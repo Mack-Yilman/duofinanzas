@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { updateGoalAction } from "@/app/actions/goals";
 
-export default async function EditGoalPage({ params }: { params: { id: string } }) {
+export default async function EditGoalPage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) return null;
 
-  const goal = await getGoal(params.id);
+  const { id } = await params;
+  const goal = await getGoal(id);
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">

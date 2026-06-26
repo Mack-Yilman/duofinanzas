@@ -3,13 +3,14 @@ import { getExpense } from "@/lib/repos/expenses";
 import { auth } from "@/auth";
 import { ExpenseForm } from "@/components/expense-form";
 
-export default async function EditExpensePage({ params }: { params: { id: string } }) {
+export default async function EditExpensePage({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) return null;
 
+  const { id } = await params;
   const coupleId = (session.user as any).coupleId;
   const categories = await getCategories(coupleId);
-  const expense = await getExpense(params.id);
+  const expense = await getExpense(id);
 
   return (
     <div className="p-6 max-w-2xl mx-auto space-y-6">
