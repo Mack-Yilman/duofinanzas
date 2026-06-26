@@ -59,6 +59,7 @@ export default async function IncomePage() {
                   <div className="flex justify-between items-center">
                     <div>
                       <p className="text-xs text-muted-foreground">{inc.type} • {inc.period}</p>
+                      <p className="text-xs font-medium mt-1">{inc.effectiveDate.toLocaleDateString()}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold">{inc.currency} {inc.amount.toFixed(2)}</p>

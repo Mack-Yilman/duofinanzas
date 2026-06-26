@@ -15,6 +15,8 @@ export async function addIncomeAction(formData: FormData) {
   const currency = formData.get("currency") as any;
   const type = formData.get("type") as any;
   const period = formData.get("period") as any;
+  const effectiveDateStr = formData.get("effectiveDate") as string;
+  const effectiveDate = effectiveDateStr ? new Date(effectiveDateStr) : new Date();
 
   await createIncome({
     name,
@@ -24,7 +26,7 @@ export async function addIncomeAction(formData: FormData) {
     period,
     userId,
     isActive: true,
-    effectiveDate: new Date(),
+    effectiveDate,
   });
 
   revalidatePath("/income");

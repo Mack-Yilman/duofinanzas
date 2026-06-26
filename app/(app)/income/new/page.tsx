@@ -76,6 +76,11 @@ export default function NewIncomePage() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="effectiveDate">Fecha Efectiva</Label>
+              <Input id="effectiveDate" name="effectiveDate" type="date" required />
+            </div>
+
             <div className="pt-4 flex justify-end gap-3">
               <Link href="/income">
                 <Button variant="outline" type="button">Cancelar</Button>

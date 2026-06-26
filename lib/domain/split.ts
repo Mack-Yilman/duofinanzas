@@ -107,3 +107,37 @@ export function calculateSettlementBalance(expenses: Expense[], userAId: string)
 
   return balances;
 }
+
+export function calculatePersonalLiquidity(incomes: Income[], expenses: Expense[], userId: string, userAId: string) {
+  const liquidity: Record<string, number> = {};
+
+  // Add incomes
+  for (const inc of incomes) {
+    if (!inc.isActive) continue;
+    if (inc.userId !== userId) continue;
+    
+    if (!liquidity[inc.currency]) liquidity[inc.currency] = 0;
+    liquidity[inc.currency] += inc.amount;
+  }
+
+  // Deduct expenses
+  for (const exp of expenses) {
+    if (!exp.isShared) {
+      if (exp.paidById === userId) {
+        if (!liquidity[exp.currency]) liquidity[exp.currency] = 0;
+        liquidity[exp.currency] -= exp.amount;
+      }
+    } else {
+      if (!liquidity[exp.currency]) liquidity[exp.currency] = 0;
+      const sharePct = userId === userAId ? exp.splitShareA : exp.splitShareB;
+      const quota = roundMoney(exp.amount * (sharePct / 100));
+      liquidity[exp.currency] -= quota;
+    }
+  }
+
+  for (const key in liquidity) {
+    liquidity[key] = roundMoney(liquidity[key]);
+  }
+
+  return liquidity;
+}

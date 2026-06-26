@@ -1,6 +1,8 @@
 import { getDashboardData } from "@/app/actions/dashboard";
 import { EquityBar } from "@/components/equity-bar";
 import { BalanceCard } from "@/components/balance-card";
+import { LiquidityCard } from "@/components/liquidity-card";
+import { DashboardCharts } from "@/components/dashboard-charts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { auth } from "@/auth";
 import { Trash2, CheckCircle2 } from "lucide-react";
@@ -20,13 +22,15 @@ export default async function DashboardPage() {
         <p className="text-muted-foreground mt-2">Bienvenido a DúoFinanzas. Aquí verás un resumen de tu mes.</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-3">
         <BalanceCard 
           balance={data.balance} 
           currentUserName={session.user.name || "Tú"} 
           partnerName={data.equity.userB === session.user.id ? "Tu pareja" : "Tu pareja"} // Simplified
         />
         
+        <LiquidityCard liquidity={data.liquidity} />
+
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Proporción de Ingresos (Equity)</CardTitle>
@@ -43,6 +47,8 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      <DashboardCharts expenses={data.expenses} categories={data.categories} />
 
       <div className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight">Gastos Recientes</h2>
