@@ -106,20 +106,33 @@ export default async function GoalsPage() {
                       <p className="text-xs text-right text-muted-foreground">{percentage}% completado</p>
                     </div>
                     
-                    <form action={contributeToGoalAction} className="flex gap-2">
+                    <form action={contributeToGoalAction} className="flex flex-wrap gap-2">
                       <input type="hidden" name="id" value={goal.id} />
                       <input type="hidden" name="currentAmount" value={goal.currentAmount} />
-                      <input 
-                        type="number" 
-                        name="contribution" 
-                        placeholder="Monto a aportar" 
-                        required 
-                        min="0.01" 
+                      <input
+                        type="number"
+                        name="contribution"
+                        placeholder="Monto a aportar"
+                        required
+                        min="0.01"
                         step="0.01"
-                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-9 min-w-0 flex-1 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                       />
+                      <select
+                        name="contributionCurrency"
+                        defaultValue={goal.currency}
+                        title="Moneda del aporte"
+                        className="h-9 rounded-md border border-input bg-transparent px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                      >
+                        <option value="PEN">PEN</option>
+                        <option value="USD">USD</option>
+                        <option value="EUR">EUR</option>
+                      </select>
                       <Button type="submit" size="sm" variant="secondary">Aportar</Button>
                     </form>
+                    <p className="text-[11px] text-muted-foreground">
+                      Meta en {goal.currency}. Si aportas en otra moneda, se convierte automáticamente.
+                    </p>
                     
                     <div className="pt-2">
                       <Link href={`/goals/${goal.id}/contributions`} className="text-xs text-brand-500 hover:underline">

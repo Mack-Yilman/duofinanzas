@@ -26,8 +26,7 @@ export default async function DashboardPage() {
 
       <div className="grid gap-6 md:grid-cols-3">
         <BalanceCard
-          balance={data.balance}
-          contributions={data.contributions}
+          breakdown={data.breakdown}
           partnerName={data.partnerName}
         />
         

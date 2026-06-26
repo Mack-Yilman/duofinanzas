@@ -128,6 +128,41 @@ export function calculateSettlementBalance(expenses: Expense[], currentUserId: s
 }
 
 /**
+ * Desglose BRUTO por moneda (no se netea en un solo número):
+ *  - owedToYou: cuánto te deben en total (la pareja debe reembolsarte su cuota de lo que TÚ pagaste).
+ *  - youOwe:    cuánto debes en total (tu cuota de lo que pagó la pareja).
+ * El neto = owedToYou - youOwe.
+ */
+export function calculateBalanceBreakdown(expenses: Expense[], currentUserId: string, userAId: string) {
+  const result: Record<string, { owedToYou: number; youOwe: number }> = {};
+
+  for (const exp of expenses) {
+    if (!exp.isShared || exp.isSettled) continue;
+    const c = exp.currency;
+    if (!result[c]) result[c] = { owedToYou: 0, youOwe: 0 };
+
+    const isCurrentA = currentUserId === userAId;
+    const currentQuota = roundMoney(exp.amount * ((isCurrentA ? exp.splitShareA : exp.splitShareB) / 100));
+    const partnerQuota = roundMoney(exp.amount - currentQuota);
+
+    if (exp.paidById === currentUserId) {
+      // Tú pagaste el total → tu pareja te debe su cuota.
+      result[c].owedToYou += partnerQuota;
+    } else {
+      // Pagó tu pareja → le debes tu cuota.
+      result[c].youOwe += currentQuota;
+    }
+  }
+
+  for (const k in result) {
+    result[k].owedToYou = roundMoney(result[k].owedToYou);
+    result[k].youOwe = roundMoney(result[k].youOwe);
+  }
+
+  return result;
+}
+
+/**
  * Cuánto puso realmente cada lado (el usuario actual vs su pareja) en los gastos
  * compartidos abiertos (no liquidados), por moneda. Sirve para la vista "global" de aportes.
  */

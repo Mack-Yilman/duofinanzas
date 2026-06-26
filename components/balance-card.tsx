@@ -2,18 +2,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatMoney } from "@/lib/domain/money";
 import { cn } from "@/lib/utils";
 
-type Contribution = { current: number; partner: number };
+type Breakdown = { owedToYou: number; youOwe: number };
 
 export function BalanceCard({
-  balance,
-  contributions = {},
+  breakdown = {},
   partnerName,
 }: {
-  balance: Record<string, number>;
-  contributions?: Record<string, Contribution>;
+  breakdown?: Record<string, Breakdown>;
   partnerName: string;
 }) {
-  const currencies = Object.keys(balance);
+  const currencies = Object.keys(breakdown).filter(
+    (c) => breakdown[c].owedToYou > 0 || breakdown[c].youOwe > 0
+  );
   const isEmpty = currencies.length === 0;
 
   return (
@@ -28,53 +28,56 @@ export function BalanceCard({
             <p className="text-xs text-muted-foreground mt-2">Todo está saldado.</p>
           </div>
         ) : (
-          <div className="space-y-4">
-            {currencies.map(curr => {
-              const amount = balance[curr];
-              // Positivo => el usuario actual le debe a su pareja. Negativo => la pareja le debe.
-              const currentOwes = amount > 0;
-              const isZero = amount === 0;
-              const contrib = contributions[curr];
+          <div className="space-y-5">
+            {currencies.map((curr) => {
+              const { owedToYou, youOwe } = breakdown[curr];
+              const net = Math.round((owedToYou - youOwe) * 100) / 100;
+              const partnerOwesNet = net > 0;
+              const isZeroNet = net === 0;
 
               return (
-                <div key={curr} className="border-b border-border/60 pb-3 last:border-0 last:pb-0">
+                <div key={curr} className="border-b border-border/60 pb-4 last:border-0 last:pb-0">
+                  {/* Neto */}
                   <div
                     className={cn(
                       "tabular text-3xl font-semibold tracking-tight",
-                      isZero
+                      isZeroNet
                         ? "text-muted-foreground"
-                        : currentOwes
-                          ? "text-destructive"
-                          : "text-brand-600 dark:text-brand-500"
+                        : partnerOwesNet
+                          ? "text-brand-600 dark:text-brand-500"
+                          : "text-destructive"
                     )}
                   >
                     <span className="text-base font-medium text-muted-foreground mr-1">{curr}</span>
-                    {Math.abs(amount).toFixed(2)}
+                    {Math.abs(net).toFixed(2)}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1.5">
-                    {isZero
-                      ? "Todo saldado en esta moneda"
-                      : currentOwes
-                        ? `Le debes a ${partnerName}`
-                        : `${partnerName} te debe`}
+                    {isZeroNet
+                      ? "Saldo neto en cero"
+                      : partnerOwesNet
+                        ? `Neto: ${partnerName} te debe`
+                        : `Neto: le debes a ${partnerName}`}
                   </p>
 
-                  {contrib && (contrib.current > 0 || contrib.partner > 0) && (
-                    <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                      <span>
-                        Tú aportaste{" "}
-                        <span className="tabular font-medium text-foreground">
-                          {formatMoney(contrib.current, curr)}
-                        </span>
-                      </span>
-                      <span>
-                        {partnerName} aportó{" "}
-                        <span className="tabular font-medium text-foreground">
-                          {formatMoney(contrib.partner, curr)}
-                        </span>
-                      </span>
+                  {/* Desglose bruto: te deben / debes (no se restan entre sí) */}
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <div className="rounded-xl bg-brand-600/8 px-3 py-2 ring-1 ring-brand-600/15">
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                        Te deben
+                      </p>
+                      <p className="tabular text-lg font-semibold text-brand-600 dark:text-brand-500">
+                        {formatMoney(owedToYou, curr)}
+                      </p>
                     </div>
-                  )}
+                    <div className="rounded-xl bg-destructive/8 px-3 py-2 ring-1 ring-destructive/15">
+                      <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                        Debes
+                      </p>
+                      <p className="tabular text-lg font-semibold text-destructive">
+                        {formatMoney(youOwe, curr)}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               );
             })}

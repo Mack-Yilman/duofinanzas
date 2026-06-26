@@ -1,9 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/auth";
-import { logoutAction } from "@/app/actions/auth";
 import { getCouple } from "@/lib/repos/couples";
 import { FxRateForm } from "./fx-rate-form";
+import { LogoutButton } from "@/components/logout-button";
 import Link from "next/link";
 
 export default async function SettingsPage() {
@@ -71,9 +71,7 @@ export default async function SettingsPage() {
             <CardTitle>Cerrar Sesión</CardTitle>
           </CardHeader>
           <CardContent>
-            <form action={logoutAction}>
-              <Button variant="destructive" type="submit">Cerrar Sesión</Button>
-            </form>
+            <LogoutButton />
           </CardContent>
         </Card>
       </div>

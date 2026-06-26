@@ -44,7 +44,7 @@ export default async function GoalContributionsPage({ params }: { params: Promis
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Resumen de Aportes</CardTitle>
-            <CardDescription>Distribución de ahorros por persona</CardDescription>
+            <CardDescription>Total acumulado por persona (cuánto puso cada uno en esta meta)</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {Object.keys(totals).length === 0 ? (
@@ -72,6 +72,7 @@ export default async function GoalContributionsPage({ params }: { params: Promis
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">Historial Detallado</CardTitle>
+            <CardDescription>Cada aporte individual por fecha (puedes eliminarlos uno a uno)</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {!(process.env.GOALS_CONTRIBUTIONS_DB_ID || process.env.GOAL_CONTRIBUTIONS_DB_ID) ? (

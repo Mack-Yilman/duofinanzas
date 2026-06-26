@@ -5,9 +5,8 @@ import { getIncomes } from "@/lib/repos/incomes";
 import { getExpenses } from "@/lib/repos/expenses";
 import {
   calculateEquity,
-  calculateSettlementBalance,
   calculatePersonalLiquidity,
-  calculateContributions,
+  calculateBalanceBreakdown,
 } from "@/lib/domain/split";
 import { getCategories } from "@/lib/repos/categories";
 import { getUsersByCoupleId } from "@/lib/repos/users";
@@ -37,9 +36,8 @@ export async function getDashboardData() {
   // Calculate Equity
   const equity = calculateEquity(incomes, "PEN", (amount) => amount);
 
-  // Balance neto consistente para el usuario logueado + aportes de cada lado
-  const balance = calculateSettlementBalance(expenses, currentUserId, equity.userA);
-  const contributions = calculateContributions(expenses, currentUserId);
+  // Desglose bruto (te deben / debes) consistente para el usuario logueado
+  const breakdown = calculateBalanceBreakdown(expenses, currentUserId, equity.userA);
   const liquidity = calculatePersonalLiquidity(incomes, expenses, currentUserId, equity.userA, couple.fxRate);
 
   const userA = users.find(u => u.id === equity.userA)?.name || "Usuario A";
@@ -49,8 +47,7 @@ export async function getDashboardData() {
   return {
     equity: { ...equity, nameA: userA, nameB: userB },
     expenses: expenses.sort((a, b) => b.date.getTime() - a.date.getTime()),
-    balance,
-    contributions,
+    breakdown,
     liquidity,
     categories,
     users: users.map(u => ({ id: u.id, name: u.name, avatarColor: u.avatarColor })),
