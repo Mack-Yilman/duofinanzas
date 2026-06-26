@@ -6,7 +6,7 @@ import { createUser } from "@/lib/repos/users";
 import { createCouple, getCoupleByInviteCode, addMemberToCouple } from "@/lib/repos/couples";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { auth, unstable_update } from "@/auth";
 import { updateUserCouple } from "@/lib/repos/users";
 
 export async function login(formData: FormData) {
@@ -62,6 +62,7 @@ export async function setupAction(formData: FormData) {
     const name = formData.get("coupleName") as string;
     const { id: coupleId } = await createCouple(name, userId);
     await updateUserCouple(userId, coupleId, 'owner');
+    await unstable_update({ coupleId } as any);
   } else if (action === "join") {
     const inviteCode = formData.get("inviteCode") as string;
     const coupleId = await getCoupleByInviteCode(inviteCode);
@@ -70,6 +71,7 @@ export async function setupAction(formData: FormData) {
     }
     await addMemberToCouple(coupleId, userId);
     await updateUserCouple(userId, coupleId, 'member');
+    await unstable_update({ coupleId } as any);
   }
   
   redirect("/");

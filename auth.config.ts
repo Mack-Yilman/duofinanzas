@@ -43,12 +43,17 @@ export default {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         token.coupleId = (user as any).coupleId;
         token.avatarColor = (user as any).avatarColor;
         token.role = (user as any).role;
+      }
+      if (trigger === "update" && session) {
+        if (session.coupleId !== undefined) {
+          token.coupleId = session.coupleId;
+        }
       }
       return token;
     },
