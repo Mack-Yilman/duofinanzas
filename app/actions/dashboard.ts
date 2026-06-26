@@ -19,9 +19,12 @@ export async function getDashboardData() {
   
   // Fetch data
   const incomes = await getIncomes();
-  const expenses = await getExpenses(coupleId);
+  const allExpenses = await getExpenses(coupleId);
   const categories = await getCategories(coupleId);
   const users = await getUsersByCoupleId(coupleId);
+  
+  // Filter expenses: shared expenses + personal expenses of the current user
+  const expenses = allExpenses.filter(exp => exp.isShared || exp.paidById === currentUserId);
   
   // Calculate Equity
   const equity = calculateEquity(incomes, "PEN", (amount) => amount);
