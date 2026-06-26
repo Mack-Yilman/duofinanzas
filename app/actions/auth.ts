@@ -6,7 +6,7 @@ import { createUser } from "@/lib/repos/users";
 import { createCouple, getCoupleByInviteCode, addMemberToCouple } from "@/lib/repos/couples";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
-import { auth, unstable_update } from "@/auth";
+import { auth, unstable_update, signOut } from "@/auth";
 import { updateUserCouple } from "@/lib/repos/users";
 
 export async function login(formData: FormData) {
@@ -75,4 +75,8 @@ export async function setupAction(formData: FormData) {
   }
   
   redirect("/");
+}
+
+export async function logoutAction() {
+  await signOut({ redirectTo: "/login" });
 }

@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { getIncomes } from "@/lib/repos/incomes";
 import { auth } from "@/auth";
+import Link from "next/link";
 
 export default async function IncomePage() {
   const session = await auth();
@@ -17,10 +18,12 @@ export default async function IncomePage() {
           <h1 className="text-3xl font-bold tracking-tight">Ingresos</h1>
           <p className="text-muted-foreground mt-2">Gestionen sus fuentes de ingresos declaradas.</p>
         </div>
-        <Button className="gap-2" disabled>
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">Nuevo Ingreso</span>
-        </Button>
+        <Link href="/income/new">
+          <Button className="gap-2">
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Nuevo Ingreso</span>
+          </Button>
+        </Link>
       </div>
 
       <div className="space-y-4">

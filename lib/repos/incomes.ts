@@ -31,3 +31,21 @@ export async function getIncomes(userId?: string): Promise<Income[]> {
   }
   return incomes;
 }
+
+export async function createIncome(data: Partial<Income>) {
+  const response = await notion.pages.create({
+    parent: { database_id: DB_ID },
+    properties: {
+      Name: { title: [{ text: { content: data.name! } }] },
+      user: { relation: [{ id: data.userId! }] },
+      amount: { number: data.amount || 0 },
+      currency: { select: { name: data.currency || "PEN" } },
+      type: { select: { name: data.type || "salary" } },
+      period: { select: { name: data.period || "monthly" } },
+      effectiveDate: { date: { start: data.effectiveDate?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0] } },
+      isActive: { checkbox: data.isActive !== false },
+      notes: { rich_text: [{ text: { content: data.notes || "" } }] },
+    },
+  });
+  return toIncome(response);
+}

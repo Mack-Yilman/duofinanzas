@@ -1,0 +1,33 @@
+"use server";
+
+import { auth } from "@/auth";
+import { createGoal } from "@/lib/repos/goals";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+export async function addGoalAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autenticado");
+
+  const coupleId = (session.user as any).coupleId;
+  const name = formData.get("name") as string;
+  const targetAmount = parseFloat(formData.get("targetAmount") as string);
+  const currency = formData.get("currency") as any;
+  const targetDateStr = formData.get("targetDate") as string;
+  const icon = formData.get("icon") as string;
+  
+  await createGoal({
+    name,
+    targetAmount,
+    currentAmount: 0,
+    currency,
+    targetDate: new Date(targetDateStr),
+    icon,
+    coupleId,
+    contributionMode: "proportional",
+    isAchieved: false,
+  });
+
+  revalidatePath("/goals");
+  redirect("/goals");
+}

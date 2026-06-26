@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/auth";
+import { logoutAction } from "@/app/actions/auth";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -35,8 +36,7 @@ export default async function SettingsPage() {
             <CardTitle>Cerrar Sesión</CardTitle>
           </CardHeader>
           <CardContent>
-            {/* Real implementation would use a client component for signOut or a server action */}
-            <form action="/api/auth/signout" method="POST">
+            <form action={logoutAction}>
               <Button variant="destructive" type="submit">Cerrar Sesión</Button>
             </form>
           </CardContent>

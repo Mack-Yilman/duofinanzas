@@ -23,9 +23,15 @@ export default async function AppLayout({
   ];
 
   return (
-    <div className="flex h-screen flex-col md:flex-row w-full bg-background">
+    <div className="flex h-screen flex-col md:flex-row w-full bg-background relative overflow-hidden">
+      {/* Background ambient glow */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-500/20 blur-[120px]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-user-b/20 blur-[120px]"></div>
+      </div>
+
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 border-r bg-card px-4 py-6">
+      <aside className="hidden md:flex flex-col w-64 border-r border-white/5 bg-card/40 backdrop-blur-xl px-4 py-6 z-10 shadow-2xl">
         <div className="text-2xl font-bold text-brand-600 mb-8 px-4">DúoFinanzas</div>
         <nav className="flex-1 space-y-2">
           {navItems.map((item) => (
@@ -53,7 +59,7 @@ export default async function AppLayout({
       </main>
 
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t bg-card flex items-center justify-around p-3 pb-safe z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/5 bg-card/60 backdrop-blur-xl flex items-center justify-around p-3 pb-safe z-50">
         {navItems.slice(0, 4).map((item) => (
           <Link key={item.href} href={item.href} className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground">
             {item.icon}

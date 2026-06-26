@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
-const inter = Inter({
-  variable: "--font-inter",
+const outfit = Outfit({
+  variable: "--font-sans",
   subsets: ["latin"],
 });
 
@@ -20,7 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body suppressHydrationWarning className={`${inter.variable} min-h-full flex flex-col font-sans antialiased`}>
+      <body suppressHydrationWarning className={`${outfit.variable} min-h-screen flex flex-col font-sans antialiased bg-gradient-to-br from-background to-muted/30`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
