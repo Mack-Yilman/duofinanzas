@@ -69,3 +69,10 @@ export async function createExpense(data: Omit<Expense, 'id' | 'createdAt'>): Pr
 
   return toExpense(response);
 }
+
+export async function deleteExpense(id: string) {
+  await notion.pages.update({
+    page_id: id,
+    archived: true
+  });
+}

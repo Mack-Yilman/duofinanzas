@@ -1,10 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { getGoals } from "@/lib/repos/goals";
+import { deleteGoalAction } from "@/app/actions/goals";
 
 export default async function GoalsPage() {
   const session = await auth();
@@ -47,6 +48,12 @@ export default async function GoalsPage() {
                     <CardTitle className="text-lg flex items-center gap-2">
                       <span>{goal.icon}</span> {goal.name}
                     </CardTitle>
+                    <form action={deleteGoalAction}>
+                      <input type="hidden" name="id" value={goal.id} />
+                      <button type="submit" className="text-muted-foreground hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </form>
                   </div>
                   <CardDescription>
                     {goal.currency} {goal.currentAmount.toLocaleString()} / {goal.targetAmount.toLocaleString()}

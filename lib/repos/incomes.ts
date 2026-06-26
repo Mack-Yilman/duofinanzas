@@ -49,3 +49,25 @@ export async function createIncome(data: Partial<Income>) {
   });
   return toIncome(response);
 }
+
+export async function updateIncome(id: string, data: Partial<Income>) {
+  const properties: any = {};
+  if (data.name) properties.Name = { title: [{ text: { content: data.name } }] };
+  if (data.amount !== undefined) properties.amount = { number: data.amount };
+  if (data.currency) properties.currency = { select: { name: data.currency } };
+  if (data.type) properties.type = { select: { name: data.type } };
+  if (data.period) properties.period = { select: { name: data.period } };
+  
+  const response = await notion.pages.update({
+    page_id: id,
+    properties,
+  });
+  return toIncome(response);
+}
+
+export async function deleteIncome(id: string) {
+  await notion.pages.update({
+    page_id: id,
+    archived: true
+  });
+}

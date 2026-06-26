@@ -31,3 +31,14 @@ export async function addGoalAction(formData: FormData) {
   revalidatePath("/goals");
   redirect("/goals");
 }
+
+export async function deleteGoalAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autenticado");
+
+  const id = formData.get("id") as string;
+  const { deleteGoal } = await import("@/lib/repos/goals");
+  await deleteGoal(id);
+  
+  revalidatePath("/goals");
+}

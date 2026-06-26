@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Home, CreditCard, Wallet, Target, Repeat, Settings } from "lucide-react";
+import { Home, CreditCard, Wallet, Target, Repeat, Settings, List } from "lucide-react";
 
 export default async function AppLayout({
   children,
@@ -19,6 +19,7 @@ export default async function AppLayout({
     { label: "Gastos", href: "/expenses", icon: <CreditCard className="w-5 h-5" /> },
     { label: "Ingresos", href: "/income", icon: <Wallet className="w-5 h-5" /> },
     { label: "Metas", href: "/goals", icon: <Target className="w-5 h-5" /> },
+    { label: "Categorías", href: "/categories", icon: <List className="w-5 h-5" /> },
     { label: "Ajustes", href: "/settings", icon: <Settings className="w-5 h-5" /> },
   ];
 

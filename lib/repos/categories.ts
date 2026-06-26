@@ -65,3 +65,25 @@ export async function getCategories(coupleId: string): Promise<Category[]> {
   
   return results;
 }
+
+export async function updateCategory(id: string, data: Partial<Category>) {
+  const properties: any = {};
+  if (data.name) properties.Name = { title: [{ text: { content: data.name } }] };
+  if (data.icon) properties.icon = { rich_text: [{ text: { content: data.icon } }] };
+  if (data.color) properties.color = { rich_text: [{ text: { content: data.color } }] };
+  if (data.kind) properties.kind = { select: { name: data.kind } };
+  
+  const response = await notion.pages.update({
+    page_id: id,
+    properties,
+  });
+  return toCategory(response);
+}
+
+export async function deleteCategory(id: string) {
+  // Archive in Notion
+  await notion.pages.update({
+    page_id: id,
+    archived: true
+  });
+}

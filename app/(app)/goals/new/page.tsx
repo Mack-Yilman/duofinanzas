@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { addGoalAction } from "@/app/actions/goals";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Link from "next/link";
 
 export default function NewGoalPage() {
   return (
@@ -56,7 +57,9 @@ export default function NewGoalPage() {
             </div>
 
             <div className="pt-4 flex justify-end gap-3">
-              <Button variant="outline" type="button" onClick={() => window.history.back()}>Cancelar</Button>
+              <Link href="/goals">
+                <Button variant="outline" type="button">Cancelar</Button>
+              </Link>
               <Button type="submit">Guardar Meta</Button>
             </div>
           </form>

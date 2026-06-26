@@ -49,3 +49,25 @@ export async function createGoal(data: Partial<Goal>) {
   });
   return toGoal(response);
 }
+
+export async function updateGoal(id: string, data: Partial<Goal>) {
+  const properties: any = {};
+  if (data.name) properties.Name = { title: [{ text: { content: data.name } }] };
+  if (data.targetAmount !== undefined) properties.targetAmount = { number: data.targetAmount };
+  if (data.currentAmount !== undefined) properties.currentAmount = { number: data.currentAmount };
+  if (data.currency) properties.currency = { select: { name: data.currency } };
+  if (data.icon) properties.icon = { rich_text: [{ text: { content: data.icon } }] };
+  
+  const response = await notion.pages.update({
+    page_id: id,
+    properties,
+  });
+  return toGoal(response);
+}
+
+export async function deleteGoal(id: string) {
+  await notion.pages.update({
+    page_id: id,
+    archived: true
+  });
+}

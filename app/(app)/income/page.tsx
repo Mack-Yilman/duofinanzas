@@ -1,7 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Briefcase, Globe, TrendingUp, Coins, Trash2 } from "lucide-react";
 import { getIncomes } from "@/lib/repos/incomes";
+import { deleteIncomeAction } from "@/app/actions/incomes";
 import { auth } from "@/auth";
 import Link from "next/link";
 
@@ -37,14 +38,32 @@ export default async function IncomePage() {
           <div className="space-y-3">
             {incomes.map(inc => (
               <Card key={inc.id}>
-                <CardContent className="p-4 flex justify-between items-center">
-                  <div>
-                    <p className="font-medium">{inc.name}</p>
-                    <p className="text-xs text-muted-foreground">{inc.type} • {inc.period}</p>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {inc.name}
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    {inc.type === "salary" && <Briefcase className="w-4 h-4 text-muted-foreground" />}
+                    {inc.type === "freelance" && <Globe className="w-4 h-4 text-muted-foreground" />}
+                    {inc.type === "bonus" && <TrendingUp className="w-4 h-4 text-muted-foreground" />}
+                    {inc.type === "other" && <Coins className="w-4 h-4 text-muted-foreground" />}
+                    <form action={deleteIncomeAction}>
+                      <input type="hidden" name="id" value={inc.id} />
+                      <button type="submit" className="text-muted-foreground hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </form>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold">{inc.currency} {inc.amount.toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground">{inc.isActive ? 'Activo' : 'Inactivo'}</p>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-xs text-muted-foreground">{inc.type} • {inc.period}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold">{inc.currency} {inc.amount.toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">{inc.isActive ? 'Activo' : 'Inactivo'}</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -2,7 +2,8 @@ import { getDashboardData } from "@/app/actions/dashboard";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
+import { deleteExpenseAction } from "@/app/actions/expenses";
 
 export default async function ExpensesPage() {
   // Reuse dashboard action for expenses list
@@ -42,11 +43,19 @@ export default async function ExpensesPage() {
                       <span className="capitalize px-2 py-0.5 bg-muted rounded-full">{exp.splitMode}</span>
                     </div>
                   </div>
-                  <div className="text-left sm:text-right">
-                    <p className="font-semibold text-lg">{exp.currency} {exp.amount.toFixed(2)}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Base: PEN {exp.amountBase.toFixed(2)}
-                    </p>
+                  <div className="flex items-center gap-4">
+                    <div className="text-left sm:text-right">
+                      <p className="font-semibold text-lg">{exp.currency} {exp.amount.toFixed(2)}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Base: PEN {exp.amountBase.toFixed(2)}
+                      </p>
+                    </div>
+                    <form action={deleteExpenseAction}>
+                      <input type="hidden" name="id" value={exp.id} />
+                      <button type="submit" className="text-muted-foreground hover:text-destructive">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </form>
                   </div>
                 </CardContent>
               </Card>

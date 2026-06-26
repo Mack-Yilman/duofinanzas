@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { createExpenseAction } from "@/app/actions/expenses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,11 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Category } from "@/lib/types";
 
 export function ExpenseForm({ categories }: { categories: Category[] }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  const [categoryId, setCategoryId] = useState<string>("");
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
+    formData.set("categoryId", categoryId); // Ensure it's in formData
     startTransition(() => {
       createExpenseAction(formData);
     });
@@ -52,7 +57,7 @@ export function ExpenseForm({ categories }: { categories: Category[] }) {
 
           <div className="space-y-2">
             <Label htmlFor="categoryId">Categoría</Label>
-            <Select name="categoryId" disabled={isPending} required>
+            <Select name="categoryId" value={categoryId} onValueChange={(val) => setCategoryId(val || "")} disabled={isPending} required>
               <SelectTrigger>
                 <SelectValue placeholder="Selecciona una categoría" />
               </SelectTrigger>
@@ -79,7 +84,7 @@ export function ExpenseForm({ categories }: { categories: Category[] }) {
         </CardContent>
         
         <CardFooter className="flex justify-end gap-3 border-t pt-6 bg-muted/20">
-          <Button type="button" variant="outline" disabled={isPending} onClick={() => window.history.back()}>
+          <Button type="button" variant="outline" disabled={isPending} onClick={() => router.back()}>
             Cancelar
           </Button>
           <Button type="submit" disabled={isPending}>

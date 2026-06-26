@@ -30,3 +30,14 @@ export async function addIncomeAction(formData: FormData) {
   revalidatePath("/income");
   redirect("/income");
 }
+
+export async function deleteIncomeAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autenticado");
+
+  const id = formData.get("id") as string;
+  const { deleteIncome } = await import("@/lib/repos/incomes");
+  await deleteIncome(id);
+  
+  revalidatePath("/income");
+}

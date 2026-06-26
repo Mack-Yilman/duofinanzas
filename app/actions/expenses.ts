@@ -70,3 +70,15 @@ export async function createExpenseAction(formData: FormData) {
   revalidatePath("/expenses");
   redirect("/expenses");
 }
+
+export async function deleteExpenseAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autenticado");
+
+  const id = formData.get("id") as string;
+  const { deleteExpense } = await import("@/lib/repos/expenses");
+  await deleteExpense(id);
+  
+  revalidatePath("/");
+  revalidatePath("/expenses");
+}
