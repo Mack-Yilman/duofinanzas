@@ -26,7 +26,7 @@ export default auth((req) => {
     if (!isLoggedIn) {
       return Response.redirect(new URL('/login', nextUrl));
     }
-    if ((req.auth as any).coupleId) {
+    if ((req.auth?.user as any)?.coupleId) {
       return Response.redirect(new URL('/', nextUrl));
     }
     return;
@@ -44,7 +44,7 @@ export default auth((req) => {
     return Response.redirect(new URL('/login', nextUrl));
   }
 
-  if (!(req.auth as any).coupleId) {
+  if (!(req.auth?.user as any)?.coupleId) {
     return Response.redirect(new URL('/setup', nextUrl));
   }
 
