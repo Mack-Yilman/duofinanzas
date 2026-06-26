@@ -17,6 +17,8 @@ export const CoupleSchema = z.object({
   baseCurrency: CurrencySchema,
   splitDefaultMode: SplitModeSchema,
   memberIds: z.array(z.string()), // Length 2
+  inviteCode: z.string(),
+  fxRate: z.number().optional(),
   createdAt: z.date(),
 });
 export type Couple = z.infer<typeof CoupleSchema>;

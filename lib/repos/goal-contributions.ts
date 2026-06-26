@@ -8,11 +8,11 @@ export function toGoalContribution(page: any): GoalContribution {
   return {
     id: page.id,
     name: getString(page, 'Name'),
-    goalId: getRelation(page, 'Goal'),
-    userId: getRelation(page, 'User'),
-    amount: getNumber(page, 'Amount') || 0,
-    currency: CurrencySchema.parse(getSelect(page, 'Currency') || 'PEN'),
-    date: getDate(page, 'Date') || new Date(),
+    goalId: getRelation(page, 'goal'),
+    userId: getRelation(page, 'user'),
+    amount: getNumber(page, 'amount') || 0,
+    currency: CurrencySchema.parse(getSelect(page, 'currency') || 'PEN'),
+    date: getDate(page, 'date') || new Date(),
   };
 }
 
@@ -23,11 +23,11 @@ export async function getGoalContributions(goalId: string): Promise<GoalContribu
     const pages = await queryAll((cursor) => notion.databases.query({
       database_id: DB_ID,
       filter: {
-        property: "Goal",
+        property: "goal",
         relation: { contains: goalId }
       },
       sorts: [
-        { property: "Date", direction: "descending" }
+        { property: "date", direction: "descending" }
       ],
       start_cursor: cursor,
     }));
@@ -46,11 +46,11 @@ export async function createGoalContribution(data: Omit<GoalContribution, 'id'>)
     parent: { database_id: DB_ID },
     properties: {
       Name: { title: [{ text: { content: data.name } }] },
-      Goal: { relation: [{ id: data.goalId }] },
-      User: { relation: [{ id: data.userId }] },
-      Amount: { number: data.amount },
-      Currency: { select: { name: data.currency } },
-      Date: { date: { start: data.date.toISOString().split('T')[0] } },
+      goal: { relation: [{ id: data.goalId }] },
+      user: { relation: [{ id: data.userId }] },
+      amount: { number: data.amount },
+      currency: { select: { name: data.currency } },
+      date: { date: { start: data.date.toISOString().split('T')[0] } },
     }
   }));
 

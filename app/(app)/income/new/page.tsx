@@ -68,9 +68,7 @@ export default function NewIncomePage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="monthly">Mensual</SelectItem>
-                    <SelectItem value="biweekly">Quincenal</SelectItem>
-                    <SelectItem value="weekly">Semanal</SelectItem>
-                    <SelectItem value="yearly">Anual</SelectItem>
+                    <SelectItem value="one_time">Ocasional</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

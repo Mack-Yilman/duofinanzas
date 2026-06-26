@@ -41,8 +41,8 @@ export default async function DashboardPage() {
               shareB={data.equity.shareB} 
               incomeA={data.equity.incomeA} 
               incomeB={data.equity.incomeB} 
-              nameA="Usuario A"
-              nameB="Usuario B"
+              nameA={data.equity.nameA}
+              nameB={data.equity.nameB}
             />
           </CardContent>
         </Card>

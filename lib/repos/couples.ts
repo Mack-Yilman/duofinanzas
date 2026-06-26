@@ -50,3 +50,22 @@ export async function addMemberToCouple(coupleId: string, userId: string): Promi
     }
   }));
 }
+
+export async function getCouple(id: string) {
+  const page: any = await notionWithRetry(() => notion.pages.retrieve({ page_id: id }));
+  return {
+    id: page.id,
+    name: page.properties.Name?.title?.[0]?.plain_text || "Couple",
+    inviteCode: page.properties.inviteCode?.rich_text?.[0]?.plain_text || "",
+    fxRate: page.properties.fxRate?.number || 3.80, // Default to 3.80 if not set
+  };
+}
+
+export async function updateCouple(id: string, fxRate: number) {
+  await notionWithRetry(() => notion.pages.update({
+    page_id: id,
+    properties: {
+      fxRate: { number: fxRate }
+    }
+  }));
+}

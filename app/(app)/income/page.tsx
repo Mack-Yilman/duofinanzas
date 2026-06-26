@@ -10,7 +10,10 @@ export default async function IncomePage() {
   const session = await auth();
   if (!session?.user) return null;
 
+  const coupleId = (session.user as any).coupleId;
   const incomes = await getIncomes();
+  const { getUsersByCoupleId } = await import("@/lib/repos/users");
+  const users = await getUsersByCoupleId(coupleId);
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
@@ -58,7 +61,10 @@ export default async function IncomePage() {
                 <CardContent className="pt-0">
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-xs text-muted-foreground">{inc.type} • {inc.period}</p>
+                      <p className="text-xs font-medium text-brand-400 mb-1">
+                        {users.find(u => u.id === inc.userId)?.name || "Desconocido"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{inc.type} • {inc.period === 'one_time' ? 'Ocasional' : 'Mensual'}</p>
                       <p className="text-xs font-medium mt-1">{inc.effectiveDate.toLocaleDateString()}</p>
                     </div>
                     <div className="text-right">

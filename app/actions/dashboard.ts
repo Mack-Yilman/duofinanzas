@@ -22,6 +22,8 @@ export async function getDashboardData() {
   const allExpenses = await getExpenses(coupleId);
   const categories = await getCategories(coupleId);
   const users = await getUsersByCoupleId(coupleId);
+  const { getCouple } = await import("@/lib/repos/couples");
+  const couple = await getCouple(coupleId);
   
   // Filter expenses: shared expenses + personal expenses of the current user
   const expenses = allExpenses.filter(exp => exp.isShared || exp.paidById === currentUserId);
@@ -31,7 +33,7 @@ export async function getDashboardData() {
   
   // Calculate balances
   const balance = calculateSettlementBalance(expenses, currentUserId);
-  const liquidity = calculatePersonalLiquidity(incomes, expenses, currentUserId, equity.userA, 3.80); // fxRate = 3.80
+  const liquidity = calculatePersonalLiquidity(incomes, expenses, currentUserId, equity.userA, couple.fxRate);
 
   const userA = users.find(u => u.id === equity.userA)?.name || "Usuario A";
   const userB = users.find(u => u.id === equity.userB)?.name || "Usuario B";
