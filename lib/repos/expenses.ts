@@ -31,17 +31,17 @@ export function toExpense(page: any): Expense {
 }
 
 export async function getExpenses(coupleId: string, monthPrefix?: string): Promise<Expense[]> {
-  // We can't filter by coupleId easily if Expense doesn't have a direct couple relation.
-  // Wait, Expense doesn't have couple relation. It's tied to Users who are tied to Couple.
-  // For the demo (1 couple), we just fetch all or we filter by paidById matching couple's users.
-  // For safety, let's just fetch all and filter in memory since volume is low.
   const pages = await queryAll((cursor) => notion.databases.query({
     database_id: DB_ID,
     start_cursor: cursor,
-    // Add month filter if needed via date
   }));
   
   return pages.map(toExpense);
+}
+
+export async function getExpense(id: string): Promise<Expense> {
+  const page = await notion.pages.retrieve({ page_id: id });
+  return toExpense(page);
 }
 
 export async function createExpense(data: Omit<Expense, 'id' | 'createdAt'>): Promise<Expense> {
@@ -63,16 +63,41 @@ export async function createExpense(data: Omit<Expense, 'id' | 'createdAt'>): Pr
       category: data.categoryId ? { relation: [{ id: data.categoryId }] } : { relation: [] },
       paidBy: data.paidById ? { relation: [{ id: data.paidById }] } : { relation: [] },
       createdBy: data.createdById ? { relation: [{ id: data.createdById }] } : { relation: [] },
-      // Optional fields skipped if undefined for brevity, but should be mapped in real app
     }
   }));
 
   return toExpense(response);
 }
 
+export async function updateExpense(id: string, data: Partial<Expense>) {
+  const properties: any = {};
+  if (data.name) properties.Name = { title: [{ text: { content: data.name } }] };
+  if (data.amount !== undefined) properties.amount = { number: data.amount };
+  if (data.currency) properties.currency = { select: { name: data.currency } };
+  if (data.amountBase !== undefined) properties.amountBase = { number: data.amountBase };
+  if (data.fxRate !== undefined) properties.fxRate = { number: data.fxRate };
+  if (data.splitMode) properties.splitMode = { select: { name: data.splitMode } };
+  if (data.categoryId) properties.category = { relation: [{ id: data.categoryId }] };
+  if (data.isShared !== undefined) properties.isShared = { checkbox: data.isShared };
+  
+  await notion.pages.update({
+    page_id: id,
+    properties
+  });
+}
+
 export async function deleteExpense(id: string) {
   await notion.pages.update({
     page_id: id,
     archived: true
+  });
+}
+
+export async function settleExpense(id: string) {
+  await notion.pages.update({
+    page_id: id,
+    properties: {
+      isSettled: { checkbox: true }
+    }
   });
 }

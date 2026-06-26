@@ -82,3 +82,45 @@ export async function deleteExpenseAction(formData: FormData) {
   revalidatePath("/");
   revalidatePath("/expenses");
 }
+
+export async function settleExpenseAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autenticado");
+
+  const id = formData.get("id") as string;
+  const { settleExpense } = await import("@/lib/repos/expenses");
+  await settleExpense(id);
+  
+  revalidatePath("/");
+  revalidatePath("/expenses");
+}
+
+export async function updateExpenseAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autenticado");
+
+  const id = formData.get("id") as string;
+  const name = formData.get("name") as string;
+  const amount = parseFloat(formData.get("amount") as string);
+  const currency = formData.get("currency") as any;
+  const categoryId = formData.get("categoryId") as string;
+  const splitMode = formData.get("splitMode") as any;
+
+  // Real app: fetch current FX rate
+  const amountBase = amount; 
+  
+  const { updateExpense } = await import("@/lib/repos/expenses");
+  
+  await updateExpense(id, {
+    name,
+    amount,
+    currency,
+    amountBase,
+    categoryId,
+    splitMode,
+  });
+
+  revalidatePath("/");
+  revalidatePath("/expenses");
+  redirect("/expenses");
+}

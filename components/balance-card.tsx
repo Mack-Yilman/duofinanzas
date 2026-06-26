@@ -1,34 +1,11 @@
-"use client";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatMoney } from "@/lib/domain/money";
+import { cn } from "@/lib/utils";
 
-interface BalanceCardProps {
-  balance: number; // Positive = current user owes money. Negative = current user is owed money.
-  currentUserName: string;
-  partnerName: string;
-}
-
-export function BalanceCard({ balance, currentUserName, partnerName }: BalanceCardProps) {
-  const isSettled = balance === 0;
-  const iOwe = balance > 0;
-  const amount = Math.abs(balance);
-
-  let title = "Están a mano";
-  let description = "No hay deudas pendientes en este ciclo.";
-  let colorClass = "text-muted-foreground";
-
-  if (!isSettled) {
-    if (iOwe) {
-      title = `Debes a ${partnerName}`;
-      description = "Tienes un saldo pendiente por pagar.";
-      colorClass = "text-destructive";
-    } else {
-      title = `${partnerName} te debe`;
-      description = "Tienes un saldo a tu favor.";
-      colorClass = "text-brand-600";
-    }
-  }
+export function BalanceCard({ balance, currentUserName, partnerName }: { balance: Record<string, number>, currentUserName: string, partnerName: string }) {
+  // We can display multiple currencies, or a summary.
+  const currencies = Object.keys(balance);
+  const isEmpty = currencies.length === 0;
 
   return (
     <Card>
@@ -36,19 +13,41 @@ export function BalanceCard({ balance, currentUserName, partnerName }: BalanceCa
         <CardTitle className="text-sm font-medium text-muted-foreground">Estado de Cuentas</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex items-end justify-between">
+        {isEmpty ? (
           <div>
-            <div className={`text-2xl font-bold ${colorClass}`}>
-              {isSettled ? "S/ 0.00" : formatMoney(amount, "PEN")}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">{title}</p>
+            <div className="text-3xl font-bold text-muted-foreground">0.00</div>
+            <p className="text-xs text-muted-foreground mt-2">Todo está saldado.</p>
           </div>
-          {!isSettled && (
-            <div className="text-right text-xs text-muted-foreground">
-              {description}
-            </div>
-          )}
-        </div>
+        ) : (
+          <div className="space-y-4">
+            {currencies.map(curr => {
+              const amount = balance[curr];
+              const isPositive = amount > 0;
+              const isZero = amount === 0;
+
+              return (
+                <div key={curr} className="flex justify-between items-center border-b pb-2 last:border-0 last:pb-0">
+                  <div>
+                    <div className={cn(
+                      "text-2xl font-bold",
+                      isZero ? "text-muted-foreground" : (isPositive ? "text-destructive" : "text-emerald-500")
+                    )}>
+                      {curr} {Math.abs(amount).toFixed(2)}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {isZero ? "Todo saldado en esta moneda" : (isPositive ? `Le debes a ${partnerName}` : `${partnerName} te debe`)}
+                    </p>
+                  </div>
+                  {!isZero && (
+                    <div className="text-xs text-right text-muted-foreground max-w-[120px]">
+                      {isPositive ? "Tienes un saldo negativo." : "Tienes un saldo a tu favor."}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

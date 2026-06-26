@@ -5,7 +5,7 @@ import { Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { getGoals } from "@/lib/repos/goals";
-import { deleteGoalAction } from "@/app/actions/goals";
+import { deleteGoalAction, contributeToGoalAction } from "@/app/actions/goals";
 
 export default async function GoalsPage() {
   const session = await auth();
@@ -48,21 +48,43 @@ export default async function GoalsPage() {
                     <CardTitle className="text-lg flex items-center gap-2">
                       <span>{goal.icon}</span> {goal.name}
                     </CardTitle>
-                    <form action={deleteGoalAction}>
-                      <input type="hidden" name="id" value={goal.id} />
-                      <button type="submit" className="text-muted-foreground hover:text-destructive">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </form>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/goals/${goal.id}/edit`} title="Editar" className="text-muted-foreground hover:text-brand-500">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
+                      </Link>
+                      <form action={deleteGoalAction}>
+                        <input type="hidden" name="id" value={goal.id} />
+                        <button type="submit" className="text-muted-foreground hover:text-destructive">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </form>
+                    </div>
                   </div>
                   <CardDescription>
                     {goal.currency} {goal.currentAmount.toLocaleString()} / {goal.targetAmount.toLocaleString()}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    <Progress value={percentage} className="h-2" />
-                    <p className="text-xs text-right text-muted-foreground">{percentage}% completado</p>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Progress value={percentage} className="h-2" />
+                      <p className="text-xs text-right text-muted-foreground">{percentage}% completado</p>
+                    </div>
+                    
+                    <form action={contributeToGoalAction} className="flex gap-2">
+                      <input type="hidden" name="id" value={goal.id} />
+                      <input type="hidden" name="currentAmount" value={goal.currentAmount} />
+                      <input 
+                        type="number" 
+                        name="contribution" 
+                        placeholder="Monto a aportar" 
+                        required 
+                        min="0.01" 
+                        step="0.01"
+                        className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+                      <Button type="submit" size="sm" variant="secondary">Aportar</Button>
+                    </form>
                   </div>
                 </CardContent>
               </Card>

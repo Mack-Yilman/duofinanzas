@@ -19,7 +19,6 @@ export default async function AppLayout({
     { label: "Gastos", href: "/expenses", icon: <CreditCard className="w-5 h-5" /> },
     { label: "Ingresos", href: "/income", icon: <Wallet className="w-5 h-5" /> },
     { label: "Metas", href: "/goals", icon: <Target className="w-5 h-5" /> },
-    { label: "Categorías", href: "/categories", icon: <List className="w-5 h-5" /> },
     { label: "Ajustes", href: "/settings", icon: <Settings className="w-5 h-5" /> },
   ];
 

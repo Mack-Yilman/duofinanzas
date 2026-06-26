@@ -32,6 +32,11 @@ export async function getGoals(coupleId: string): Promise<Goal[]> {
   return pages.map(toGoal).filter(g => !g.isAchieved);
 }
 
+export async function getGoal(id: string): Promise<Goal> {
+  const page = await notion.pages.retrieve({ page_id: id });
+  return toGoal(page);
+}
+
 export async function createGoal(data: Partial<Goal>) {
   const response = await notion.pages.create({
     parent: { database_id: DB_ID },

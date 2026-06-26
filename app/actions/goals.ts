@@ -42,3 +42,43 @@ export async function deleteGoalAction(formData: FormData) {
   
   revalidatePath("/goals");
 }
+
+export async function contributeToGoalAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autenticado");
+
+  const id = formData.get("id") as string;
+  const currentAmount = parseFloat(formData.get("currentAmount") as string);
+  const contribution = parseFloat(formData.get("contribution") as string);
+  
+  const { updateGoal } = await import("@/lib/repos/goals");
+  
+  await updateGoal(id, {
+    currentAmount: currentAmount + contribution,
+  });
+  
+  revalidatePath("/goals");
+}
+
+export async function updateGoalAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("No autenticado");
+
+  const id = formData.get("id") as string;
+  const name = formData.get("name") as string;
+  const targetAmount = parseFloat(formData.get("targetAmount") as string);
+  const currency = formData.get("currency") as any;
+  const icon = formData.get("icon") as string;
+  
+  const { updateGoal } = await import("@/lib/repos/goals");
+  
+  await updateGoal(id, {
+    name,
+    targetAmount,
+    currency,
+    icon,
+  });
+  
+  revalidatePath("/goals");
+  redirect("/goals");
+}

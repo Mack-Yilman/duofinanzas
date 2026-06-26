@@ -80,21 +80,30 @@ export function calculateExpenseSplit(
 }
 
 export function calculateSettlementBalance(expenses: Expense[], userAId: string) {
-  let balanceA = 0;
+  const balances: Record<string, number> = {};
 
   for (const exp of expenses) {
-    if (!exp.isShared) continue;
+    if (!exp.isShared || exp.isSettled) continue;
+
+    // Use exp.currency and exp.amount directly since we want separate currency balances
+    const currency = exp.currency;
+    if (!balances[currency]) balances[currency] = 0;
 
     // A's required quota
-    const quotaA = roundMoney(exp.amountBase * (exp.splitShareA / 100));
+    const quotaA = roundMoney(exp.amount * (exp.splitShareA / 100));
     
     // What A actually paid
-    const paidByA = exp.paidById === userAId ? exp.amountBase : 0;
+    const paidByA = exp.paidById === userAId ? exp.amount : 0;
     
     // Balance for this expense: what A should have paid minus what A actually paid
-    // If balanceA > 0, A owes money. If balanceA < 0, A overpaid (is owed money).
-    balanceA += (quotaA - paidByA);
+    // If balances[currency] > 0, A owes money. If balances[currency] < 0, A overpaid (is owed money).
+    balances[currency] += (quotaA - paidByA);
   }
 
-  return roundMoney(balanceA);
+  // Round all balances
+  for (const key in balances) {
+    balances[key] = roundMoney(balances[key]);
+  }
+
+  return balances;
 }

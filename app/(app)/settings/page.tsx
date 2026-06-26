@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { auth } from "@/auth";
 import { logoutAction } from "@/app/actions/auth";
+import Link from "next/link";
 
 export default async function SettingsPage() {
   const session = await auth();
@@ -28,6 +29,18 @@ export default async function SettingsPage() {
               <p className="text-sm font-medium">Correo Electrónico</p>
               <p className="text-muted-foreground">{session?.user?.email}</p>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Gestión de Datos</CardTitle>
+            <CardDescription>Personaliza tu experiencia.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/categories">
+              <Button variant="outline">Gestionar Categorías</Button>
+            </Link>
           </CardContent>
         </Card>
 
