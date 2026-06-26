@@ -51,7 +51,23 @@ export async function contributeToGoalAction(formData: FormData) {
   const currentAmount = parseFloat(formData.get("currentAmount") as string);
   const contribution = parseFloat(formData.get("contribution") as string);
   
-  const { updateGoal } = await import("@/lib/repos/goals");
+  const { updateGoal, getGoal } = await import("@/lib/repos/goals");
+  const goal = await getGoal(id);
+  
+  // Store contribution if DB exists
+  const { createGoalContribution } = await import("@/lib/repos/goal-contributions");
+  try {
+    await createGoalContribution({
+      name: `Aporte de ${session.user.name || 'Usuario'}`,
+      goalId: id,
+      userId: session.user.id!,
+      amount: contribution,
+      currency: goal.currency,
+      date: new Date(),
+    });
+  } catch (err) {
+    console.warn("Aportes detallados no registrados. Falta configuración GOALS_CONTRIBUTIONS_DB_ID");
+  }
   
   await updateGoal(id, {
     currentAmount: currentAmount + contribution,

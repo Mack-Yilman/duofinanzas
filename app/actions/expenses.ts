@@ -48,6 +48,8 @@ export async function createExpenseAction(formData: FormData) {
   const splitShareA = (quotaA / amountBase) * 100;
   const splitShareB = (quotaB / amountBase) * 100;
 
+  const isShared = formData.get("isShared") === "true";
+
   await createExpense({
     name,
     amount,
@@ -61,7 +63,7 @@ export async function createExpenseAction(formData: FormData) {
     splitMode,
     splitShareA,
     splitShareB,
-    isShared: true,
+    isShared,
     isSettled: false,
     createdById: currentUserId,
   });
@@ -106,6 +108,8 @@ export async function updateExpenseAction(formData: FormData) {
   const categoryId = formData.get("categoryId") as string;
   const splitMode = formData.get("splitMode") as any;
 
+  const isShared = formData.get("isShared") === "true";
+
   // Real app: fetch current FX rate
   const amountBase = amount; 
   
@@ -118,6 +122,7 @@ export async function updateExpenseAction(formData: FormData) {
     amountBase,
     categoryId,
     splitMode,
+    isShared,
   });
 
   revalidatePath("/");

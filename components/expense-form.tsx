@@ -16,6 +16,7 @@ export function ExpenseForm({ categories, initialData }: { categories: Category[
   const [isPending, startTransition] = useTransition();
 
   const [categoryId, setCategoryId] = useState<string>(initialData?.categoryId || "");
+  const [isPersonal, setIsPersonal] = useState<boolean>(initialData ? !initialData.isShared : false);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -59,7 +60,6 @@ export function ExpenseForm({ categories, initialData }: { categories: Category[
                 <SelectContent>
                   <SelectItem value="PEN">Soles (PEN)</SelectItem>
                   <SelectItem value="USD">Dólares (USD)</SelectItem>
-                  <SelectItem value="EUR">Euros (EUR)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -88,17 +88,42 @@ export function ExpenseForm({ categories, initialData }: { categories: Category[
             </select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="splitMode">Forma de Dividir</Label>
-            <Select name="splitMode" defaultValue={initialData?.splitMode || "proportional"} disabled={isPending}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecciona" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="proportional">Proporcional (Según Ingresos)</SelectItem>
-                <SelectItem value="equal">Partes Iguales (50/50)</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2 border p-4 rounded-md">
+              <input 
+                type="checkbox" 
+                id="isPersonal" 
+                checked={isPersonal}
+                onChange={(e) => setIsPersonal(e.target.checked)}
+                className="h-4 w-4 rounded border-gray-300 text-brand-600 focus:ring-brand-500"
+                disabled={isPending}
+              />
+              <Label htmlFor="isPersonal" className="flex flex-col cursor-pointer">
+                <span className="font-medium">Gasto Personal</span>
+                <span className="text-xs text-muted-foreground">Este gasto no se dividirá con tu pareja, solo descontará de tu liquidez.</span>
+              </Label>
+            </div>
+            
+            <input type="hidden" name="isShared" value={isPersonal ? "false" : "true"} />
+
+            {!isPersonal && (
+              <div className="space-y-2">
+                <Label htmlFor="splitMode">Forma de Dividir</Label>
+                <Select name="splitMode" defaultValue={initialData?.splitMode || "proportional"} disabled={isPending}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="proportional">Proporcional (Según Ingresos)</SelectItem>
+                    <SelectItem value="equal">Partes Iguales (50/50)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            
+            {isPersonal && (
+              <input type="hidden" name="splitMode" value="owner_100" />
+            )}
           </div>
         </CardContent>
         

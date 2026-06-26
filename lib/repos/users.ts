@@ -65,3 +65,14 @@ export async function updateUserCouple(userId: string, coupleId: string, role: '
   }));
   return toUser(response);
 }
+
+export async function getUsersByCoupleId(coupleId: string): Promise<User[]> {
+  const response = await notionWithRetry(() => notion.databases.query({
+    database_id: DB_ID,
+    filter: {
+      property: 'couple',
+      relation: { contains: coupleId }
+    }
+  }));
+  return response.results.map(toUser);
+}

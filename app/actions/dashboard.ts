@@ -5,6 +5,7 @@ import { getIncomes } from "@/lib/repos/incomes";
 import { getExpenses } from "@/lib/repos/expenses";
 import { calculateEquity, calculateSettlementBalance, calculatePersonalLiquidity } from "@/lib/domain/split";
 import { getCategories } from "@/lib/repos/categories";
+import { getUsersByCoupleId } from "@/lib/repos/users";
 import { unstable_cache } from "next/cache";
 
 export async function getDashboardData() {
@@ -20,18 +21,20 @@ export async function getDashboardData() {
   const incomes = await getIncomes();
   const expenses = await getExpenses(coupleId);
   const categories = await getCategories(coupleId);
+  const users = await getUsersByCoupleId(coupleId);
   
   // Calculate Equity
   const equity = calculateEquity(incomes, "PEN", (amount) => amount);
   
   // Calculate balances
   const balance = calculateSettlementBalance(expenses, currentUserId);
+  const liquidity = calculatePersonalLiquidity(incomes, expenses, currentUserId, equity.userA, 3.80); // fxRate = 3.80
 
-  // Calculate personal liquidity
-  const liquidity = calculatePersonalLiquidity(incomes, expenses, currentUserId, equity.userA);
-  
+  const userA = users.find(u => u.id === equity.userA)?.name || "Usuario A";
+  const userB = users.find(u => u.id === equity.userB)?.name || "Usuario B";
+
   return {
-    equity,
+    equity: { ...equity, nameA: userA, nameB: userB },
     expenses: expenses.sort((a, b) => b.date.getTime() - a.date.getTime()),
     balance,
     liquidity,

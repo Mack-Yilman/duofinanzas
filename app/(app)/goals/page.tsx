@@ -29,6 +29,41 @@ export default async function GoalsPage() {
         </Link>
       </div>
 
+      {goals.length > 0 && (
+        <div className="grid gap-4 md:grid-cols-3 mb-8">
+          <Card className="bg-muted/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Metas Activas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{goals.length}</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-muted/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Progreso Global</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-brand-600">
+                {goals.reduce((acc, g) => acc + g.targetAmount, 0) > 0 
+                  ? Math.round((goals.reduce((acc, g) => acc + g.currentAmount, 0) / goals.reduce((acc, g) => acc + g.targetAmount, 0)) * 100) 
+                  : 0}%
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-muted/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Meta más cercana</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-xl font-bold truncate">
+                {goals.sort((a, b) => (b.currentAmount/b.targetAmount) - (a.currentAmount/a.targetAmount))[0]?.name || "-"}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {goals.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
@@ -85,6 +120,12 @@ export default async function GoalsPage() {
                       />
                       <Button type="submit" size="sm" variant="secondary">Aportar</Button>
                     </form>
+                    
+                    <div className="pt-2">
+                      <Link href={`/goals/${goal.id}/contributions`} className="text-xs text-brand-500 hover:underline">
+                        Ver historial de aportes &rarr;
+                      </Link>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

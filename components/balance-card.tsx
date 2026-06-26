@@ -38,11 +38,6 @@ export function BalanceCard({ balance, currentUserName, partnerName }: { balance
                       {isZero ? "Todo saldado en esta moneda" : (isPositive ? `Le debes a ${partnerName}` : `${partnerName} te debe`)}
                     </p>
                   </div>
-                  {!isZero && (
-                    <div className="text-xs text-right text-muted-foreground max-w-[120px]">
-                      {isPositive ? "Tienes un saldo negativo." : "Tienes un saldo a tu favor."}
-                    </div>
-                  )}
                 </div>
               );
             })}

@@ -108,7 +108,7 @@ export function calculateSettlementBalance(expenses: Expense[], userAId: string)
   return balances;
 }
 
-export function calculatePersonalLiquidity(incomes: Income[], expenses: Expense[], userId: string, userAId: string) {
+export function calculatePersonalLiquidity(incomes: Income[], expenses: Expense[], userId: string, userAId: string, fxRate: number = 3.80) {
   const liquidity: Record<string, number> = {};
 
   // Add incomes
@@ -132,6 +132,39 @@ export function calculatePersonalLiquidity(incomes: Income[], expenses: Expense[
       const sharePct = userId === userAId ? exp.splitShareA : exp.splitShareB;
       const quota = roundMoney(exp.amount * (sharePct / 100));
       liquidity[exp.currency] -= quota;
+    }
+  }
+
+  // Apply FX conversion for negative balances
+  const currencies = Object.keys(liquidity);
+  
+  if (currencies.includes("USD") && liquidity["USD"] < 0 && liquidity["PEN"] > 0) {
+    // We have negative USD, but positive PEN
+    const deficitUSD = Math.abs(liquidity["USD"]);
+    const equivalentPEN = deficitUSD * fxRate;
+    
+    if (liquidity["PEN"] >= equivalentPEN) {
+      liquidity["PEN"] -= equivalentPEN;
+      liquidity["USD"] = 0;
+    } else {
+      // PEN doesn't cover all USD deficit
+      const coveredUSD = liquidity["PEN"] / fxRate;
+      liquidity["USD"] += coveredUSD;
+      liquidity["PEN"] = 0;
+    }
+  } else if (currencies.includes("PEN") && liquidity["PEN"] < 0 && liquidity["USD"] > 0) {
+    // We have negative PEN, but positive USD
+    const deficitPEN = Math.abs(liquidity["PEN"]);
+    const equivalentUSD = deficitPEN / fxRate;
+    
+    if (liquidity["USD"] >= equivalentUSD) {
+      liquidity["USD"] -= equivalentUSD;
+      liquidity["PEN"] = 0;
+    } else {
+      // USD doesn't cover all PEN deficit
+      const coveredPEN = liquidity["USD"] * fxRate;
+      liquidity["PEN"] += coveredPEN;
+      liquidity["USD"] = 0;
     }
   }
 
