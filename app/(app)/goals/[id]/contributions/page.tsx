@@ -74,7 +74,7 @@ export default async function GoalContributionsPage({ params }: { params: Promis
             <CardTitle className="text-lg">Historial Detallado</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {!process.env.GOALS_CONTRIBUTIONS_DB_ID ? (
+            {!(process.env.GOALS_CONTRIBUTIONS_DB_ID || process.env.GOAL_CONTRIBUTIONS_DB_ID) ? (
               <div className="p-4 bg-destructive/10 text-destructive text-sm rounded-md">
                 No se ha configurado la base de datos de aportes en Notion (GOALS_CONTRIBUTIONS_DB_ID). Los aportes detallados no se están guardando.
               </div>

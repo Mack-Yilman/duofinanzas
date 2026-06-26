@@ -2,7 +2,8 @@ import notion, { queryAll, notionWithRetry } from '../notion/client';
 import { getString, getNumber, getSelect, getDate, getRelation } from '../notion/helpers';
 import { GoalContribution, CurrencySchema } from '../types';
 
-const DB_ID = process.env.GOALS_CONTRIBUTIONS_DB_ID || '';
+// Acepta ambos nombres de variable para evitar fallos por la 'S' (GOALS_ vs GOAL_)
+const DB_ID = process.env.GOALS_CONTRIBUTIONS_DB_ID || process.env.GOAL_CONTRIBUTIONS_DB_ID || '';
 
 export function toGoalContribution(page: any): GoalContribution {
   return {

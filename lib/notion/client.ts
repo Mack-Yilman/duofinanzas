@@ -5,8 +5,9 @@ const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
 
-// Limit concurrency to 2-3 to avoid hitting the ~3 req/sec rate limit of Notion API
-const limit = pLimit(2);
+// Limit concurrency to avoid hitting the ~3 req/sec rate limit of Notion API.
+// 3 permite ráfagas de lecturas en paralelo; los 429 se reintentan con backoff.
+const limit = pLimit(3);
 
 /**
  * Executes a Notion API call with automatic retries for rate limits (429/529).

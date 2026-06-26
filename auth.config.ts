@@ -71,5 +71,8 @@ export default {
     signIn: '/login',
   },
   session: { strategy: 'jwt' },
-  secret: process.env.NEXTAUTH_SECRET,
+  // Confía en el host del proxy (Netlify) para construir URLs/cookies de auth correctamente.
+  trustHost: true,
+  // Acepta ambos nombres de secreto (Auth.js v5 prefiere AUTH_SECRET).
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
 } satisfies NextAuthConfig;

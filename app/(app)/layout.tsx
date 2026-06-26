@@ -2,6 +2,10 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { SidebarLinks, BottomNav } from "@/components/app-nav";
 
+// Las rutas autenticadas se renderizan por petición (no se cachean), así la sesión
+// nunca queda "pegada" tras cerrar sesión o cambiar de usuario.
+export const dynamic = "force-dynamic";
+
 export default async function AppLayout({
   children,
 }: {

@@ -43,20 +43,27 @@ describe('split domain logic', () => {
     expect(quotaB).toBe(1250);
   });
 
-  it('calculates settlement balance correctly (A pays everything)', () => {
-    // User A pays 2500. Quota was A=1000, B=1500.
-    // So balanceA should be 1000 - 2500 = -1500. (Meaning B owes A 1500)
+  it('calculates settlement balance consistently for both users (A pays everything)', () => {
+    // User A pays 2500. Quota was A=1000 (40%), B=1500 (60%).
     const expenses: Partial<Expense>[] = [
       {
         isShared: true,
-        amountBase: 2500,
-        splitShareA: 40, // 40%
+        isSettled: false,
+        amount: 2500,
+        currency: 'PEN',
+        splitShareA: 40,
         splitShareB: 60,
-        paidById: 'userA'
-      }
+        paidById: 'userA',
+      },
     ];
 
-    const balanceA = calculateSettlementBalance(expenses as Expense[], 'userA');
-    expect(balanceA).toBe(-1500);
+    // Perspectiva de A: debía 1000, pagó 2500 → -1500 (la pareja le debe 1500).
+    const balanceA = calculateSettlementBalance(expenses as Expense[], 'userA', 'userA');
+    expect(balanceA['PEN']).toBe(-1500);
+
+    // Perspectiva de B: debía 1500, pagó 0 → +1500 (B le debe 1500 a A).
+    // Esto valida que el cálculo NO se invierte mal para el segundo usuario.
+    const balanceB = calculateSettlementBalance(expenses as Expense[], 'userB', 'userA');
+    expect(balanceB['PEN']).toBe(1500);
   });
 });

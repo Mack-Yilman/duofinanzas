@@ -79,33 +79,75 @@ export function calculateExpenseSplit(
   return { quotaA, quotaB };
 }
 
-export function calculateSettlementBalance(expenses: Expense[], userAId: string) {
+/**
+ * Devuelve la cuota (monto que le corresponde aportar) de cada lado para un gasto,
+ * en la moneda del gasto. `quotaA` corresponde al usuario A estable (id que ordena primero),
+ * `quotaB` al usuario B. Para gastos personales, la cuota total recae en quien pagó.
+ */
+export function getExpenseShares(exp: Expense, userAId: string) {
+  if (!exp.isShared) {
+    const paidByA = exp.paidById === userAId;
+    return { quotaA: paidByA ? exp.amount : 0, quotaB: paidByA ? 0 : exp.amount };
+  }
+  const quotaA = roundMoney(exp.amount * (exp.splitShareA / 100));
+  const quotaB = roundMoney(exp.amount - quotaA);
+  return { quotaA, quotaB };
+}
+
+/**
+ * Balance neto del usuario logueado respecto a su pareja, por moneda.
+ * Positivo  => el usuario actual LE DEBE a su pareja.
+ * Negativo  => la pareja le debe al usuario actual.
+ *
+ * Calcula la cuota correcta del usuario actual (A o B) y le resta lo que realmente pagó,
+ * de modo que el resultado sea consistente para AMBOS miembros (no invertido para el segundo).
+ */
+export function calculateSettlementBalance(expenses: Expense[], currentUserId: string, userAId: string) {
   const balances: Record<string, number> = {};
 
   for (const exp of expenses) {
     if (!exp.isShared || exp.isSettled) continue;
 
-    // Use exp.currency and exp.amount directly since we want separate currency balances
     const currency = exp.currency;
     if (!balances[currency]) balances[currency] = 0;
 
-    // A's required quota
-    const quotaA = roundMoney(exp.amount * (exp.splitShareA / 100));
-    
-    // What A actually paid
-    const paidByA = exp.paidById === userAId ? exp.amount : 0;
-    
-    // Balance for this expense: what A should have paid minus what A actually paid
-    // If balances[currency] > 0, A owes money. If balances[currency] < 0, A overpaid (is owed money).
-    balances[currency] += (quotaA - paidByA);
+    const isCurrentA = currentUserId === userAId;
+    const currentShare = isCurrentA ? exp.splitShareA : exp.splitShareB;
+    const currentQuota = roundMoney(exp.amount * (currentShare / 100));
+    const currentPaid = exp.paidById === currentUserId ? exp.amount : 0;
+
+    // Lo que el usuario debía aportar menos lo que realmente puso.
+    balances[currency] += (currentQuota - currentPaid);
   }
 
-  // Round all balances
   for (const key in balances) {
     balances[key] = roundMoney(balances[key]);
   }
 
   return balances;
+}
+
+/**
+ * Cuánto puso realmente cada lado (el usuario actual vs su pareja) en los gastos
+ * compartidos abiertos (no liquidados), por moneda. Sirve para la vista "global" de aportes.
+ */
+export function calculateContributions(expenses: Expense[], currentUserId: string) {
+  const result: Record<string, { current: number; partner: number }> = {};
+
+  for (const exp of expenses) {
+    if (!exp.isShared || exp.isSettled) continue;
+    const c = exp.currency;
+    if (!result[c]) result[c] = { current: 0, partner: 0 };
+    if (exp.paidById === currentUserId) result[c].current += exp.amount;
+    else result[c].partner += exp.amount;
+  }
+
+  for (const k in result) {
+    result[k].current = roundMoney(result[k].current);
+    result[k].partner = roundMoney(result[k].partner);
+  }
+
+  return result;
 }
 
 export function calculatePersonalLiquidity(incomes: Income[], expenses: Expense[], userId: string, userAId: string, fxRate: number = 3.80) {
