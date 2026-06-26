@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { Home, CreditCard, Wallet, Target, Repeat, Settings, List } from "lucide-react";
+import { SidebarLinks, BottomNav } from "@/components/app-nav";
 
 export default async function AppLayout({
   children,
@@ -14,63 +13,45 @@ export default async function AppLayout({
     redirect("/login");
   }
 
-  const navItems = [
-    { label: "Inicio", href: "/", icon: <Home className="w-5 h-5" /> },
-    { label: "Gastos", href: "/expenses", icon: <CreditCard className="w-5 h-5" /> },
-    { label: "Ingresos", href: "/income", icon: <Wallet className="w-5 h-5" /> },
-    { label: "Metas", href: "/goals", icon: <Target className="w-5 h-5" /> },
-    { label: "Ajustes", href: "/settings", icon: <Settings className="w-5 h-5" /> },
-  ];
-
   return (
-    <div className="flex h-screen flex-col md:flex-row w-full bg-background relative overflow-hidden">
-      {/* Background ambient glow */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-500/20 blur-[120px]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-user-b/20 blur-[120px]"></div>
+    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-background md:flex-row">
+      {/* Glows ambientales cálidos (dorado + bosque) */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute left-[-12%] top-[-12%] h-[42%] w-[42%] rounded-full bg-[var(--user-a)] opacity-[0.12] blur-[130px]" />
+        <div className="absolute bottom-[-14%] right-[-10%] h-[44%] w-[44%] rounded-full bg-brand-600 opacity-[0.14] blur-[130px]" />
       </div>
 
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-white/5 bg-card/40 backdrop-blur-xl px-4 py-6 z-10 shadow-2xl">
-        <div className="text-2xl font-bold text-brand-600 mb-8 px-4">DúoFinanzas</div>
-        <nav className="flex-1 space-y-2">
-          {navItems.map((item) => (
-            <Link key={item.href} href={item.href} className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors">
-              {item.icon}
-              <span className="font-medium">{item.label}</span>
-            </Link>
-          ))}
-        </nav>
-        <div className="mt-auto px-4">
+      {/* Sidebar (desktop) */}
+      <aside className="z-10 hidden w-64 flex-col border-r border-border/60 bg-sidebar/70 px-4 py-7 backdrop-blur-xl md:flex">
+        <div className="mb-9 flex items-center gap-2.5 px-3">
+          <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-base font-bold text-primary-foreground shadow-sm">
+            D
+          </span>
+          <span className="font-heading text-xl font-semibold tracking-tight text-foreground">
+            Dúo<span className="text-primary">Finanzas</span>
+          </span>
+        </div>
+
+        <SidebarLinks />
+
+        <div className="mt-auto border-t border-border/60 px-2 pt-4">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold bg-${(session.user as any).avatarColor}-500`}>
+            <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white shadow-sm bg-${(session.user as any).avatarColor}-500`}>
               {session.user.name?.[0]?.toUpperCase()}
             </div>
-            <div className="text-sm">
-              <p className="font-medium">{session.user.name}</p>
+            <div className="min-w-0 text-sm">
+              <p className="truncate font-medium text-foreground">{session.user.name}</p>
+              <p className="truncate text-xs text-muted-foreground">{session.user.email}</p>
             </div>
           </div>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-y-auto pb-16 md:pb-0">
-        {children}
-      </main>
+      {/* Contenido */}
+      <main className="flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 border-t border-white/5 bg-card/60 backdrop-blur-xl flex items-center justify-around p-3 pb-safe z-50">
-        {navItems.slice(0, 4).map((item) => (
-          <Link key={item.href} href={item.href} className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground">
-            {item.icon}
-            <span className="text-[10px] font-medium">{item.label}</span>
-          </Link>
-        ))}
-        <Link href="/settings" className="flex flex-col items-center gap-1 text-muted-foreground hover:text-foreground">
-          <Settings className="w-5 h-5" />
-          <span className="text-[10px] font-medium">Más</span>
-        </Link>
-      </nav>
+      {/* Navegación inferior (móvil) */}
+      <BottomNav />
     </div>
   );
 }

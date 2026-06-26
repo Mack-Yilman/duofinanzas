@@ -26,9 +26,9 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm shadow-md">
+    <Card className="w-full max-w-sm">
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">DúoFinanzas</CardTitle>
+        <CardTitle className="text-xl">Bienvenido de vuelta</CardTitle>
         <CardDescription>
           Ingresa a tu cuenta para ver sus finanzas
         </CardDescription>

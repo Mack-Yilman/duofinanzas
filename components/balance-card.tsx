@@ -15,7 +15,7 @@ export function BalanceCard({ balance, currentUserName, partnerName }: { balance
       <CardContent>
         {isEmpty ? (
           <div>
-            <div className="text-3xl font-bold text-muted-foreground">0.00</div>
+            <div className="tabular text-3xl font-semibold text-muted-foreground">0.00</div>
             <p className="text-xs text-muted-foreground mt-2">Todo está saldado.</p>
           </div>
         ) : (
@@ -26,15 +26,16 @@ export function BalanceCard({ balance, currentUserName, partnerName }: { balance
               const isZero = amount === 0;
 
               return (
-                <div key={curr} className="flex justify-between items-center border-b pb-2 last:border-0 last:pb-0">
+                <div key={curr} className="flex justify-between items-center border-b border-border/60 pb-2 last:border-0 last:pb-0">
                   <div>
                     <div className={cn(
-                      "text-2xl font-bold",
-                      isZero ? "text-muted-foreground" : (isPositive ? "text-destructive" : "text-emerald-500")
+                      "tabular text-3xl font-semibold tracking-tight",
+                      isZero ? "text-muted-foreground" : (isPositive ? "text-destructive" : "text-brand-600 dark:text-brand-500")
                     )}>
-                      {curr} {Math.abs(amount).toFixed(2)}
+                      <span className="text-base font-medium text-muted-foreground mr-1">{curr}</span>
+                      {Math.abs(amount).toFixed(2)}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-1.5">
                       {isZero ? "Todo saldado en esta moneda" : (isPositive ? `Le debes a ${partnerName}` : `${partnerName} te debe`)}
                     </p>
                   </div>

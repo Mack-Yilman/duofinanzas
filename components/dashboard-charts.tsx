@@ -4,7 +4,23 @@ import { Expense, Category } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#A28DFF', '#FF6384', '#36A2EB', '#FFCE56'];
+const COLORS = [
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
+  'var(--brand-700)',
+];
+
+const tooltipStyle = {
+  backgroundColor: 'var(--popover)',
+  border: '1px solid var(--border)',
+  borderRadius: '0.75rem',
+  color: 'var(--popover-foreground)',
+  fontSize: '12px',
+  boxShadow: '0 10px 30px -12px rgba(0,0,0,0.25)',
+};
 
 export function DashboardCharts({ expenses, categories }: { expenses: Expense[], categories: Category[] }) {
   // Aggregate expenses by category
@@ -65,8 +81,8 @@ export function DashboardCharts({ expenses, categories }: { expenses: Expense[],
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value: any) => `S/ ${Number(value).toFixed(2)}`} />
-                <Legend />
+                <Tooltip contentStyle={tooltipStyle} formatter={(value: any) => `S/ ${Number(value).toFixed(2)}`} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
@@ -85,11 +101,11 @@ export function DashboardCharts({ expenses, categories }: { expenses: Expense[],
           {barData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
-                <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `S/${value}`} />
-                <Tooltip cursor={{fill: 'rgba(255,255,255,0.05)'}} formatter={(value: any) => `S/ ${Number(value).toFixed(2)}`} />
-                <Bar dataKey="total" fill="#00C49F" radius={[4, 4, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
+                <YAxis fontSize={12} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" tickFormatter={(value) => `S/${value}`} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'color-mix(in oklch, var(--primary) 8%, transparent)' }} formatter={(value: any) => `S/ ${Number(value).toFixed(2)}`} />
+                <Bar dataKey="total" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (

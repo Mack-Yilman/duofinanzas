@@ -17,29 +17,36 @@ export function EquityBar({ shareA, shareB, incomeA, incomeB, nameA, nameB }: Eq
   const percentB = Math.round(shareB * 100);
 
   return (
-    <div className="space-y-2">
-      <div className="flex justify-between text-sm font-medium">
-        <div>
-          <span className="text-user-a mr-2">●</span>
-          {nameA} ({percentA}%)
+    <div className="space-y-3">
+      <div className="flex items-center justify-between text-sm font-medium">
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-user-a ring-2 ring-user-a/20" />
+          <span className="truncate">{nameA}</span>
+          <span className="tabular text-muted-foreground">{percentA}%</span>
         </div>
-        <div>
-          {nameB} ({percentB}%)
-          <span className="text-user-b ml-2">●</span>
+        <div className="flex items-center gap-2">
+          <span className="tabular text-muted-foreground">{percentB}%</span>
+          <span className="truncate">{nameB}</span>
+          <span className="h-2.5 w-2.5 rounded-full bg-user-b ring-2 ring-user-b/20" />
         </div>
       </div>
-      
-      {/* Custom Progress Bar with two colors */}
-      <div className="h-4 w-full bg-user-b rounded-full overflow-hidden flex">
-        <div 
-          className="h-full bg-user-a transition-all duration-500 ease-in-out" 
-          style={{ width: `${percentA}%` }} 
+
+      {/* Barra de equidad a dos tonos con marcador central */}
+      <div className="relative flex h-5 w-full overflow-hidden rounded-full bg-user-b shadow-inner ring-1 ring-black/5">
+        <div
+          className="h-full bg-user-a transition-all duration-700 ease-out"
+          style={{ width: `${percentA}%` }}
+        />
+        <div
+          className="absolute top-1/2 h-full w-0.5 -translate-x-1/2 -translate-y-1/2 bg-card/80 transition-all duration-700 ease-out"
+          style={{ left: `${percentA}%` }}
+          aria-hidden
         />
       </div>
-      
+
       <div className="flex justify-between text-xs text-muted-foreground">
-        <div>{formatMoney(incomeA, "PEN")}</div>
-        <div>{formatMoney(incomeB, "PEN")}</div>
+        <div className="tabular">{formatMoney(incomeA, "PEN")}</div>
+        <div className="tabular">{formatMoney(incomeB, "PEN")}</div>
       </div>
     </div>
   );

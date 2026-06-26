@@ -13,7 +13,7 @@ export function LiquidityCard({ liquidity }: { liquidity: Record<string, number>
       <CardContent>
         {isEmpty ? (
           <div>
-            <div className="text-3xl font-bold text-muted-foreground">0.00</div>
+            <div className="tabular text-3xl font-semibold text-muted-foreground">0.00</div>
             <p className="text-xs text-muted-foreground mt-2">Sin ingresos registrados aún.</p>
           </div>
         ) : (
@@ -21,18 +21,18 @@ export function LiquidityCard({ liquidity }: { liquidity: Record<string, number>
             {currencies.map(curr => {
               const amount = liquidity[curr];
               const isPositive = amount > 0;
-              const isZero = amount === 0;
 
               return (
-                <div key={curr} className="flex justify-between items-center border-b pb-2 last:border-0 last:pb-0">
+                <div key={curr} className="flex justify-between items-center border-b border-border/60 pb-2 last:border-0 last:pb-0">
                   <div>
                     <div className={cn(
-                      "text-2xl font-bold",
-                      isPositive ? "text-brand-600" : "text-destructive"
+                      "tabular text-3xl font-semibold tracking-tight",
+                      isPositive ? "text-brand-600 dark:text-brand-500" : "text-destructive"
                     )}>
-                      {curr} {amount.toFixed(2)}
+                      <span className="text-base font-medium text-muted-foreground mr-1">{curr}</span>
+                      {amount.toFixed(2)}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-1.5">
                       {isPositive ? "Disponible para uso personal" : "Excediste tus ingresos"}
                     </p>
                   </div>
