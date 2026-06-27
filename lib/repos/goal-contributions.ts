@@ -40,6 +40,21 @@ export async function getGoalContributions(goalId: string): Promise<GoalContribu
   }
 }
 
+/** Todos los aportes (de todas las metas). Para calcular su efecto en la liquidez. */
+export async function getAllGoalContributions(): Promise<GoalContribution[]> {
+  if (!DB_ID) return [];
+  try {
+    const pages = await queryAll((cursor) => notion.databases.query({
+      database_id: DB_ID,
+      start_cursor: cursor,
+    }));
+    return pages.map(toGoalContribution);
+  } catch (error) {
+    console.error("Error fetching all goal contributions:", error);
+    return [];
+  }
+}
+
 export async function createGoalContribution(data: Omit<GoalContribution, 'id'>) {
   if (!DB_ID) throw new Error("La base de datos de aportes no está configurada.");
 

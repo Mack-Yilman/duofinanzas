@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { updateCouple } from "@/lib/repos/couples";
+import { updateCouple, updateCoupleCutoffDay } from "@/lib/repos/couples";
 import { revalidatePath } from "next/cache";
 
 export async function updateFxRateAction(formData: FormData) {
@@ -16,7 +16,24 @@ export async function updateFxRateAction(formData: FormData) {
   }
   
   await updateCouple(coupleId, fxRate);
-  
+
   revalidatePath("/");
+  revalidatePath("/settings");
+}
+
+export async function updateCutoffDayAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Unauthorized");
+
+  const coupleId = (session.user as any).coupleId;
+  let cutoffDay = parseInt(formData.get("cutoffDay") as string, 10);
+
+  if (!Number.isFinite(cutoffDay)) throw new Error("Día de corte inválido");
+  cutoffDay = Math.min(Math.max(cutoffDay, 1), 31);
+
+  await updateCoupleCutoffDay(coupleId, cutoffDay);
+
+  revalidatePath("/");
+  revalidatePath("/expenses");
   revalidatePath("/settings");
 }

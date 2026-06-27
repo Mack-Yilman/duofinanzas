@@ -185,31 +185,63 @@ export function calculateContributions(expenses: Expense[], currentUserId: strin
   return result;
 }
 
-export function calculatePersonalLiquidity(incomes: Income[], expenses: Expense[], userId: string, userAId: string, fxRate: number = 3.80) {
-  const liquidity: Record<string, number> = {};
+export interface LiquidityContribution {
+  userId: string;
+  amount: number;
+  currency: string;
+}
 
-  // Add incomes
+/**
+ * Liquidez disponible del usuario, con modelo de FLUJO DE CAJA real (no devengo):
+ *  - Ingresos del usuario.
+ *  - Gasto personal: lo paga quien lo registró → se le descuenta completo.
+ *  - Gasto compartido NO liquidado: quien lo pagó pierde el MONTO COMPLETO (fronteó el dinero);
+ *    el otro NO ve afectada su liquidez todavía.
+ *  - Gasto compartido LIQUIDADO: cada uno asume SOLO su cuota (ya se reembolsaron).
+ *    => Al saldar, quien pagó "recupera" la parte del otro y al otro se le descuenta su cuota.
+ *  - Aportes a metas: descuentan de la liquidez de quien aportó.
+ */
+export function calculatePersonalLiquidity(
+  incomes: Income[],
+  expenses: Expense[],
+  userId: string,
+  userAId: string,
+  fxRate: number = 3.80,
+  goalContributions: LiquidityContribution[] = []
+) {
+  const liquidity: Record<string, number> = {};
+  const ensure = (c: string) => { if (!liquidity[c]) liquidity[c] = 0; };
+
+  // Ingresos
   for (const inc of incomes) {
     if (!inc.isActive) continue;
     if (inc.userId !== userId) continue;
-    
-    if (!liquidity[inc.currency]) liquidity[inc.currency] = 0;
+    ensure(inc.currency);
     liquidity[inc.currency] += inc.amount;
   }
 
-  // Deduct expenses
+  // Gastos (flujo de caja)
   for (const exp of expenses) {
+    ensure(exp.currency);
     if (!exp.isShared) {
-      if (exp.paidById === userId) {
-        if (!liquidity[exp.currency]) liquidity[exp.currency] = 0;
-        liquidity[exp.currency] -= exp.amount;
-      }
-    } else {
-      if (!liquidity[exp.currency]) liquidity[exp.currency] = 0;
-      const sharePct = userId === userAId ? exp.splitShareA : exp.splitShareB;
-      const quota = roundMoney(exp.amount * (sharePct / 100));
-      liquidity[exp.currency] -= quota;
+      if (exp.paidById === userId) liquidity[exp.currency] -= exp.amount;
+      continue;
     }
+    if (!exp.isSettled) {
+      // Quien pagó fronteó el monto completo hasta que se salde.
+      if (exp.paidById === userId) liquidity[exp.currency] -= exp.amount;
+    } else {
+      // Liquidado: cada uno asume su cuota.
+      const sharePct = userId === userAId ? exp.splitShareA : exp.splitShareB;
+      liquidity[exp.currency] -= roundMoney(exp.amount * (sharePct / 100));
+    }
+  }
+
+  // Aportes a metas
+  for (const gc of goalContributions) {
+    if (gc.userId !== userId) continue;
+    ensure(gc.currency);
+    liquidity[gc.currency] -= gc.amount;
   }
 
   // Apply FX conversion for negative balances

@@ -1,7 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { auth } from "@/auth";
 import { getCouple } from "@/lib/repos/couples";
+import { updateCutoffDayAction } from "@/app/actions/settings";
 import { FxRateForm } from "./fx-rate-form";
 import { LogoutButton } from "@/components/logout-button";
 import Link from "next/link";
@@ -49,8 +51,30 @@ export default async function SettingsPage() {
             <CardTitle>Configuración Financiera</CardTitle>
             <CardDescription>Ajusta cómo se calculan tus saldos.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
             <FxRateForm initialRate={couple.fxRate} />
+
+            <form action={updateCutoffDayAction} className="space-y-2 max-w-sm border-t border-border/60 pt-6">
+              <Label htmlFor="cutoffDay">Día de corte del periodo</Label>
+              <div className="flex gap-2">
+                <input
+                  id="cutoffDay"
+                  name="cutoffDay"
+                  type="number"
+                  min={1}
+                  max={31}
+                  step={1}
+                  defaultValue={couple.cutoffDay}
+                  required
+                  className="flex h-9 w-24 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+                <Button type="submit">Guardar</Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                El "mes financiero" va de este día al mismo día del mes siguiente (ej. 15 = quincena a
+                quincena, 1 = mes calendario). Si el mes no tiene ese día, se ajusta al último.
+              </p>
+            </form>
           </CardContent>
         </Card>
 

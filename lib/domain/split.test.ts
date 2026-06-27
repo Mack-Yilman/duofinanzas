@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateEquity, calculateExpenseSplit, calculateSettlementBalance } from './split';
+import { calculateEquity, calculateExpenseSplit, calculateSettlementBalance, calculatePersonalLiquidity } from './split';
 import { Income, Expense } from '../types';
 
 describe('split domain logic', () => {
@@ -65,5 +65,35 @@ describe('split domain logic', () => {
     // Esto valida que el cálculo NO se invierte mal para el segundo usuario.
     const balanceB = calculateSettlementBalance(expenses as Expense[], 'userB', 'userA');
     expect(balanceB['PEN']).toBe(1500);
+  });
+
+  it('liquidez: flujo de caja según quién pagó y estado de liquidación', () => {
+    const incomes: Income[] = [
+      { id: '1', name: 'A', userId: 'userA', amount: 5500, currency: 'PEN', type: 'salary', period: 'monthly', effectiveDate: new Date(), isActive: true },
+      { id: '2', name: 'B', userId: 'userB', amount: 4500, currency: 'PEN', type: 'salary', period: 'monthly', effectiveDate: new Date(), isActive: true },
+    ];
+    // Gasto compartido de 180 (55/45) pagado por A, NO liquidado.
+    const unsettled: Partial<Expense>[] = [
+      { isShared: true, isSettled: false, amount: 180, currency: 'PEN', splitShareA: 55, splitShareB: 45, paidById: 'userA' },
+    ];
+
+    // A fronteó los 180 completos; B aún no ve afectada su liquidez.
+    expect(calculatePersonalLiquidity(incomes, unsettled as Expense[], 'userA', 'userA')['PEN']).toBe(5320);
+    expect(calculatePersonalLiquidity(incomes, unsettled as Expense[], 'userB', 'userA')['PEN']).toBe(4500);
+
+    // Una vez LIQUIDADO, cada uno asume su cuota (A recupera la parte de B).
+    const settled = unsettled.map(e => ({ ...e, isSettled: true })) as Expense[];
+    expect(calculatePersonalLiquidity(incomes, settled, 'userA', 'userA')['PEN']).toBe(5401); // 5500 - 99
+    expect(calculatePersonalLiquidity(incomes, settled, 'userB', 'userA')['PEN']).toBe(4419); // 4500 - 81
+  });
+
+  it('liquidez: los aportes a metas descuentan de la persona que aportó', () => {
+    const incomes: Income[] = [
+      { id: '1', name: 'A', userId: 'userA', amount: 1000, currency: 'PEN', type: 'salary', period: 'monthly', effectiveDate: new Date(), isActive: true },
+    ];
+    const contribs = [{ userId: 'userA', amount: 100, currency: 'PEN' }];
+    expect(calculatePersonalLiquidity(incomes, [], 'userA', 'userA', 3.8, contribs)['PEN']).toBe(900);
+    // A otro usuario no le afecta.
+    expect(calculatePersonalLiquidity(incomes, [], 'userB', 'userA', 3.8, contribs)['PEN'] ?? 0).toBe(0);
   });
 });

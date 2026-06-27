@@ -8,20 +8,35 @@ import { auth } from "@/auth";
 import { Trash2, CheckCircle2 } from "lucide-react";
 import { deleteExpenseAction, settleExpenseAction } from "@/app/actions/expenses";
 import { ExpenseContributions } from "@/components/expense-contributions";
+import { PeriodSelector } from "@/components/period-selector";
 import { formatMoney } from "@/lib/domain/money";
 import Link from "next/link";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string; offset?: string }>;
+}) {
   const session = await auth();
-  const data = await getDashboardData();
-  
+  const sp = await searchParams;
+  const view = sp.view === "global" ? "global" : "current";
+  const offset = parseInt(sp.offset || "0", 10) || 0;
+  const data = await getDashboardData({ view, offset });
+
   if (!session?.user) return null;
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Bienvenido a DúoFinanzas. Aquí verás un resumen de tu mes.</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground mt-2">
+            {view === "global"
+              ? "Resumen global de todas tus finanzas."
+              : "Resumen del periodo actual."}
+          </p>
+        </div>
+        <PeriodSelector basePath="/" view={view} offset={offset} label={data.periodLabel} />
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -52,11 +67,15 @@ export default async function DashboardPage() {
       <DashboardCharts expenses={data.expenses} categories={data.categories} />
 
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold tracking-tight">Gastos Recientes</h2>
+        <h2 className="text-xl font-semibold tracking-tight">
+          {view === "global" ? "Gastos (todo el histórico)" : "Gastos del periodo"}
+        </h2>
         {data.expenses.length === 0 ? (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              No hay gastos registrados este mes.
+              {view === "global"
+                ? "No hay gastos registrados."
+                : "No hay gastos en este periodo."}
             </CardContent>
           </Card>
         ) : (

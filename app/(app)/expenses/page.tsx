@@ -5,25 +5,37 @@ import Link from "next/link";
 import { Plus, Trash2, CheckCircle2 } from "lucide-react";
 import { deleteExpenseAction, settleExpenseAction } from "@/app/actions/expenses";
 import { ExpenseContributions } from "@/components/expense-contributions";
+import { PeriodSelector } from "@/components/period-selector";
 import { formatMoney } from "@/lib/domain/money";
 
-export default async function ExpensesPage() {
-  // Reuse dashboard action for expenses list
-  const data = await getDashboardData();
+export default async function ExpensesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string; offset?: string }>;
+}) {
+  const sp = await searchParams;
+  const view = sp.view === "global" ? "global" : "current";
+  const offset = parseInt(sp.offset || "0", 10) || 0;
+  const data = await getDashboardData({ view, offset });
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Gastos</h1>
-          <p className="text-muted-foreground mt-2">Historial de gastos del ciclo actual.</p>
+          <p className="text-muted-foreground mt-2">
+            {view === "global" ? "Todo el historial de gastos." : "Gastos del periodo seleccionado."}
+          </p>
         </div>
-        <Link href="/expenses/new">
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Nuevo Gasto</span>
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <PeriodSelector basePath="/expenses" view={view} offset={offset} label={data.periodLabel} />
+          <Link href="/expenses/new">
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Nuevo Gasto</span>
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="space-y-4">

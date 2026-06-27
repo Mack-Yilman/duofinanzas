@@ -58,6 +58,7 @@ export async function getCouple(id: string) {
     name: page.properties.Name?.title?.[0]?.plain_text || "Couple",
     inviteCode: page.properties.inviteCode?.rich_text?.[0]?.plain_text || "",
     fxRate: page.properties.fxRate?.number || 3.80, // Default to 3.80 if not set
+    cutoffDay: page.properties.cutoffDay?.number || 1, // Día de corte del periodo (default 1)
   };
 }
 
@@ -67,5 +68,21 @@ export async function updateCouple(id: string, fxRate: number) {
     properties: {
       fxRate: { number: fxRate }
     }
+  }));
+}
+
+export async function updateCoupleCutoffDay(id: string, cutoffDay: number) {
+  // Asegura que la columna 'cutoffDay' exista (idempotente) para DBs creadas antes de esta feature.
+  try {
+    await notionWithRetry(() => notion.databases.update({
+      database_id: DB_ID,
+      properties: { cutoffDay: { number: {} } },
+    } as any));
+  } catch {
+    // Si ya existe o no se puede actualizar el esquema, continuamos.
+  }
+  await notionWithRetry(() => notion.pages.update({
+    page_id: id,
+    properties: { cutoffDay: { number: cutoffDay } },
   }));
 }
