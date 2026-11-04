@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,7 +73,12 @@ export default function SetupPage() {
               </form>
             </TabsContent>
           </Tabs>
-          {error && <p className="mt-4 text-sm text-destructive text-center">{error}</p>}
+          {error && <p className="mt-4 text-sm text-destructive text-center" role="alert">{error}</p>}
+          {me?.isAdmin && (
+            <p className="mt-6 text-center text-sm">
+              <Link href="/admin" className="underline">Ir al panel de administración</Link>
+            </p>
+          )}
         </CardContent>
       </Card>
     </div>

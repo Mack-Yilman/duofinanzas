@@ -2,6 +2,8 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Shield } from "lucide-react";
 import { SidebarLinks, BottomNav } from "@/components/app-nav";
 import { useMe } from "@/components/auth-provider";
 import { PageSkeleton } from "@/components/page-state";
@@ -45,6 +47,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
 
         <SidebarLinks />
+
+        {me?.isAdmin && (
+          <Link
+            href="/admin"
+            className="mt-2 flex items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-foreground/[0.04] hover:text-foreground"
+          >
+            <Shield className="h-[18px] w-[18px]" />
+            <span>Administración</span>
+          </Link>
+        )}
 
         {me && (
           <div className="mt-auto border-t border-border/60 px-2 pt-4">

@@ -2,12 +2,18 @@ import { supabase, unwrap } from "../supabase/client";
 import { toUser } from "./mappers";
 import type { User } from "../types";
 
+export type CurrentUser = User & { isAdmin: boolean };
+
 /** Perfil del usuario autenticado (null si no hay sesión). */
-export async function getCurrentUser(): Promise<User | null> {
+export async function getCurrentUser(): Promise<CurrentUser | null> {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) return null;
-  const row = unwrap(await supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle());
-  return row ? toUser(row) : null;
+  const [profile, admin] = await Promise.all([
+    supabase.from("profiles").select("*").eq("id", session.user.id).maybeSingle(),
+    supabase.rpc("is_admin"),
+  ]);
+  const row = unwrap(profile);
+  return row ? { ...toUser(row), isAdmin: admin.data === true } : null;
 }
 
 /** Miembros de la pareja (RLS ya limita a la pareja del usuario). */

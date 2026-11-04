@@ -46,7 +46,7 @@ export default function RegisterPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>
-              <Input id="password" name="password" type="password" minLength={6} required disabled={isPending} />
+              <Input id="password" name="password" type="password" minLength={8} autoComplete="new-password" required disabled={isPending} />
             </div>
             {error && <p className="text-sm text-destructive text-center">{error}</p>}
             {info && <p className="text-sm text-emerald-600 text-center">{info}</p>}

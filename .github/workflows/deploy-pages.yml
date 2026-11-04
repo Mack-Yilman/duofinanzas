@@ -28,6 +28,8 @@ jobs:
       - name: Configurar Pages
         id: pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - run: npm ci
       - run: npm run lint
@@ -38,8 +40,10 @@ jobs:
         env:
           # base_path = "/<repo>" en Pages de proyecto, "" con dominio propio.
           NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          # Valores PÚBLICOS por diseño (van en el JS del navegador; la seguridad la da RLS).
+          # Se pueden sobrescribir con variables del repositorio.
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://vjglzizutcijcyexcume.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_-5jemi-CUKFZT1qHElyxSg_FAne0LLb' }}
           NEXT_TELEMETRY_DISABLED: 1
 
       - uses: actions/upload-pages-artifact@v3

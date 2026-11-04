@@ -38,6 +38,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
+      <head>
+        {/* GitHub Pages no permite cabeceras HTTP propias: la CSP va como meta.
+            Solo se permiten conexiones a Supabase y a la API de tipos de cambio. */}
+        <meta
+          httpEquiv="Content-Security-Policy"
+          content={[
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline'",
+            "style-src 'self' 'unsafe-inline'",
+            "img-src 'self' data: blob:",
+            "font-src 'self' data:",
+            "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.frankfurter.dev",
+            "object-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+          ].join("; ")}
+        />
+        <meta name="referrer" content="strict-origin-when-cross-origin" />
+      </head>
       <body suppressHydrationWarning className={`${outfit.variable} ${fraunces.variable} ${jetbrainsMono.variable} min-h-screen flex flex-col font-sans antialiased`}>
         <ThemeProvider
           attribute="class"

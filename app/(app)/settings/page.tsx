@@ -97,20 +97,32 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {me.isAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Administración</CardTitle>
+              <CardDescription>Gestiona las cuentas de la plataforma.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/admin" className={buttonVariants()}>Abrir panel de administración</Link>
+            </CardContent>
+          </Card>
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle>Cambiar contraseña</CardTitle>
-            <CardDescription>Mínimo 6 caracteres.</CardDescription>
+            <CardDescription>Mínimo 8 caracteres.</CardDescription>
           </CardHeader>
           <CardContent>
             <form action={changePasswordAction} className="space-y-3 max-w-sm">
               <div className="space-y-2">
                 <Label htmlFor="password">Nueva contraseña</Label>
-                <Input id="password" name="password" type="password" minLength={6} autoComplete="new-password" required />
+                <Input id="password" name="password" type="password" minLength={8} autoComplete="new-password" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm">Repetir contraseña</Label>
-                <Input id="confirm" name="confirm" type="password" minLength={6} autoComplete="new-password" required />
+                <Input id="confirm" name="confirm" type="password" minLength={8} autoComplete="new-password" required />
               </div>
               <Button type="submit">Actualizar contraseña</Button>
             </form>

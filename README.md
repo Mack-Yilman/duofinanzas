@@ -44,7 +44,7 @@ GitHub Pages (HTML/JS estático)
 
 ### 1. Supabase
 1. Crea un proyecto en [supabase.com](https://supabase.com).
-2. **SQL Editor** → pega y ejecuta `supabase/migrations/0001_init.sql`.
+2. **SQL Editor** → ejecuta en orden `supabase/migrations/0001_init.sql` y `0002_private_helpers.sql`.
 3. **Authentication → URL Configuration**: agrega la URL de tu sitio (p. ej. `https://<usuario>.github.io/duofinanzas/`).
 4. Opcional para pruebas: **Authentication → Providers → Email** → desactiva *Confirm email*.
 
@@ -71,6 +71,17 @@ npm run migrate:notion
 ```
 
 El script imprime contraseñas temporales; cada usuario puede cambiarla en **Ajustes → Cambiar contraseña**.
+
+## 🛡️ Administración y seguridad
+
+- **Panel `/admin`** (solo cuentas en `app_admins`): estadísticas, búsqueda de usuarios, enviar correo de recuperación, bloquear/desbloquear (cierra sesiones), quitar de una pareja, dar/quitar rol de admin y eliminar cuentas. Todo queda en `admin_audit`.
+- El admin **no** puede ver los datos financieros de las parejas: solo gestiona cuentas.
+- Para nombrar otro admin desde SQL:
+  ```sql
+  insert into public.app_admins (user_id)
+  select id from auth.users where email = 'correo@ejemplo.com' on conflict do nothing;
+  ```
+- RLS en todas las tablas, `anon` sin acceso, helpers de RLS en un esquema `private` no expuesto, CSP que solo permite conexiones a Supabase y a la API de tipos de cambio, y contraseñas de 8+ caracteres.
 
 ## 📌 Roadmap de Funcionalidades
 - [x] Corrección de errores de renderizado SSR/Client Components.
