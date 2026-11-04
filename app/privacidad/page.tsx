@@ -16,7 +16,7 @@ export default function PrivacidadPage() {
 
       <h2>1. Titular del banco de datos</h2>
       <ul>
-        <li>Titular: {o.name} (persona natural), DNI {o.dni}.</li>
+        <li>Titular: {o.name} (persona natural).</li>
         <li>Domicilio: {o.address}.</li>
         <li>Contacto para privacidad y derechos ARCO: <a href={`mailto:${o.email}`}>{o.email}</a>.</li>
       </ul>

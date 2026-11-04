@@ -1,6 +1,7 @@
 /**
  * Datos legales (Ley N.º 29733 – Protección de Datos Personales, Perú).
- * Titular: persona natural. Mantén el domicilio completo (distrito/provincia) si cambia.
+ * Titular: persona natural. El DNI no se publica; se entrega solo si una autoridad o un
+ * titular de datos lo solicita formalmente.
  * Si cambias el contenido de las políticas, sube `version`: se pedirá de nuevo
  * el consentimiento a todos los usuarios.
  */
@@ -9,9 +10,8 @@ export const LEGAL = {
   updatedAt: "4 de noviembre de 2026",
   appName: "DúoFinanzas",
   owner: {
-    name: "Mack Chirinos Quispe",
-    dni: "[REDACTADO]",
-    address: "Av. Lima, Perú",
+    name: "Mack Chirinos",
+    address: "Av. Lima Sur Nº 186, Perú",
     email: "mack.yilman@gmail.com",
   },
   hosting: {
