@@ -1,14 +1,10 @@
 "use client";
 
-import { signOut } from "next-auth/react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { logout } from "@/lib/actions/auth";
 
-/**
- * Logout por el CLIENTE usando el endpoint oficial de Auth.js (/api/auth/signout).
- * Es más fiable que un server action en Netlify: limpia la cookie de sesión de forma
- * consistente detrás del proxy/CDN, evitando que la sesión quede "pegada".
- */
+/** Cierra la sesión de Supabase y limpia toda la caché de datos del navegador. */
 export function LogoutButton() {
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +14,7 @@ export function LogoutButton() {
       disabled={loading}
       onClick={async () => {
         setLoading(true);
-        await signOut({ callbackUrl: "/login", redirect: true });
+        await logout();
       }}
     >
       {loading ? "Cerrando sesión..." : "Cerrar Sesión"}

@@ -1,22 +1,39 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { setupAction } from "@/app/actions/auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useMe } from "@/components/auth-provider";
+import { setupCouple } from "@/lib/actions/auth";
 
-export default async function SetupPage() {
-  const session = await auth();
-  
-  // Si ya tiene pareja configurada, lo mandamos al dashboard
-  if ((session?.user as any)?.coupleId) {
-    redirect("/");
+export default function SetupPage() {
+  const router = useRouter();
+  const { data: me, isLoading } = useMe();
+  const [error, setError] = useState<string>();
+  const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (!me) router.replace("/login");
+    else if (me.coupleId) router.replace("/");
+  }, [me, isLoading, router]);
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError(undefined);
+    const formData = new FormData(event.currentTarget);
+    startTransition(async () => {
+      const res = await setupCouple(formData);
+      setError(res.error);
+    });
   }
 
   return (
-    <div className="flex h-screen w-full items-center justify-center px-4 bg-muted/40">
+    <div className="flex min-h-screen w-full items-center justify-center px-4 bg-muted/40">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Bienvenido a DúoFinanzas</CardTitle>
@@ -28,29 +45,34 @@ export default async function SetupPage() {
               <TabsTrigger value="create">Crear Pareja</TabsTrigger>
               <TabsTrigger value="join">Unirme</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="create" className="space-y-4 pt-4">
-              <form action={setupAction} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <input type="hidden" name="action" value="create" />
                 <div className="space-y-2">
                   <Label htmlFor="coupleName">Nombre de su Espacio</Label>
-                  <Input id="coupleName" name="coupleName" placeholder="Ej. Juan y Maria" required />
+                  <Input id="coupleName" name="coupleName" placeholder="Ej. Juan y Maria" required disabled={isPending} />
                 </div>
-                <Button type="submit" className="w-full">Crear Espacio y Obtener Código</Button>
+                <Button type="submit" className="w-full" disabled={isPending}>
+                  {isPending ? "Creando..." : "Crear Espacio y Obtener Código"}
+                </Button>
               </form>
             </TabsContent>
-            
+
             <TabsContent value="join" className="space-y-4 pt-4">
-              <form action={setupAction} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <input type="hidden" name="action" value="join" />
                 <div className="space-y-2">
                   <Label htmlFor="inviteCode">Código de Invitación</Label>
-                  <Input id="inviteCode" name="inviteCode" placeholder="DUO-ABCD" required />
+                  <Input id="inviteCode" name="inviteCode" placeholder="DUO-ABC123" required disabled={isPending} />
                 </div>
-                <Button type="submit" className="w-full">Conectar</Button>
+                <Button type="submit" className="w-full" disabled={isPending}>
+                  {isPending ? "Conectando..." : "Conectar"}
+                </Button>
               </form>
             </TabsContent>
           </Tabs>
+          {error && <p className="mt-4 text-sm text-destructive text-center">{error}</p>}
         </CardContent>
       </Card>
     </div>

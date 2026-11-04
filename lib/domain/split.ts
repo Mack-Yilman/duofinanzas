@@ -1,16 +1,29 @@
 import { Expense, Income, SplitMode } from "../types";
 import { roundMoney } from "./money";
 
-export function calculateEquity(incomes: Income[], baseCurrency: string, fxConvert: (amount: number, from: string, to: string) => number) {
-  const activeMonthlyIncomes = incomes.filter(i => i.isActive && i.period === "monthly");
-  
+/**
+ * Proporción de ingresos de la pareja. `memberIds` (opcional) fija quiénes son A y B
+ * (orden estable por id) aunque alguno no tenga ingresos registrados; sin él, A/B se
+ * deducen de los ingresos (comportamiento anterior).
+ */
+export function calculateEquity(
+  incomes: Income[],
+  baseCurrency: string,
+  fxConvert: (amount: number, from: string, to: string) => number,
+  memberIds?: string[]
+) {
+  const members = memberIds && memberIds.length ? new Set(memberIds) : null;
+  const activeMonthlyIncomes = incomes.filter(
+    i => i.isActive && i.period === "monthly" && (!members || members.has(i.userId))
+  );
+
   const userIncomes = new Map<string, number>();
   for (const inc of activeMonthlyIncomes) {
     const baseAmount = fxConvert(inc.amount, inc.currency, baseCurrency);
     userIncomes.set(inc.userId, (userIncomes.get(inc.userId) || 0) + baseAmount);
   }
 
-  const userIds = Array.from(userIncomes.keys()).sort();
+  const userIds = members ? Array.from(members).sort() : Array.from(userIncomes.keys()).sort();
   const idA = userIds[0] || "userA";
   const idB = userIds[1] || "userB";
 

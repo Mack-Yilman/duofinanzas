@@ -97,3 +97,26 @@ describe('split domain logic', () => {
     expect(calculatePersonalLiquidity(incomes, [], 'userB', 'userA', 3.8, contribs)['PEN'] ?? 0).toBe(0);
   });
 });
+
+describe('calculateEquity con miembros', () => {
+  it('mantiene A/B estables aunque un miembro no tenga ingresos', () => {
+    const incomes: Income[] = [
+      { id: '1', name: 'Sueldo', userId: 'zeta', amount: 1000, currency: 'PEN', type: 'salary', period: 'monthly', effectiveDate: new Date(), isActive: true },
+    ];
+    const eq = calculateEquity(incomes, 'PEN', (a) => a, ['zeta', 'alfa']);
+    expect(eq.userA).toBe('alfa');
+    expect(eq.userB).toBe('zeta');
+    expect(eq.shareA).toBe(0);
+    expect(eq.shareB).toBe(1);
+  });
+
+  it('ignora ingresos de usuarios ajenos a la pareja', () => {
+    const incomes: Income[] = [
+      { id: '1', name: 'A', userId: 'a', amount: 100, currency: 'PEN', type: 'salary', period: 'monthly', effectiveDate: new Date(), isActive: true },
+      { id: '2', name: 'X', userId: 'intruso', amount: 900, currency: 'PEN', type: 'salary', period: 'monthly', effectiveDate: new Date(), isActive: true },
+    ];
+    const eq = calculateEquity(incomes, 'PEN', (a) => a, ['a', 'b']);
+    expect(eq.incomeA).toBe(100);
+    expect(eq.shareA).toBe(1);
+  });
+});

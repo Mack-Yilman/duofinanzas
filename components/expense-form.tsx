@@ -2,16 +2,17 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { updateExpenseAction, createExpenseAction } from "@/app/actions/expenses";
+import { updateExpenseAction, createExpenseAction } from "@/lib/actions/expenses";
+import { toDateString } from "@/lib/domain/dates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Category } from "@/lib/types";
+import type { Category, Expense } from "@/lib/types";
 import Link from "next/link";
 
-export function ExpenseForm({ categories, initialData }: { categories: Category[], initialData?: any }) {
+export function ExpenseForm({ categories, initialData }: { categories: Category[], initialData?: Expense }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -25,13 +26,14 @@ export function ExpenseForm({ categories, initialData }: { categories: Category[
     
     if (initialData) {
       formData.set("id", initialData.id);
+      formData.set("paidById", initialData.paidById);
     }
-    
-    startTransition(() => {
+
+    startTransition(async () => {
       if (initialData) {
-        updateExpenseAction(formData);
+        await updateExpenseAction(formData);
       } else {
-        createExpenseAction(formData);
+        await createExpenseAction(formData);
       }
     });
   }
@@ -60,9 +62,22 @@ export function ExpenseForm({ categories, initialData }: { categories: Category[
                 <SelectContent>
                   <SelectItem value="PEN">Soles (PEN)</SelectItem>
                   <SelectItem value="USD">Dólares (USD)</SelectItem>
+                  <SelectItem value="EUR">Euros (EUR)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="date">Fecha</Label>
+            <Input
+              id="date"
+              name="date"
+              type="date"
+              defaultValue={toDateString(initialData?.date ?? new Date())}
+              required
+              disabled={isPending}
+            />
           </div>
 
           <div className="space-y-2">

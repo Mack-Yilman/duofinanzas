@@ -1,15 +1,9 @@
+# Opcional: el mismo export estático también se puede publicar en Netlify.
 [build]
   command = "npm run build"
+  publish = "out"
 
-
-
-# Setup headers for caching static assets
 [[headers]]
   for = "/_next/static/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-[[headers]]
-  for = "/_next/image/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"

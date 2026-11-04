@@ -13,7 +13,9 @@ const navItems = [
   { label: "Ajustes", href: "/settings", icon: Settings },
 ];
 
-function isActive(pathname: string, href: string) {
+function isActive(rawPath: string, href: string) {
+  // Con trailingSlash el pathname llega como "/expenses/"; normalizamos.
+  const pathname = rawPath.length > 1 ? rawPath.replace(/\/+$/, "") : rawPath;
   if (href === "/") return pathname === "/";
   return pathname === href || pathname.startsWith(href + "/");
 }

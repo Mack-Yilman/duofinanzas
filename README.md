@@ -2,79 +2,81 @@
   <h1>💖 DúoFinanzas</h1>
   <p><b>La plataforma definitiva para gestionar las finanzas en pareja de forma transparente, equitativa y sin estrés.</b></p>
   
-  [![Next.js](https://img.shields.io/badge/Next.js-15+-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
-  [![Notion API](https://img.shields.io/badge/Notion_API-Integrado-black?style=flat-square&logo=notion)](https://developers.notion.com/)
+  [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
+  [![Supabase](https://img.shields.io/badge/Supabase-Postgres_+_Auth-3ECF8E?style=flat-square&logo=supabase)](https://supabase.com/)
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
 </div>
 
 ---
 
-DúoFinanzas es una aplicación web moderna diseñada para parejas que desean organizar sus finanzas compartidas. Permite registrar ingresos, calcular automáticamente la proporción justa de aportes (Equity) y llevar un control detallado de los gastos y metas de ahorro. Todo esto respaldado por la potencia y flexibilidad de **Notion** como base de datos (Headless CMS).
+DúoFinanzas es una aplicación web para parejas que desean organizar sus finanzas compartidas: registra ingresos, calcula la proporción justa de aportes (Equity) y controla gastos y metas de ahorro.
 
-## ✨ Características Principales
+Es un **sitio 100 % estático** (Next.js `output: "export"`) que se publica en **GitHub Pages**. Los datos y el login viven en **Supabase** (Postgres + Auth), y la seguridad la imponen políticas **Row Level Security**: cada pareja solo puede leer y modificar sus propios registros.
 
-- 📊 **Cálculo de Equidad (Equity):** Los gastos se pueden dividir 50/50 o de manera proporcional a los ingresos de cada uno.
-- 💸 **Gestión de Gastos e Ingresos:** Registro intuitivo con soporte para múltiples monedas y categorías personalizadas.
-- 🎯 **Metas de Ahorro:** Establece objetivos financieros juntos y visualiza el progreso en tiempo real.
-- 🏷️ **Categorías Personalizables:** Crea, edita y elimina categorías para adaptar los gastos a tu estilo de vida.
-- 🎨 **Diseño Premium:** Interfaz de usuario "Glassmorphism" con modo oscuro profundo, utilizando Shadcn UI y Tailwind CSS.
-- 🔐 **Autenticación Segura:** Sistema de login seguro manejado por NextAuth.
+## ✨ Características
 
-## 🛠️ Tecnologías Utilizadas
+- 📊 **Equity:** gastos 50/50 o proporcionales a los ingresos de cada uno.
+- 💸 **Gastos e ingresos** en PEN, USD y EUR, con categorías personalizables.
+- 🎯 **Metas de ahorro** con historial de aportes por persona.
+- 📅 **Periodos** con día de corte configurable y vista mensual/global.
+- 🔐 **Auth de Supabase** + RLS por pareja.
 
-- **Frontend:** [Next.js (App Router)](https://nextjs.org/), React 19, Tailwind CSS.
-- **Componentes UI:** [Shadcn UI](https://ui.shadcn.com/) (Radix Primitives).
-- **Backend / Base de Datos:** [Notion API](https://developers.notion.com/) para persistencia de datos.
-- **Autenticación:** [NextAuth.js v5 (Auth.js)](https://authjs.dev/).
+## 🏗️ Arquitectura
 
-## 🚀 Guía de Instalación y Despliegue
-
-### 1. Duplicar la Plantilla de Notion
-Para que DúoFinanzas funcione, necesitas la estructura de base de datos en Notion.
-1. [Duplica esta plantilla de Notion] *(Inserta aquí el link a tu plantilla pública)* en tu propio espacio de trabajo de Notion.
-2. Crea una **Integración Interna de Notion** en [Notion Developers](https://www.notion.so/my-integrations) para obtener el `NOTION_TOKEN`.
-3. **Comparte** las bases de datos principales de la plantilla con tu nueva Integración para otorgarle permisos de lectura y escritura.
-
-> **Importante:** La plantilla original ya fue actualizada para soportar la eliminación de registros mediante la propiedad `isArchived` (Checkbox) o archivado nativo.
-
-### 2. Configurar Variables de Entorno
-Clona este repositorio y crea un archivo `.env` en la raíz del proyecto con el siguiente contenido:
-
-```env
-# URL de la aplicación (Ej. http://localhost:3000 o tu dominio en producción)
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# Auth.js / NextAuth
-AUTH_SECRET="genera_un_secreto_seguro_aqui"
-
-# Notion API
-NOTION_TOKEN="secret_..."
-
-# IDs de las Bases de Datos de Notion (Extraídos de las URLs de cada base de datos)
-USERS_DB_ID="tu_users_db_id"
-COUPLES_DB_ID="tu_couples_db_id"
-EXPENSES_DB_ID="tu_expenses_db_id"
-INCOMES_DB_ID="tu_incomes_db_id"
-GOALS_DB_ID="tu_goals_db_id"
-CATEGORIES_DB_ID="tu_categories_db_id"
+```
+GitHub Pages (HTML/JS estático)
+  └── Navegador ── supabase-js (anon key pública) ──► Supabase
+                                                     ├── Auth (email + contraseña)
+                                                     └── Postgres + RLS (por pareja)
 ```
 
-### 3. Instalación Local
+| Carpeta | Contenido |
+|---|---|
+| `app/` | Páginas (componentes cliente) |
+| `lib/repos/` | Acceso a datos (Supabase) |
+| `lib/actions/` | Mutaciones de formularios (cliente) |
+| `lib/domain/` | Lógica pura y testeada: reparto, periodos, FX |
+| `supabase/migrations/` | Esquema SQL, triggers, RPCs y políticas RLS |
+| `scripts/` | Migración única desde Notion |
+
+## 🚀 Puesta en marcha
+
+### 1. Supabase
+1. Crea un proyecto en [supabase.com](https://supabase.com).
+2. **SQL Editor** → pega y ejecuta `supabase/migrations/0001_init.sql`.
+3. **Authentication → URL Configuration**: agrega la URL de tu sitio (p. ej. `https://<usuario>.github.io/duofinanzas/`).
+4. Opcional para pruebas: **Authentication → Providers → Email** → desactiva *Confirm email*.
+
+### 2. Local
 
 ```bash
-# 1. Instalar dependencias
+cp .env.example .env.local   # completa NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY
 npm install
-
-# 2. Iniciar servidor de desarrollo
-npm run dev
+npm run dev                  # http://localhost:3000
+npm test                     # pruebas de dominio (vitest)
+npm run build                # genera out/ (sitio estático)
 ```
-La aplicación estará disponible en `http://localhost:3000`.
+
+### 3. GitHub Pages
+1. **Settings → Pages → Source:** *GitHub Actions*.
+2. **Settings → Secrets and variables → Actions → Variables:** crea `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+3. Cada push a `main` ejecuta lint + tests + build y publica (`.github/workflows/deploy-pages.yml`).
+
+### 4. Migrar datos desde Notion (una sola vez)
+Con `SUPABASE_SERVICE_ROLE_KEY`, `NOTION_TOKEN` y los `*_DB_ID` en `.env.local` (nunca en el repo):
+
+```bash
+npm run migrate:notion
+```
+
+El script imprime contraseñas temporales; cada usuario puede cambiarla en **Ajustes → Cambiar contraseña**.
 
 ## 📌 Roadmap de Funcionalidades
 - [x] Corrección de errores de renderizado SSR/Client Components.
 - [x] CRUD completo (Eliminar registros directamente desde la interfaz).
 - [x] Módulo de gestión de categorías dinámico.
+- [x] Migración a Supabase + GitHub Pages (sitio estático).
 - [ ] Exportación de reportes mensuales en PDF/Excel.
 - [ ] Recordatorios de pagos recurrentes.
 

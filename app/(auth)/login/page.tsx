@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/login-form";
+import { RedirectIfAuthed } from "@/components/redirect-if-authed";
 
 export default function LoginPage() {
   return (
@@ -21,6 +22,7 @@ export default function LoginPage() {
             Las finanzas de su hogar, en equilibrio.
           </p>
         </div>
+        <RedirectIfAuthed />
         <LoginForm />
       </div>
     </div>

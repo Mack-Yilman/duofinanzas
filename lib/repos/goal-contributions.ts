@@ -1,83 +1,35 @@
-import notion, { queryAll, notionWithRetry } from '../notion/client';
-import { getString, getNumber, getSelect, getDate, getRelation } from '../notion/helpers';
-import { GoalContribution, CurrencySchema } from '../types';
-
-// Acepta ambos nombres de variable para evitar fallos por la 'S' (GOALS_ vs GOAL_)
-const DB_ID = process.env.GOALS_CONTRIBUTIONS_DB_ID || process.env.GOAL_CONTRIBUTIONS_DB_ID || '';
-
-export function toGoalContribution(page: any): GoalContribution {
-  return {
-    id: page.id,
-    name: getString(page, 'Name'),
-    goalId: getRelation(page, 'goal'),
-    userId: getRelation(page, 'user'),
-    amount: getNumber(page, 'amount') || 0,
-    currency: CurrencySchema.parse(getSelect(page, 'currency') || 'PEN'),
-    date: getDate(page, 'date') || new Date(),
-  };
-}
+import { supabase, unwrap } from "../supabase/client";
+import { toGoalContribution } from "./mappers";
+import { toDateString } from "../domain/dates";
+import type { GoalContribution } from "../types";
 
 export async function getGoalContributions(goalId: string): Promise<GoalContribution[]> {
-  if (!DB_ID) return []; // Fallback if DB is not created yet
-
-  try {
-    const pages = await queryAll((cursor) => notion.databases.query({
-      database_id: DB_ID,
-      filter: {
-        property: "goal",
-        relation: { contains: goalId }
-      },
-      sorts: [
-        { property: "date", direction: "descending" }
-      ],
-      start_cursor: cursor,
-    }));
-    
-    return pages.map(toGoalContribution);
-  } catch (error) {
-    console.error("Error fetching goal contributions:", error);
-    return [];
-  }
+  const rows = unwrap(
+    await supabase.from("goal_contributions").select("*").eq("goal_id", goalId).order("date", { ascending: false })
+  );
+  return (rows ?? []).map(toGoalContribution);
 }
 
-/** Todos los aportes (de todas las metas). Para calcular su efecto en la liquidez. */
-export async function getAllGoalContributions(): Promise<GoalContribution[]> {
-  if (!DB_ID) return [];
-  try {
-    const pages = await queryAll((cursor) => notion.databases.query({
-      database_id: DB_ID,
-      start_cursor: cursor,
-    }));
-    return pages.map(toGoalContribution);
-  } catch (error) {
-    console.error("Error fetching all goal contributions:", error);
-    return [];
-  }
+/** Aportes de la pareja (para descontarlos de la liquidez). */
+export async function getAllGoalContributions(coupleId: string): Promise<GoalContribution[]> {
+  const rows = unwrap(await supabase.from("goal_contributions").select("*").eq("couple_id", coupleId));
+  return (rows ?? []).map(toGoalContribution);
 }
 
-export async function createGoalContribution(data: Omit<GoalContribution, 'id'>) {
-  if (!DB_ID) throw new Error("La base de datos de aportes no está configurada.");
-
-  const response = await notionWithRetry(() => notion.pages.create({
-    parent: { database_id: DB_ID },
-    properties: {
-      Name: { title: [{ text: { content: data.name } }] },
-      goal: { relation: [{ id: data.goalId }] },
-      user: { relation: [{ id: data.userId }] },
-      amount: { number: data.amount },
-      currency: { select: { name: data.currency } },
-      date: { date: { start: data.date.toISOString().split('T')[0] } },
-    }
-  }));
-
-  return toGoalContribution(response);
+/** El trigger `goal_contributions_sync` actualiza goals.current_amount de forma atómica. */
+export async function createGoalContribution(data: Omit<GoalContribution, "id">) {
+  unwrap(
+    await supabase.from("goal_contributions").insert({
+      name: data.name,
+      goal_id: data.goalId,
+      user_id: data.userId,
+      amount: data.amount,
+      currency: data.currency,
+      date: toDateString(data.date),
+    })
+  );
 }
 
 export async function deleteGoalContribution(id: string) {
-  if (!DB_ID) return;
-  
-  await notionWithRetry(() => notion.pages.update({
-    page_id: id,
-    archived: true
-  }));
+  unwrap(await supabase.from("goal_contributions").delete().eq("id", id));
 }
