@@ -31,3 +31,5 @@ Formato: **tema**. Decisión. *Por qué.*
 - **Ley 29733**: consentimiento expreso registrado (`profiles.consent_version/at`), flujo transfronterizo
   informado (servidores en EE. UU.), ARCO dentro de la app (exportar/eliminar). Solo almacenamiento
   estrictamente necesario → no se requiere banner de consentimiento de cookies, solo aviso informativo.
+- **Plantillas de correo de Supabase** solo se pueden editar con **SMTP propio**. Por ahora se usa el
+  predefinido (en inglés, pocos envíos por hora); ver `docs/PENDIENTES.md`.

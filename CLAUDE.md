@@ -9,10 +9,12 @@ App de finanzas en pareja. **Sitio 100 % estático** (Next.js 16 `output: "expor
 - `docs/ARCHITECTURE.md`: arquitectura, modelo de datos, seguridad y comandos.
 - `docs/INSIGHTS.md`: decisiones y aprendizajes no obvios (léelo antes de cambiar algo “raro”).
 - `docs/ERRORS.md`: bitácora de errores encontrados y cómo se resolvieron.
+- `docs/PENDIENTES.md`: tareas acordadas que siguen abiertas.
 
 ## Reglas del proyecto
 1. **Cada bug o hallazgo nuevo se registra** en `docs/ERRORS.md` (síntoma · causa · solución) y cada
-   decisión o aprendizaje no obvio en `docs/INSIGHTS.md`, en el mismo PR que lo corrige.
+   decisión o aprendizaje no obvio en `docs/INSIGHTS.md`, en el mismo PR que lo corrige. Lo que el
+   usuario decida posponer va a `docs/PENDIENTES.md`.
 2. **No hay servidor**: nada de Server Actions, route handlers dinámicos, middleware ni `cookies()`.
    Toda la lógica corre en el navegador; la seguridad vive en **RLS de Postgres**, nunca en la UI.
 3. **Rutas dinámicas prohibidas** en export estático: usa `?id=` (`/expenses/edit?id=…`).
