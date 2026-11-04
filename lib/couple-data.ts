@@ -6,24 +6,26 @@ import { getCategories } from "./repos/categories";
 import { getUsersByCoupleId } from "./repos/users";
 import { getCouple } from "./repos/couples";
 import { getAllGoalContributions } from "./repos/goal-contributions";
+import { getCoupleReceipts } from "./repos/receipts";
 
 export const coupleDataKey = (coupleId: string) => ["couple-data", coupleId] as const;
 
 /**
- * Todo lo que necesitan dashboard, gastos e ingresos en 6 consultas PARALELAS a
+ * Todo lo que necesitan dashboard, gastos e ingresos en 7 consultas PARALELAS a
  * Postgres (antes: decenas de peticiones paginadas a Notion limitadas a ~3 req/s).
  * Cambiar de periodo o vista no vuelve a consultar: se recalcula en memoria.
  */
 export async function fetchCoupleData(coupleId: string) {
-  const [incomes, expenses, categories, users, couple, contributions] = await Promise.all([
+  const [incomes, expenses, categories, users, couple, contributions, receipts] = await Promise.all([
     getIncomes(coupleId),
     getExpenses(coupleId),
     getCategories(coupleId),
     getUsersByCoupleId(coupleId),
     getCouple(coupleId),
     getAllGoalContributions(coupleId),
+    getCoupleReceipts(coupleId),
   ]);
-  return { incomes, expenses, categories, users, couple, contributions };
+  return { incomes, expenses, categories, users, couple, contributions, receipts };
 }
 
 export type CoupleData = Awaited<ReturnType<typeof fetchCoupleData>>;

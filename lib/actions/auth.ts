@@ -8,6 +8,8 @@ function translate(message: string) {
   if (/invalid login credentials/i.test(message)) return "Credenciales inválidas.";
   if (/email not confirmed/i.test(message)) return "Confirma tu correo antes de iniciar sesión.";
   if (/already registered/i.test(message)) return "Ese correo ya está registrado.";
+  if (/solo por invitación|signups not allowed|database error saving new user/i.test(message))
+    return "El acceso es solo por invitación del administrador.";
   if (/password should be at least/i.test(message)) return "La contraseña es demasiado corta.";
   if (/same.*password|different from the old/i.test(message)) return "La nueva contraseña debe ser distinta a la anterior.";
   if (/weak|pwned|leaked/i.test(message)) return "Esa contraseña es débil o apareció en filtraciones; elige otra.";
@@ -25,26 +27,37 @@ export async function login(formData: FormData): Promise<{ error?: string }> {
   return {};
 }
 
-export async function register(formData: FormData): Promise<{ error?: string; info?: string }> {
-  if (String(formData.get("password") ?? "").length < 8) {
-    return { error: "La contraseña debe tener al menos 8 caracteres." };
-  }
-  const { resetRedirectUrl } = await import("../repos/admin");
-  const { data, error } = await supabase.auth.signUp({
-    email: String(formData.get("email") ?? ""),
-    password: String(formData.get("password") ?? ""),
-    options: {
-      data: { name: String(formData.get("name") ?? "").slice(0, 80) },
-      // Tras confirmar el correo vuelve a la app (no a localhost).
-      emailRedirectTo: resetRedirectUrl()?.replace(/reset-password\/$/, "login/"),
-    },
-  });
+/**
+ * Aceptar invitación: la sesión llega en el enlace del correo. El invitado define
+ * nombre y contraseña y otorga el consentimiento (Ley 29733), que queda registrado.
+ */
+export async function acceptInvite(input: {
+  userId: string;
+  name: string;
+  password: string;
+  consent: boolean;
+  version: string;
+}): Promise<{ error?: string }> {
+  if (!input.consent) return { error: "Debes aceptar la Política de Privacidad y los Términos." };
+  if (input.password.length < 8) return { error: "La contraseña debe tener al menos 8 caracteres." };
+  const name = input.name.trim().slice(0, 80);
+  if (!name) return { error: "Escribe tu nombre." };
+
+  const { error } = await supabase.auth.updateUser({ password: input.password, data: { name } });
   if (error) return { error: translate(error.message) };
-  if (!data.session) {
-    return { info: "Revisa tu correo para confirmar la cuenta y luego inicia sesión." };
-  }
+  const { updateMyName } = await import("../repos/users");
+  await updateMyName(input.userId, name);
+  const consent = await supabase.rpc("accept_terms", { p_version: input.version });
+  if (consent.error) return { error: consent.error.message };
   await queryClient.invalidateQueries({ queryKey: ME_KEY });
   navigate("/setup");
+  return {};
+}
+
+export async function acceptTerms(version: string): Promise<{ error?: string }> {
+  const { error } = await supabase.rpc("accept_terms", { p_version: version });
+  if (error) return { error: error.message };
+  await queryClient.invalidateQueries({ queryKey: ME_KEY });
   return {};
 }
 

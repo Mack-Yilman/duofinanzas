@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from "react";
 import { login, requestPasswordReset } from "@/lib/actions/auth";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +34,7 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-sm">
+    <Card className="w-full">
       <CardHeader className="text-center">
         <CardTitle className="text-xl">Bienvenido de vuelta</CardTitle>
         <CardDescription>
@@ -77,8 +76,8 @@ export function LoginForm() {
               Volver a iniciar sesión
             </button>
           )}
-          <p className="text-sm text-center text-muted-foreground">
-            ¿No tienes cuenta? <Link href="/register" className="underline">Regístrate</Link>
+          <p className="text-center text-xs text-muted-foreground">
+            El acceso es solo por invitación. Si necesitas una cuenta, pídesela al administrador.
           </p>
         </CardFooter>
       </form>

@@ -21,8 +21,8 @@ export default function CategoriesPage() {
     <div className="p-6 max-w-4xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Categorías</h1>
-          <p className="text-muted-foreground mt-2">Gestionen las categorías de sus gastos.</p>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Categorías</h1>
+          <p className="mt-1.5 text-muted-foreground">Gestionen las categorías de sus gastos.</p>
         </div>
       </div>
 

@@ -11,6 +11,10 @@ import { PageError, PageSkeleton } from "@/components/page-state";
 import { FxRateForm } from "./fx-rate-form";
 import { LogoutButton } from "@/components/logout-button";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { MyDataCard } from "@/components/my-data-card";
+import { PageHeader } from "@/components/page-header";
+import { updateNameAction } from "@/lib/actions/account";
 
 export default function SettingsPage() {
   const { data: me } = useMe();
@@ -22,10 +26,7 @@ export default function SettingsPage() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Ajustes</h1>
-        <p className="text-muted-foreground mt-2">Configuración de tu cuenta y preferencias de la pareja.</p>
-      </div>
+      <PageHeader title="Ajustes" description="Tu cuenta, la pareja, la apariencia y tus datos." />
 
       <div className="space-y-6">
         <Card>
@@ -34,10 +35,13 @@ export default function SettingsPage() {
             <CardDescription>Información de tu usuario y grupo.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div>
-              <p className="text-sm font-medium">Nombre</p>
-              <p className="text-muted-foreground">{me.name}</p>
-            </div>
+            <form key={me.name} action={updateNameAction} className="space-y-2 max-w-sm">
+              <Label htmlFor="profile-name">Nombre</Label>
+              <div className="flex gap-2">
+                <Input id="profile-name" name="name" defaultValue={me.name} maxLength={80} required />
+                <Button type="submit" variant="outline">Guardar</Button>
+              </div>
+            </form>
             <div>
               <p className="text-sm font-medium">Correo Electrónico</p>
               <p className="text-muted-foreground">{me.email}</p>
@@ -49,6 +53,16 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground">Comparte este código con tu pareja para que se una.</p>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Apariencia</CardTitle>
+            <CardDescription>Elige modo claro, oscuro o el de tu sistema.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ThemeToggle />
           </CardContent>
         </Card>
 
@@ -128,6 +142,8 @@ export default function SettingsPage() {
             </form>
           </CardContent>
         </Card>
+
+        <MyDataCard email={me.email} />
 
         <Card>
           <CardHeader>

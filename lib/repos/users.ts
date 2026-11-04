@@ -2,7 +2,7 @@ import { supabase, unwrap } from "../supabase/client";
 import { toUser } from "./mappers";
 import type { User } from "../types";
 
-export type CurrentUser = User & { isAdmin: boolean };
+export type CurrentUser = User & { isAdmin: boolean; consentVersion: string | null };
 
 /** Perfil del usuario autenticado (null si no hay sesión). */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
@@ -13,11 +13,17 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     supabase.rpc("is_admin"),
   ]);
   const row = unwrap(profile);
-  return row ? { ...toUser(row), isAdmin: admin.data === true } : null;
+  return row
+    ? { ...toUser(row), isAdmin: admin.data === true, consentVersion: (row.consent_version as string | null) ?? null }
+    : null;
 }
 
 /** Miembros de la pareja (RLS ya limita a la pareja del usuario). */
 export async function getUsersByCoupleId(coupleId: string): Promise<User[]> {
   const rows = unwrap(await supabase.from("profiles").select("*").eq("couple_id", coupleId).order("id"));
   return (rows ?? []).map(toUser);
+}
+
+export async function updateMyName(id: string, name: string) {
+  unwrap(await supabase.from("profiles").update({ name }).eq("id", id));
 }

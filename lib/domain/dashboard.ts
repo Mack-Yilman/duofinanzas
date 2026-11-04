@@ -53,6 +53,14 @@ export function computeDashboard(
 
   const nameOf = (id: string, fallback: string) => users.find((u) => u.id === id)?.name || fallback;
 
+  // Índices para la UI (evita búsquedas repetidas en cada tarjeta).
+  const receiptsByExpense: Record<string, CoupleData["receipts"]> = {};
+  for (const r of data.receipts ?? []) {
+    if (r.expenseId) (receiptsByExpense[r.expenseId] ??= []).push(r);
+  }
+  const categoryById = Object.fromEntries(categories.map((c) => [c.id, c]));
+  const names = Object.fromEntries(users.map((u) => [u.id, u.name]));
+
   return {
     equity: { ...equity, nameA: nameOf(equity.userA, "Usuario A"), nameB: nameOf(equity.userB, "Usuario B") },
     expenses: [...statsExpenses].sort((a, b) => b.date.getTime() - a.date.getTime()),
@@ -68,5 +76,8 @@ export function computeDashboard(
     periodLabel: selectedPeriod.label,
     currentPeriodLabel: currentPeriod.label,
     cutoffDay,
+    receiptsByExpense,
+    categoryById,
+    names,
   };
 }

@@ -2,13 +2,14 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
-import { Plus, Briefcase, Globe, TrendingUp, Coins, Trash2 } from "lucide-react";
+import { Wallet, Plus, Briefcase, Globe, TrendingUp, Coins, Trash2 } from "lucide-react";
 import { deleteIncomeAction } from "@/lib/actions/incomes";
 import { useMe } from "@/components/auth-provider";
 import { useCoupleData } from "@/lib/couple-data";
 import { PageError, PageSkeleton } from "@/components/page-state";
 import { formatMoney } from "@/lib/domain/money";
 import Link from "next/link";
+import { EmptyState } from "@/components/page-header";
 
 const TYPE_LABEL: Record<string, string> = { salary: "Salario", freelance: "Freelance", bonus: "Bono", other: "Otro" };
 
@@ -26,8 +27,8 @@ export default function IncomePage() {
     <div className="p-6 max-w-4xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Ingresos</h1>
-          <p className="text-muted-foreground mt-2">Gestionen sus fuentes de ingresos declaradas.</p>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Ingresos</h1>
+          <p className="mt-1.5 text-muted-foreground">Gestionen sus fuentes de ingresos declaradas.</p>
         </div>
         <Link href="/income/new" className={buttonVariants({ className: "gap-2" })}>
           <Plus className="w-4 h-4" />
@@ -37,11 +38,9 @@ export default function IncomePage() {
 
       <div className="space-y-4">
         {incomes.length === 0 ? (
-          <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
-              Aún no hay ingresos declarados.
-            </CardContent>
-          </Card>
+          <EmptyState icon={<Wallet className="h-5 w-5" />} title="Aún no hay ingresos declarados">
+            Los ingresos mensuales definen la proporción justa de aportes de cada uno.
+          </EmptyState>
         ) : (
           <div className="space-y-3">
             {incomes.map(inc => (

@@ -90,3 +90,45 @@ export function resetRedirectUrl() {
   if (typeof window === "undefined") return undefined;
   return `${window.location.origin}${process.env.NEXT_PUBLIC_BASE_PATH || ""}/reset-password/`;
 }
+
+export interface Invitation {
+  email: string;
+  invitedByEmail: string | null;
+  createdAt: Date;
+  lastSentAt: Date;
+  sendCount: number;
+  status: "pending" | "accepted" | "revoked";
+}
+
+export async function listInvitations(): Promise<Invitation[]> {
+  const rows = unwrap(await supabase.rpc("admin_list_invitations")) as any[];
+  return (rows ?? []).map((r) => ({
+    email: r.email,
+    invitedByEmail: r.invited_by_email,
+    createdAt: new Date(r.created_at),
+    lastSentAt: new Date(r.last_sent_at),
+    sendCount: r.send_count,
+    status: r.status,
+  }));
+}
+
+/** Invita (o reenvía) vía la Edge Function `admin-invite`, que verifica el rol admin. */
+export async function inviteUser(email: string) {
+  const { data, error } = await supabase.functions.invoke("admin-invite", { body: { email } });
+  if (error) {
+    // El cuerpo del error trae el mensaje legible de la función.
+    let message = "No se pudo enviar la invitación.";
+    try {
+      const body = await (error as { context?: Response }).context?.json();
+      if (body?.error) message = body.error;
+    } catch {
+      /* respuesta sin JSON */
+    }
+    throw new Error(message);
+  }
+  return data;
+}
+
+export async function revokeInvitation(email: string) {
+  unwrap(await supabase.rpc("admin_revoke_invitation", { p_email: email }));
+}

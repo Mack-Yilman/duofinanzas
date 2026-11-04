@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AuthShell } from "@/components/auth-shell";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -32,8 +33,8 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center px-4 bg-muted/40">
-      <Card className="w-full max-w-sm">
+    <AuthShell>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-2xl">Nueva contraseña</CardTitle>
           <CardDescription>Elige una contraseña de al menos 8 caracteres.</CardDescription>
@@ -66,6 +67,6 @@ export default function ResetPasswordPage() {
           </form>
         )}
       </Card>
-    </div>
+    </AuthShell>
   );
 }

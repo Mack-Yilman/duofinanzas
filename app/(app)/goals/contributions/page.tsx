@@ -12,6 +12,7 @@ import { useGoal, useGoalContributions } from "@/lib/goals-data";
 import { useCoupleData } from "@/lib/couple-data";
 import { useIdParam } from "@/lib/hooks";
 import { formatMoney } from "@/lib/domain/money";
+import { ReceiptGallery } from "@/components/receipt-gallery";
 
 function Contributions() {
   const id = useIdParam();
@@ -89,6 +90,10 @@ function Contributions() {
                     <p className="text-xs text-muted-foreground">{c.date.toLocaleDateString("es-PE")}</p>
                   </div>
                   <div className="flex items-center gap-4">
+                    <ReceiptGallery
+                      receipts={coupleQ.data.receipts.filter((r) => r.contributionId === c.id)}
+                      names={Object.fromEntries(users.map((u) => [u.id, u.name]))}
+                    />
                     <span className="font-bold text-brand-600 tabular">{formatMoney(c.amount, c.currency)}</span>
                     <form action={deleteContributionAction}>
                       <input type="hidden" name="id" value={c.id} />

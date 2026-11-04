@@ -3,11 +3,13 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Plus, Trash2, Pencil } from "lucide-react";
+import { Plus, Trash2, Pencil, Target } from "lucide-react";
+import { EmptyState } from "@/components/page-header";
 import Link from "next/link";
 import { deleteGoalAction, contributeToGoalAction } from "@/lib/actions/goals";
 import { useMe } from "@/components/auth-provider";
 import { useGoals } from "@/lib/goals-data";
+import { ReceiptInput } from "@/components/receipt-input";
 import { PageError, PageSkeleton } from "@/components/page-state";
 import { formatMoney } from "@/lib/domain/money";
 
@@ -27,8 +29,8 @@ export default function GoalsPage() {
     <div className="p-6 max-w-4xl mx-auto space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Metas de Ahorro</h1>
-          <p className="text-muted-foreground mt-2">Gestionen sus objetivos financieros juntos.</p>
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Metas de Ahorro</h1>
+          <p className="mt-1.5 text-muted-foreground">Gestionen sus objetivos financieros juntos.</p>
         </div>
         <Link href="/goals/new" className={buttonVariants({ className: "gap-2" })}>
           <Plus className="w-4 h-4" />
@@ -72,11 +74,9 @@ export default function GoalsPage() {
       )}
 
       {goals.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Aún no tienen metas de ahorro registradas. ¡Empiecen ahora!
-          </CardContent>
-        </Card>
+        <EmptyState icon={<Target className="h-5 w-5" />} title="Aún no tienen metas de ahorro">
+          Creen una meta y registren aportes con su constancia para llevar el control juntos.
+        </EmptyState>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {goals.map(goal => {
@@ -117,6 +117,7 @@ export default function GoalsPage() {
                         type="number"
                         name="contribution"
                         placeholder="Monto a aportar"
+                        aria-label="Monto a aportar"
                         required
                         min="0.01"
                         step="0.01"
@@ -126,6 +127,7 @@ export default function GoalsPage() {
                         name="contributionCurrency"
                         defaultValue={goal.currency}
                         title="Moneda del aporte"
+                        aria-label="Moneda del aporte"
                         className="h-9 rounded-md border border-input bg-transparent px-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                       >
                         <option value="PEN">PEN</option>
@@ -133,6 +135,7 @@ export default function GoalsPage() {
                         <option value="EUR">EUR</option>
                       </select>
                       <Button type="submit" size="sm" variant="secondary">Aportar</Button>
+                      <ReceiptInput label="Constancia del depósito (opcional)" hint="Captura del depósito o transferencia." className="w-full pt-1" />
                     </form>
                     <p className="text-[11px] text-muted-foreground">
                       Meta en {goal.currency}. Si aportas en otra moneda, se convierte automáticamente.

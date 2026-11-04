@@ -1,9 +1,11 @@
-import { action, str, positiveNumber } from "./safe";
+import { action, str, positiveNumber, optionalFile } from "./safe";
+import { attachReceipt } from "./receipt-helpers";
+import { receiptPathsFor, removeReceiptFiles } from "../repos/receipts";
 import { navigate } from "../nav";
 import { requireCoupleUser } from "../session";
 import { getCoupleDataCached } from "../couple-data";
 import { createGoal, deleteGoal, getGoal, updateGoal } from "../repos/goals";
-import { createGoalContribution, deleteGoalContribution } from "../repos/goal-contributions";
+import { createGoalContribution, deleteGoalContribution, getGoalContributions } from "../repos/goal-contributions";
 import { getRate } from "../domain/fx";
 import { roundMoney } from "../domain/money";
 import { CurrencySchema } from "../types";
@@ -33,8 +35,12 @@ export const updateGoalAction = action(async (fd: FormData) => {
 }, "Meta actualizada");
 
 export const deleteGoalAction = action(async (fd: FormData) => {
-  if (!confirm("¿Eliminar esta meta y su historial de aportes?")) return;
-  await deleteGoal(str(fd, "id"));
+  if (!confirm("¿Eliminar esta meta, su historial de aportes y sus constancias?")) return;
+  const id = str(fd, "id");
+  const contributions = await getGoalContributions(id);
+  const paths = await receiptPathsFor({ contributionIds: contributions.map((c) => c.id) });
+  await deleteGoal(id);
+  await removeReceiptFiles(paths);
   return "Meta eliminada";
 });
 
@@ -47,7 +53,7 @@ export const contributeToGoalAction = action(async (fd: FormData) => {
   const { couple } = await getCoupleDataCached(me.coupleId);
   const rate = await getRate(from, goal.currency, couple.fxRate);
 
-  await createGoalContribution({
+  const contributionId = await createGoalContribution({
     name: `Aporte de ${me.name || "Usuario"}`,
     goalId: goal.id,
     userId: me.id,
@@ -55,10 +61,14 @@ export const contributeToGoalAction = action(async (fd: FormData) => {
     currency: goal.currency,
     date: new Date(),
   });
+  await attachReceipt(optionalFile(fd, "receipt"), me.coupleId, { kind: "goal_contribution", contributionId });
 }, "Aporte registrado");
 
 export const deleteContributionAction = action(async (fd: FormData) => {
-  if (!confirm("¿Eliminar este aporte?")) return;
-  await deleteGoalContribution(str(fd, "id"));
+  if (!confirm("¿Eliminar este aporte y sus constancias?")) return;
+  const id = str(fd, "id");
+  const paths = await receiptPathsFor({ contributionIds: [id] });
+  await deleteGoalContribution(id);
+  await removeReceiptFiles(paths);
   return "Aporte eliminado";
 });

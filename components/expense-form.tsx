@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { updateExpenseAction, createExpenseAction } from "@/lib/actions/expenses";
 import { toDateString } from "@/lib/domain/dates";
+import { ReceiptInput } from "@/components/receipt-input";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -140,6 +141,12 @@ export function ExpenseForm({ categories, initialData }: { categories: Category[
               <input type="hidden" name="splitMode" value="owner_100" />
             )}
           </div>
+
+          <ReceiptInput
+            label={initialData ? "Añadir constancia (opcional)" : "Comprobante del gasto (opcional)"}
+            hint="Boleta, factura o voucher. Ayuda a regularizar entre ambos."
+            disabled={isPending}
+          />
         </CardContent>
         
         <CardFooter className="flex justify-end gap-3 border-t pt-6 bg-muted/20">

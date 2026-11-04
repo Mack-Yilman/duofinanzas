@@ -8,6 +8,8 @@ import { supabase } from "@/lib/supabase/client";
 import { getCurrentUser } from "@/lib/repos/users";
 import { ME_KEY } from "@/lib/session";
 import { setNavigator } from "@/lib/nav";
+import { ConsentGate } from "@/components/consent-gate";
+import { StorageNotice } from "@/components/storage-notice";
 
 function SessionSync() {
   const router = useRouter();
@@ -32,6 +34,8 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <SessionSync />
       {children}
+      <ConsentGate />
+      <StorageNotice />
     </QueryClientProvider>
   );
 }

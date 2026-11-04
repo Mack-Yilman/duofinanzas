@@ -4,6 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { AuthShell } from "@/components/auth-shell";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,8 +35,8 @@ export default function SetupPage() {
   }
 
   return (
-    <div className="flex min-h-screen w-full items-center justify-center px-4 bg-muted/40">
-      <Card className="w-full max-w-md">
+    <AuthShell>
+      <Card className="w-full">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Bienvenido a DúoFinanzas</CardTitle>
           <CardDescription>Para empezar, necesitas conectar con tu pareja.</CardDescription>
@@ -81,6 +82,6 @@ export default function SetupPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

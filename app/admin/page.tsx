@@ -4,10 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Ban, KeyRound, ShieldCheck, ShieldOff, Trash2, UserMinus, Unlock, Search } from "lucide-react";
+import { ArrowLeft, Ban, KeyRound, ShieldCheck, ShieldOff, Trash2, UserMinus, Unlock, Search, Send, RotateCw, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageError, PageSkeleton } from "@/components/page-state";
 import { useMe } from "@/components/auth-provider";
@@ -16,6 +16,9 @@ import { cn } from "@/lib/utils";
 import {
   deleteUser,
   getAuditLog,
+  inviteUser,
+  listInvitations,
+  revokeInvitation,
   getStats,
   listUsers,
   removeFromCouple,
@@ -33,7 +36,104 @@ const ACTION_LABEL: Record<string, string> = {
   grant_admin: "Hizo admin a",
   revoke_admin: "Quitó admin a",
   bootstrap_admin: "Alta del admin inicial",
+  invite: "Invitó a",
+  revoke_invitation: "Revocó la invitación de",
+  self_delete: "Cuenta eliminada por su titular:",
 };
+
+const INVITE_STATUS: Record<string, [string, string]> = {
+  pending: ["Pendiente", "bg-warning/15 text-warning"],
+  accepted: ["Aceptada", "bg-success/15 text-success"],
+  revoked: ["Revocada", "bg-destructive/10 text-destructive"],
+};
+
+function InvitePanel() {
+  const [email, setEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const invitations = useQuery({ queryKey: ["admin", "invitations"], queryFn: listInvitations });
+
+  async function invite(target: string) {
+    setSending(true);
+    await run(`Invitación enviada a ${target}`, () => inviteUser(target).then(() => undefined));
+    setSending(false);
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Invitar persona</CardTitle>
+        <CardDescription>
+          El acceso es solo por invitación: la persona recibe un correo, elige su contraseña y acepta las políticas.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <form
+          className="flex flex-col gap-2 sm:flex-row"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            const target = email.trim().toLowerCase();
+            if (!target) return;
+            await invite(target);
+            setEmail("");
+          }}
+        >
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="correo@ejemplo.com"
+            aria-label="Correo de la persona a invitar"
+            required
+            maxLength={254}
+            disabled={sending}
+          />
+          <Button type="submit" className="gap-2" disabled={sending}>
+            <Send className="h-4 w-4" aria-hidden /> {sending ? "Enviando…" : "Invitar"}
+          </Button>
+        </form>
+
+        <div>
+          {(invitations.data ?? []).length === 0 ? (
+            <p className="text-sm text-muted-foreground">Aún no hay invitaciones.</p>
+          ) : (
+            invitations.data!.map((i) => {
+              const [label, tone] = INVITE_STATUS[i.status];
+              return (
+                <div key={i.email} className="flex flex-col gap-2 border-b border-border/60 py-3 last:border-0 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate font-medium">{i.email}</p>
+                      <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-medium", tone)}>{label}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Enviada {fmt(i.lastSentAt)} · {i.sendCount} {i.sendCount === 1 ? "envío" : "envíos"}
+                    </p>
+                  </div>
+                  {i.status !== "accepted" && (
+                    <div className="flex gap-1">
+                      <IconAction label="Reenviar invitación" onClick={() => invite(i.email)}>
+                        <RotateCw className="h-4 w-4" />
+                      </IconAction>
+                      {i.status === "pending" && (
+                        <IconAction
+                          label="Revocar invitación"
+                          danger
+                          onClick={() => run("Invitación revocada", () => revokeInvitation(i.email), `¿Revocar la invitación de ${i.email}? El enlace dejará de funcionar.`)}
+                        >
+                          <XCircle className="h-4 w-4" />
+                        </IconAction>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 const fmt = (d: Date | null) =>
   d ? d.toLocaleString("es-PE", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
@@ -204,6 +304,8 @@ export default function AdminPage() {
           </Card>
         ))}
       </div>
+
+      <InvitePanel />
 
       <Card>
         <CardHeader className="gap-3 sm:flex-row sm:items-center sm:justify-between">

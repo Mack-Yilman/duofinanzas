@@ -25,3 +25,9 @@ export function positiveNumber(fd: FormData, key: string, label: string) {
   if (!Number.isFinite(n) || n <= 0) throw new Error(`${label} debe ser un número mayor a 0`);
   return n;
 }
+
+/** Archivo opcional de un formulario (input type=file vacío → null). */
+export function optionalFile(fd: FormData, key: string): File | null {
+  const v = fd.get(key);
+  return v instanceof File && v.size > 0 ? v : null;
+}

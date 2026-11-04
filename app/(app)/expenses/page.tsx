@@ -2,8 +2,8 @@
 
 import { Suspense } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Plus, Receipt } from "lucide-react";
+import { EmptyState } from "@/components/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import { PeriodSelector } from "@/components/period-selector";
 import { ExpenseItem } from "@/components/expense-item";
@@ -21,8 +21,8 @@ function Expenses() {
     <div className="p-6 max-w-4xl mx-auto space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gastos</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Gastos</h1>
+          <p className="mt-1.5 text-muted-foreground">
             {view === "global" ? "Todo el historial de gastos." : "Gastos del periodo seleccionado."}
           </p>
         </div>
@@ -36,11 +36,9 @@ function Expenses() {
       </div>
 
       {data.expenses.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            Aún no hay gastos registrados. ¡Agrega el primero!
-          </CardContent>
-        </Card>
+        <EmptyState icon={<Receipt className="h-5 w-5" />} title="Aún no hay gastos en esta vista">
+          Usa “Nuevo gasto” para registrar el primero y, si quieres, adjunta su comprobante.
+        </EmptyState>
       ) : (
         <div className="space-y-3">
           {data.expenses.map((exp) => (
@@ -51,6 +49,9 @@ function Expenses() {
               nameB={data.equity.nameB}
               userAId={data.userAId}
               currentUserId={data.currentUserId}
+              category={data.categoryById[exp.categoryId]}
+              receipts={data.receiptsByExpense[exp.id]}
+              names={data.names}
               showBase
             />
           ))}

@@ -20,7 +20,15 @@ Es un **sitio 100 % estático** (Next.js `output: "export"`) que se publica en *
 - 💸 **Gastos e ingresos** en PEN, USD y EUR, con categorías personalizables.
 - 🎯 **Metas de ahorro** con historial de aportes por persona.
 - 📅 **Periodos** con día de corte configurable y vista mensual/global.
-- 🔐 **Auth de Supabase** + RLS por pareja.
+- 🔐 **Acceso solo por invitación** del administrador + RLS por pareja.
+- 🧾 **Constancias en imagen** (opcionales) al registrar gastos, al pagar y al aportar a metas.
+- 🌗 **Modo claro, oscuro o del sistema.**
+- ⚖️ **Ley N.º 29733**: políticas de privacidad, términos, cookies, consentimiento y derechos ARCO.
+
+## 📚 Documentación
+
+- [`CLAUDE.md`](CLAUDE.md): reglas del proyecto para agentes.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/INSIGHTS.md`](docs/INSIGHTS.md), [`docs/ERRORS.md`](docs/ERRORS.md).
 
 ## 🏗️ Arquitectura
 
@@ -44,7 +52,8 @@ GitHub Pages (HTML/JS estático)
 
 ### 1. Supabase
 1. Crea un proyecto en [supabase.com](https://supabase.com).
-2. **SQL Editor** → ejecuta en orden `supabase/migrations/0001_init.sql` y `0002_private_helpers.sql`.
+2. **SQL Editor** → ejecuta en orden los archivos de `supabase/migrations/` (`0001` a `0005`).
+3. Despliega la Edge Function `supabase/functions/admin-invite` y desactiva *Allow new users to sign up* (Authentication → Sign In / Providers).
 3. **Authentication → URL Configuration**: agrega la URL de tu sitio (p. ej. `https://<usuario>.github.io/duofinanzas/`).
 4. Opcional para pruebas: **Authentication → Providers → Email** → desactiva *Confirm email*.
 
@@ -74,7 +83,7 @@ El script imprime contraseñas temporales; cada usuario puede cambiarla en **Aju
 
 ## 🛡️ Administración y seguridad
 
-- **Panel `/admin`** (solo cuentas en `app_admins`): estadísticas, búsqueda de usuarios, enviar correo de recuperación, bloquear/desbloquear (cierra sesiones), quitar de una pareja, dar/quitar rol de admin y eliminar cuentas. Todo queda en `admin_audit`.
+- **Panel `/admin`** (solo cuentas en `app_admins`): **invitaciones** (enviar, reenviar, revocar), estadísticas, búsqueda de usuarios, enviar correo de recuperación, bloquear/desbloquear (cierra sesiones), quitar de una pareja, dar/quitar rol de admin y eliminar cuentas. Todo queda en `admin_audit`.
 - El admin **no** puede ver los datos financieros de las parejas: solo gestiona cuentas.
 - Para nombrar otro admin desde SQL:
   ```sql

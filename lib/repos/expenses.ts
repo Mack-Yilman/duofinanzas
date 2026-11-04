@@ -41,8 +41,9 @@ function toRow(data: Partial<ExpenseInput>) {
   return row;
 }
 
-export async function createExpense(data: ExpenseInput) {
-  unwrap(await supabase.from("expenses").insert(toRow(data)));
+export async function createExpense(data: ExpenseInput): Promise<string> {
+  const row = unwrap(await supabase.from("expenses").insert(toRow(data)).select("id").single());
+  return row!.id as string;
 }
 
 export async function updateExpense(id: string, data: Partial<ExpenseInput>) {

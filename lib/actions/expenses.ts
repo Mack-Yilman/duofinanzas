@@ -1,4 +1,6 @@
-import { action, str, positiveNumber } from "./safe";
+import { action, str, positiveNumber, optionalFile } from "./safe";
+import { attachReceipt } from "./receipt-helpers";
+import { receiptPathsFor, removeReceiptFiles } from "../repos/receipts";
 import { navigate } from "../nav";
 import { requireCoupleUser } from "../session";
 import { getCoupleDataCached } from "../couple-data";
@@ -58,7 +60,8 @@ async function buildExpense(fd: FormData, me: User, paidById: string) {
 export const createExpenseAction = action(async (fd: FormData) => {
   const me = await requireCoupleUser();
   const fields = await buildExpense(fd, me, me.id);
-  await createExpense({ ...fields, paidById: me.id, isSettled: false, notes: "" });
+  const id = await createExpense({ ...fields, paidById: me.id, isSettled: false, notes: "" });
+  await attachReceipt(optionalFile(fd, "receipt"), me.coupleId, { kind: "expense", expenseId: id });
   navigate("/expenses");
 }, "Gasto guardado");
 
@@ -67,15 +70,23 @@ export const updateExpenseAction = action(async (fd: FormData) => {
   const paidById = str(fd, "paidById") || me.id;
   const fields = await buildExpense(fd, me, paidById);
   await updateExpense(str(fd, "id"), fields);
+  await attachReceipt(optionalFile(fd, "receipt"), me.coupleId, { kind: "expense", expenseId: str(fd, "id") });
   navigate("/expenses");
 }, "Gasto actualizado");
 
 export const deleteExpenseAction = action(async (fd: FormData) => {
-  if (!confirm("¿Eliminar este gasto?")) return;
-  await deleteExpense(str(fd, "id"));
+  if (!confirm("¿Eliminar este gasto y sus constancias?")) return;
+  const id = str(fd, "id");
+  const paths = await receiptPathsFor({ expenseId: id });
+  await deleteExpense(id);
+  await removeReceiptFiles(paths);
   return "Gasto eliminado";
 });
 
+/** Marca como pagado; opcionalmente adjunta la constancia de la transferencia. */
 export const settleExpenseAction = action(async (fd: FormData) => {
-  await settleExpense(str(fd, "id"));
+  const me = await requireCoupleUser();
+  const id = str(fd, "id");
+  await settleExpense(id);
+  await attachReceipt(optionalFile(fd, "receipt"), me.coupleId, { kind: "settlement", expenseId: id });
 }, "Gasto marcado como pagado");

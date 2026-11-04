@@ -1,5 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { Receipt } from "lucide-react";
+import { EmptyState } from "@/components/page-header";
+
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import { EquityBar } from "@/components/equity-bar";
@@ -28,8 +32,8 @@ function Dashboard() {
     <div className="p-6 max-w-4xl mx-auto space-y-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground mt-2">
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Dashboard</h1>
+          <p className="mt-1.5 text-muted-foreground">
             {view === "global" ? "Resumen global de todas tus finanzas." : "Resumen del periodo actual."}
           </p>
         </div>
@@ -63,11 +67,9 @@ function Dashboard() {
           {view === "global" ? "Gastos (todo el histórico)" : "Gastos del periodo"}
         </h2>
         {data.expenses.length === 0 ? (
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              {view === "global" ? "No hay gastos registrados." : "No hay gastos en este periodo."}
-            </CardContent>
-          </Card>
+          <EmptyState icon={<Receipt className="h-5 w-5" />} title={view === "global" ? "No hay gastos registrados" : "No hay gastos en este periodo"}>
+            <Link href="/expenses/new" className="underline">Registra el primero</Link>
+          </EmptyState>
         ) : (
           <div className="space-y-3">
             {data.expenses.slice(0, 5).map((exp) => (
@@ -78,6 +80,9 @@ function Dashboard() {
                 nameB={data.equity.nameB}
                 userAId={data.userAId}
                 currentUserId={data.currentUserId}
+                category={data.categoryById[exp.categoryId]}
+                receipts={data.receiptsByExpense[exp.id]}
+                names={data.names}
               />
             ))}
           </div>

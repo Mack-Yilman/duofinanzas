@@ -17,8 +17,8 @@ export async function getAllGoalContributions(coupleId: string): Promise<GoalCon
 }
 
 /** El trigger `goal_contributions_sync` actualiza goals.current_amount de forma atómica. */
-export async function createGoalContribution(data: Omit<GoalContribution, "id">) {
-  unwrap(
+export async function createGoalContribution(data: Omit<GoalContribution, "id">): Promise<string> {
+  const row = unwrap(
     await supabase.from("goal_contributions").insert({
       name: data.name,
       goal_id: data.goalId,
@@ -26,8 +26,9 @@ export async function createGoalContribution(data: Omit<GoalContribution, "id">)
       amount: data.amount,
       currency: data.currency,
       date: toDateString(data.date),
-    })
+    }).select("id").single()
   );
+  return row!.id as string;
 }
 
 export async function deleteGoalContribution(id: string) {
