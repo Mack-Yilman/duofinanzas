@@ -1,21 +1,29 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { SidebarLinks, BottomNav } from "@/components/app-nav";
+import { useMe } from "@/components/auth-provider";
+import { PageSkeleton } from "@/components/page-state";
+import { avatarBg } from "@/lib/avatar";
+import { cn } from "@/lib/utils";
 
-// Las rutas autenticadas se renderizan por petición (no se cachean), así la sesión
-// nunca queda "pegada" tras cerrar sesión o cambiar de usuario.
-export const dynamic = "force-dynamic";
+/**
+ * Guardia de cliente (reemplaza al middleware, que no existe en un sitio estático):
+ * sin sesión → /login; sin pareja → /setup. La seguridad real la imponen las
+ * políticas RLS de Supabase, no esta redirección.
+ */
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const { data: me, isLoading } = useMe();
 
-export default async function AppLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const session = await auth();
+  useEffect(() => {
+    if (isLoading) return;
+    if (!me) router.replace("/login");
+    else if (!me.coupleId) router.replace("/setup");
+  }, [me, isLoading, router]);
 
-  if (!session?.user) {
-    redirect("/login");
-  }
+  const ready = !isLoading && me?.coupleId;
 
   return (
     <div className="relative flex h-screen w-full flex-col overflow-hidden bg-background md:flex-row">
@@ -38,21 +46,28 @@ export default async function AppLayout({
 
         <SidebarLinks />
 
-        <div className="mt-auto border-t border-border/60 px-2 pt-4">
-          <div className="flex items-center gap-3">
-            <div className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white shadow-sm bg-${(session.user as any).avatarColor}-500`}>
-              {session.user.name?.[0]?.toUpperCase()}
-            </div>
-            <div className="min-w-0 text-sm">
-              <p className="truncate font-medium text-foreground">{session.user.name}</p>
-              <p className="truncate text-xs text-muted-foreground">{session.user.email}</p>
+        {me && (
+          <div className="mt-auto border-t border-border/60 px-2 pt-4">
+            <div className="flex items-center gap-3">
+              <div
+                className={cn(
+                  "flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white shadow-sm",
+                  avatarBg(me.avatarColor)
+                )}
+              >
+                {me.name?.[0]?.toUpperCase()}
+              </div>
+              <div className="min-w-0 text-sm">
+                <p className="truncate font-medium text-foreground">{me.name}</p>
+                <p className="truncate text-xs text-muted-foreground">{me.email}</p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </aside>
 
       {/* Contenido */}
-      <main className="flex-1 overflow-y-auto pb-20 md:pb-0">{children}</main>
+      <main className="flex-1 overflow-y-auto pb-20 md:pb-0">{ready ? children : <PageSkeleton />}</main>
 
       {/* Navegación inferior (móvil) */}
       <BottomNav />

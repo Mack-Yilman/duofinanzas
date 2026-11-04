@@ -1,18 +1,27 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Pencil } from "lucide-react";
 import Link from "next/link";
-import { auth } from "@/auth";
-import { getGoals } from "@/lib/repos/goals";
-import { deleteGoalAction, contributeToGoalAction } from "@/app/actions/goals";
+import { deleteGoalAction, contributeToGoalAction } from "@/lib/actions/goals";
+import { useMe } from "@/components/auth-provider";
+import { useGoals } from "@/lib/goals-data";
+import { PageError, PageSkeleton } from "@/components/page-state";
+import { formatMoney } from "@/lib/domain/money";
 
-export default async function GoalsPage() {
-  const session = await auth();
-  if (!session?.user) return null;
+const pct = (current: number, target: number) => (target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0);
 
-  const coupleId = (session.user as any).coupleId;
-  const goals = await getGoals(coupleId);
+export default function GoalsPage() {
+  const { data: me } = useMe();
+  const { data: goals, isLoading, error } = useGoals(me?.coupleId);
+
+  if (error) return <PageError error={error} />;
+  if (isLoading || !goals) return <PageSkeleton />;
+
+  // Copia antes de ordenar: .sort() muta el array (antes reordenaba la lista visible).
+  const closest = [...goals].sort((a, b) => pct(b.currentAmount, b.targetAmount) - pct(a.currentAmount, a.targetAmount))[0];
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
@@ -21,11 +30,9 @@ export default async function GoalsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Metas de Ahorro</h1>
           <p className="text-muted-foreground mt-2">Gestionen sus objetivos financieros juntos.</p>
         </div>
-        <Link href="/goals/new">
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Nueva Meta</span>
-          </Button>
+        <Link href="/goals/new" className={buttonVariants({ className: "gap-2" })}>
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">Nueva Meta</span>
         </Link>
       </div>
 
@@ -57,7 +64,7 @@ export default async function GoalsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-xl font-bold truncate">
-                {goals.sort((a, b) => (b.currentAmount/b.targetAmount) - (a.currentAmount/a.targetAmount))[0]?.name || "-"}
+                {closest?.name || "-"}
               </div>
             </CardContent>
           </Card>
@@ -73,9 +80,7 @@ export default async function GoalsPage() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {goals.map(goal => {
-            const percentage = goal.targetAmount > 0 
-              ? Math.round((goal.currentAmount / goal.targetAmount) * 100) 
-              : 0;
+            const percentage = pct(goal.currentAmount, goal.targetAmount);
             return (
               <Card key={goal.id}>
                 <CardHeader className="pb-3">
@@ -84,19 +89,19 @@ export default async function GoalsPage() {
                       <span>{goal.icon}</span> {goal.name}
                     </CardTitle>
                     <div className="flex items-center gap-2">
-                      <Link href={`/goals/${goal.id}/edit`} title="Editar" className="text-muted-foreground hover:text-brand-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>
+                      <Link href={`/goals/edit?id=${goal.id}`} title="Editar" aria-label="Editar" className="text-muted-foreground hover:text-brand-500">
+                        <Pencil className="w-4 h-4" />
                       </Link>
                       <form action={deleteGoalAction}>
                         <input type="hidden" name="id" value={goal.id} />
-                        <button type="submit" className="text-muted-foreground hover:text-destructive">
+                        <button type="submit" title="Eliminar" aria-label="Eliminar" className="text-muted-foreground hover:text-destructive">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </form>
                     </div>
                   </div>
                   <CardDescription>
-                    {goal.currency} {goal.currentAmount.toLocaleString()} / {goal.targetAmount.toLocaleString()}
+                    {formatMoney(goal.currentAmount, goal.currency)} / {formatMoney(goal.targetAmount, goal.currency)}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -108,7 +113,6 @@ export default async function GoalsPage() {
                     
                     <form action={contributeToGoalAction} className="flex flex-wrap gap-2">
                       <input type="hidden" name="id" value={goal.id} />
-                      <input type="hidden" name="currentAmount" value={goal.currentAmount} />
                       <input
                         type="number"
                         name="contribution"
@@ -135,7 +139,7 @@ export default async function GoalsPage() {
                     </p>
                     
                     <div className="pt-2">
-                      <Link href={`/goals/${goal.id}/contributions`} className="text-xs text-brand-500 hover:underline">
+                      <Link href={`/goals/contributions?id=${goal.id}`} className="text-xs text-brand-500 hover:underline">
                         Ver historial de aportes &rarr;
                       </Link>
                     </div>

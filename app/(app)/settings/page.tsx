@@ -1,18 +1,24 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { auth } from "@/auth";
-import { getCouple } from "@/lib/repos/couples";
-import { updateCutoffDayAction } from "@/app/actions/settings";
+import { updateCutoffDayAction, changePasswordAction } from "@/lib/actions/settings";
+import { Input } from "@/components/ui/input";
+import { useMe } from "@/components/auth-provider";
+import { useCoupleData } from "@/lib/couple-data";
+import { PageError, PageSkeleton } from "@/components/page-state";
 import { FxRateForm } from "./fx-rate-form";
 import { LogoutButton } from "@/components/logout-button";
 import Link from "next/link";
 
-export default async function SettingsPage() {
-  const session = await auth();
-  if (!session?.user) return null;
-  const coupleId = (session.user as any).coupleId;
-  const couple = await getCouple(coupleId);
+export default function SettingsPage() {
+  const { data: me } = useMe();
+  const { data, isLoading, error } = useCoupleData(me?.coupleId);
+
+  if (error) return <PageError error={error} />;
+  if (isLoading || !data || !me) return <PageSkeleton />;
+  const { couple } = data;
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
@@ -30,11 +36,11 @@ export default async function SettingsPage() {
           <CardContent className="space-y-4">
             <div>
               <p className="text-sm font-medium">Nombre</p>
-              <p className="text-muted-foreground">{session.user.name}</p>
+              <p className="text-muted-foreground">{me.name}</p>
             </div>
             <div>
               <p className="text-sm font-medium">Correo Electrónico</p>
-              <p className="text-muted-foreground">{session.user.email}</p>
+              <p className="text-muted-foreground">{me.email}</p>
             </div>
             <div>
               <p className="text-sm font-medium">Código de Invitación (Pareja)</p>
@@ -52,9 +58,10 @@ export default async function SettingsPage() {
             <CardDescription>Ajusta cómo se calculan tus saldos.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <FxRateForm initialRate={couple.fxRate} />
+            {/* key: al cambiar la tasa guardada se remonta el form con el nuevo valor */}
+            <FxRateForm key={couple.fxRate} initialRate={couple.fxRate} />
 
-            <form action={updateCutoffDayAction} className="space-y-2 max-w-sm border-t border-border/60 pt-6">
+            <form key={couple.cutoffDay} action={updateCutoffDayAction} className="space-y-2 max-w-sm border-t border-border/60 pt-6">
               <Label htmlFor="cutoffDay">Día de corte del periodo</Label>
               <div className="flex gap-2">
                 <input
@@ -71,7 +78,7 @@ export default async function SettingsPage() {
                 <Button type="submit">Guardar</Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                El "mes financiero" va de este día al mismo día del mes siguiente (ej. 15 = quincena a
+                El &ldquo;mes financiero&rdquo; va de este día al mismo día del mes siguiente (ej. 15 = quincena a
                 quincena, 1 = mes calendario). Si el mes no tiene ese día, se ajusta al último.
               </p>
             </form>
@@ -84,9 +91,29 @@ export default async function SettingsPage() {
             <CardDescription>Personaliza tu experiencia.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href="/categories">
-              <Button variant="outline">Gestionar Categorías</Button>
+            <Link href="/categories" className={buttonVariants({ variant: "outline" })}>
+              Gestionar Categorías
             </Link>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Cambiar contraseña</CardTitle>
+            <CardDescription>Mínimo 6 caracteres.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form action={changePasswordAction} className="space-y-3 max-w-sm">
+              <div className="space-y-2">
+                <Label htmlFor="password">Nueva contraseña</Label>
+                <Input id="password" name="password" type="password" minLength={6} autoComplete="new-password" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm">Repetir contraseña</Label>
+                <Input id="confirm" name="confirm" type="password" minLength={6} autoComplete="new-password" required />
+              </div>
+              <Button type="submit">Actualizar contraseña</Button>
+            </form>
           </CardContent>
         </Card>
 

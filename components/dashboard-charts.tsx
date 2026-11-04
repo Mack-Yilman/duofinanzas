@@ -81,7 +81,7 @@ export function DashboardCharts({ expenses, categories }: { expenses: Expense[],
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} formatter={(value: any) => `S/ ${Number(value).toFixed(2)}`} />
+                <Tooltip contentStyle={tooltipStyle} formatter={(value) => `S/ ${Number(value).toFixed(2)}`} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
@@ -104,7 +104,7 @@ export function DashboardCharts({ expenses, categories }: { expenses: Expense[],
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
                 <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
                 <YAxis fontSize={12} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" tickFormatter={(value) => `S/${value}`} />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'color-mix(in oklch, var(--primary) 8%, transparent)' }} formatter={(value: any) => `S/ ${Number(value).toFixed(2)}`} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'color-mix(in oklch, var(--primary) 8%, transparent)' }} formatter={(value) => `S/ ${Number(value).toFixed(2)}`} />
                 <Bar dataKey="total" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

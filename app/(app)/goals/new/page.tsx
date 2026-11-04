@@ -1,8 +1,10 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { addGoalAction } from "@/app/actions/goals";
+import { addGoalAction } from "@/lib/actions/goals";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Link from "next/link";
 
@@ -35,7 +37,7 @@ export default function NewGoalPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="targetAmount">Monto Objetivo</Label>
-                <Input id="targetAmount" name="targetAmount" type="number" step="0.01" placeholder="0.00" required />
+                <Input id="targetAmount" name="targetAmount" type="number" step="0.01" min="0.01" placeholder="0.00" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="currency">Moneda</Label>
@@ -46,6 +48,7 @@ export default function NewGoalPage() {
                   <SelectContent>
                     <SelectItem value="PEN">Soles (PEN)</SelectItem>
                     <SelectItem value="USD">Dólares (USD)</SelectItem>
+                    <SelectItem value="EUR">Euros (EUR)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -57,9 +60,7 @@ export default function NewGoalPage() {
             </div>
 
             <div className="pt-4 flex justify-end gap-3">
-              <Link href="/goals">
-                <Button variant="outline" type="button">Cancelar</Button>
-              </Link>
+              <Link href="/goals" className={buttonVariants({ variant: "outline" })}>Cancelar</Link>
               <Button type="submit">Guardar Meta</Button>
             </div>
           </form>

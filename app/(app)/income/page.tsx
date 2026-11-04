@@ -1,19 +1,26 @@
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+"use client";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { buttonVariants } from "@/components/ui/button";
 import { Plus, Briefcase, Globe, TrendingUp, Coins, Trash2 } from "lucide-react";
-import { getIncomes } from "@/lib/repos/incomes";
-import { deleteIncomeAction } from "@/app/actions/incomes";
-import { auth } from "@/auth";
+import { deleteIncomeAction } from "@/lib/actions/incomes";
+import { useMe } from "@/components/auth-provider";
+import { useCoupleData } from "@/lib/couple-data";
+import { PageError, PageSkeleton } from "@/components/page-state";
+import { formatMoney } from "@/lib/domain/money";
 import Link from "next/link";
 
-export default async function IncomePage() {
-  const session = await auth();
-  if (!session?.user) return null;
+const TYPE_LABEL: Record<string, string> = { salary: "Salario", freelance: "Freelance", bonus: "Bono", other: "Otro" };
 
-  const coupleId = (session.user as any).coupleId;
-  const incomes = await getIncomes();
-  const { getUsersByCoupleId } = await import("@/lib/repos/users");
-  const users = await getUsersByCoupleId(coupleId);
+export default function IncomePage() {
+  const { data: me } = useMe();
+  const { data, isLoading, error } = useCoupleData(me?.coupleId);
+
+  if (error) return <PageError error={error} />;
+  if (isLoading || !data) return <PageSkeleton />;
+
+  // Solo ingresos de la pareja (antes se listaban los de TODOS los usuarios de la base).
+  const { incomes, users } = data;
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
@@ -22,11 +29,9 @@ export default async function IncomePage() {
           <h1 className="text-3xl font-bold tracking-tight">Ingresos</h1>
           <p className="text-muted-foreground mt-2">Gestionen sus fuentes de ingresos declaradas.</p>
         </div>
-        <Link href="/income/new">
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Nuevo Ingreso</span>
-          </Button>
+        <Link href="/income/new" className={buttonVariants({ className: "gap-2" })}>
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">Nuevo Ingreso</span>
         </Link>
       </div>
 
@@ -52,7 +57,7 @@ export default async function IncomePage() {
                     {inc.type === "other" && <Coins className="w-4 h-4 text-muted-foreground" />}
                     <form action={deleteIncomeAction}>
                       <input type="hidden" name="id" value={inc.id} />
-                      <button type="submit" className="text-muted-foreground hover:text-destructive">
+                      <button type="submit" title="Eliminar" aria-label="Eliminar" className="text-muted-foreground hover:text-destructive">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </form>
@@ -64,11 +69,11 @@ export default async function IncomePage() {
                       <p className="text-xs font-medium text-brand-400 mb-1">
                         {users.find(u => u.id === inc.userId)?.name || "Desconocido"}
                       </p>
-                      <p className="text-xs text-muted-foreground">{inc.type} • {inc.period === 'one_time' ? 'Ocasional' : 'Mensual'}</p>
-                      <p className="text-xs font-medium mt-1">{inc.effectiveDate.toLocaleDateString()}</p>
+                      <p className="text-xs text-muted-foreground">{TYPE_LABEL[inc.type] || inc.type} • {inc.period === 'one_time' ? 'Ocasional' : 'Mensual'}</p>
+                      <p className="text-xs font-medium mt-1">{inc.effectiveDate.toLocaleDateString("es-PE")}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold">{inc.currency} {inc.amount.toFixed(2)}</p>
+                      <p className="font-semibold">{formatMoney(inc.amount, inc.currency)}</p>
                       <p className="text-xs text-muted-foreground">{inc.isActive ? 'Activo' : 'Inactivo'}</p>
                     </div>
                   </div>

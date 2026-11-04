@@ -1,17 +1,21 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Plus, Trash2 } from "lucide-react";
-import { auth } from "@/auth";
-import { getCategories } from "@/lib/repos/categories";
-import { addCategoryAction, deleteCategoryAction } from "@/app/actions/categories";
+import { addCategoryAction, deleteCategoryAction } from "@/lib/actions/categories";
+import { useMe } from "@/components/auth-provider";
+import { useCoupleData } from "@/lib/couple-data";
+import { PageError, PageSkeleton } from "@/components/page-state";
 
-export default async function CategoriesPage() {
-  const session = await auth();
-  if (!session?.user) return null;
+export default function CategoriesPage() {
+  const { data: me } = useMe();
+  const { data, isLoading, error } = useCoupleData(me?.coupleId);
 
-  const coupleId = (session.user as any).coupleId;
-  const categories = await getCategories(coupleId);
+  if (error) return <PageError error={error} />;
+  if (isLoading || !data) return <PageSkeleton />;
+  const { categories } = data;
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
@@ -55,7 +59,7 @@ export default async function CategoriesPage() {
               </div>
               <form action={deleteCategoryAction}>
                 <input type="hidden" name="id" value={cat.id} />
-                <Button variant="ghost" size="icon" type="submit" className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                <Button variant="ghost" size="icon" type="submit" aria-label="Eliminar" className="text-destructive hover:text-destructive hover:bg-destructive/10">
                   <Trash2 className="w-4 h-4" />
                 </Button>
               </form>

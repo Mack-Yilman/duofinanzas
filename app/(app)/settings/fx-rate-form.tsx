@@ -4,7 +4,7 @@ import * as React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { updateFxRateAction } from "@/app/actions/settings";
+import { updateFxRateAction } from "@/lib/actions/settings";
 
 /**
  * Formulario controlado para la tasa de cambio.
@@ -17,10 +17,6 @@ import { updateFxRateAction } from "@/app/actions/settings";
 export function FxRateForm({ initialRate }: { initialRate: number }) {
   const [rate, setRate] = React.useState(String(initialRate));
 
-  // Si el servidor envía una tasa nueva tras revalidar, sincronizamos el valor controlado.
-  React.useEffect(() => {
-    setRate(String(initialRate));
-  }, [initialRate]);
 
   return (
     <form action={updateFxRateAction} className="space-y-4 max-w-sm">

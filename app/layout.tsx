@@ -2,23 +2,28 @@ import type { Metadata } from "next";
 import { Outfit, Fraunces, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AppProviders } from "@/components/auth-provider";
+import { Toaster } from "sonner";
 
 const outfit = Outfit({
   variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
-// Serif de display con carácter para titulares (dirección editorial cálida).
+// Serif de display para titulares. Sin ejes variables extra (SOFT/WONK no se usaban
+// y aumentaban el peso de la fuente descargada).
 const fraunces = Fraunces({
   variable: "--font-heading",
   subsets: ["latin"],
-  axes: ["SOFT", "WONK"],
+  display: "swap",
 });
 
 // Mono tabular para cifras y montos, para que las columnas de dinero alineen.
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -40,7 +45,8 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <AppProviders>{children}</AppProviders>
+          <Toaster richColors position="top-center" />
         </ThemeProvider>
       </body>
     </html>
