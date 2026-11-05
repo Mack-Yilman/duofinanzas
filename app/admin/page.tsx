@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Ban, KeyRound, ShieldCheck, ShieldOff, Trash2, UserMinus, Unlock, Search, Send, RotateCw, XCircle } from "lucide-react";
+import { ArrowLeft, Ban, KeyRound, ShieldCheck, ShieldOff, Trash2, UserMinus, Unlock, Search, Send, RotateCw, XCircle, Eraser } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import {
   deleteUser,
   getAuditLog,
   inviteUser,
+  cleanupOrphanReceipts,
   listInvitations,
   revokeInvitation,
   getStats,
@@ -39,6 +40,7 @@ const ACTION_LABEL: Record<string, string> = {
   invite: "Invitó a",
   revoke_invitation: "Revocó la invitación de",
   self_delete: "Cuenta eliminada por su titular:",
+  cleanup_receipts: "Limpió constancias huérfanas",
 };
 
 const INVITE_STATUS: Record<string, [string, string]> = {
@@ -138,6 +140,52 @@ function InvitePanel() {
 const fmt = (d: Date | null) =>
   d ? d.toLocaleString("es-PE", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—";
 
+/** Tras borrar cuentas o parejas, limpia sus imágenes sin bloquear la interfaz. */
+function cleanupInBackground() {
+  cleanupOrphanReceipts().catch(() => {
+    /* se puede reintentar desde "Mantenimiento" */
+  });
+}
+
+function MaintenancePanel() {
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<string>();
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Mantenimiento</CardTitle>
+        <CardDescription>
+          Borra del almacenamiento las imágenes de constancias que ya no pertenecen a ningún registro (por ejemplo,
+          de cuentas o parejas eliminadas). Se ejecuta también automáticamente al eliminar una cuenta.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <Button
+          variant="outline"
+          className="gap-2"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            setResult(undefined);
+            try {
+              const { removed } = await cleanupOrphanReceipts();
+              setResult(removed ? `Se eliminaron ${removed} imágenes huérfanas.` : "No había imágenes huérfanas.");
+              await queryClient.invalidateQueries({ queryKey: ["admin"] });
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : "No se pudo limpiar");
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <Eraser className="h-4 w-4" aria-hidden /> {busy ? "Limpiando…" : "Limpiar imágenes huérfanas"}
+        </Button>
+        {result && <p className="text-sm text-muted-foreground" role="status">{result}</p>}
+      </CardContent>
+    </Card>
+  );
+}
+
 async function run(label: string, fn: () => Promise<void>, confirmText?: string) {
   if (confirmText && !confirm(confirmText)) return;
   try {
@@ -217,7 +265,7 @@ function UserRow({ u, selfId }: { u: AdminUser; selfId: string }) {
               label="Quitar de su pareja"
               danger
               onClick={() =>
-                run("Usuario quitado de la pareja", () => removeFromCouple(u.id), `¿Quitar a ${u.email} de "${u.coupleName}"? Si era el último miembro, la pareja y sus datos se eliminan.`)
+                run("Usuario quitado de la pareja", () => removeFromCouple(u.id).then(cleanupInBackground), `¿Quitar a ${u.email} de "${u.coupleName}"? Si era el último miembro, la pareja y sus datos se eliminan.`)
               }
             >
               <UserMinus className="h-4 w-4" />
@@ -236,7 +284,7 @@ function UserRow({ u, selfId }: { u: AdminUser; selfId: string }) {
             label="Eliminar cuenta"
             danger
             onClick={() =>
-              run("Cuenta eliminada", () => deleteUser(u.id), `¿Eliminar DEFINITIVAMENTE la cuenta de ${u.email}? Esta acción no se puede deshacer.`)
+              run("Cuenta eliminada", () => deleteUser(u.id).then(cleanupInBackground), `¿Eliminar DEFINITIVAMENTE la cuenta de ${u.email}? Esta acción no se puede deshacer.`)
             }
           >
             <Trash2 className="h-4 w-4" />
@@ -306,6 +354,8 @@ export default function AdminPage() {
       </div>
 
       <InvitePanel />
+
+      <MaintenancePanel />
 
       <Card>
         <CardHeader className="gap-3 sm:flex-row sm:items-center sm:justify-between">

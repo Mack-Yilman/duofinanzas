@@ -28,3 +28,12 @@ App de finanzas en pareja. **Sitio 100 % estático** (Next.js 16 `output: "expor
 8. Datos personales → respeta `lib/legal.ts` (Ley N.º 29733). Si cambias las políticas, sube `LEGAL.version`.
 9. Antes de hacer push: `npx tsc --noEmit && npm run lint && npm test && npm run build`.
 10. Responde y documenta en español.
+
+## Cómo retomar el trabajo (nueva sesión)
+1. Lee `docs/PENDIENTES.md` y pregunta al usuario qué quiere priorizar.
+2. Backend: proyecto Supabase **`vjglzizutcijcyexcume`** (org “Kirin Proyect”, plan Free). Para migraciones,
+   Edge Functions y logs se necesita el **conector de Supabase** en la sesión.
+3. Flujo: rama de trabajo → PR → fusionar en `main` → GitHub Actions publica en Pages
+   (https://mack-yilman.github.io/duofinanzas/). Verifica que el workflow quede en verde.
+4. Edge Functions viven en `supabase/functions/*`; se despliegan con el conector (no hay CI para ellas).
+5. Al terminar: actualiza `docs/ERRORS.md`, `docs/INSIGHTS.md` y `docs/PENDIENTES.md` en el mismo PR.

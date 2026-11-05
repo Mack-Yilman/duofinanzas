@@ -33,3 +33,11 @@ Formato: **tema**. Decisión. *Por qué.*
   estrictamente necesario → no se requiere banner de consentimiento de cookies, solo aviso informativo.
 - **Plantillas de correo de Supabase** solo se pueden editar con **SMTP propio**. Por ahora se usa el
   predefinido (en inglés, pocos envíos por hora); ver `docs/PENDIENTES.md`.
+- **Leaked password protection no está en el plan Free** (verificado: org en `free` y la doc dice
+  “available on the Pro Plan and above”). Alternativa gratuita: *Password requirements* en Auth → Email.
+- **Constancias huérfanas**: `orphan_receipt_paths()` (solo service_role) devuelve objetos sin fila en
+  `receipts` con más de 1 hora de antigüedad (para no borrar subidas en curso); la Edge Function
+  `cleanup-receipts` los borra con la API de Storage. Se ejecuta al eliminar cuentas desde `/admin` o a mano.
+- **Datos sensibles en Git**: quitar un dato del código no lo borra del historial. Hay que reescribir con
+  `git filter-repo --replace-text` + push forzado, y pedir a GitHub Support que purgue las vistas de los PR.
+

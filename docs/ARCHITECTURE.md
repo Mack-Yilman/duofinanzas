@@ -7,6 +7,7 @@ Navegador (GitHub Pages: HTML/JS estático, basePath /duofinanzas)
  ├─────────────────────────────────────► Postgres + RLS (aislamiento por pareja)
  ├─────────────────────────────────────► Storage        (bucket privado `receipts`, URLs firmadas 5 min)
  ├─ functions.invoke('admin-invite') ──► Edge Function  (service role; solo administradores)
+ ├─ functions.invoke('cleanup-receipts') ► Edge Function (borra constancias huérfanas; solo admins)
  └─ fetch ─────────────────────────────► api.frankfurter.dev (tipos de cambio, sin datos personales)
 ```
 Despliegue: push a `main` → `.github/workflows/deploy-pages.yml` (lint + tests + build + deploy).
@@ -23,6 +24,7 @@ Despliegue: push a `main` → `.github/workflows/deploy-pages.yml` (lint + tests
 | `lib/legal.ts` | Datos del titular y versión de las políticas (Ley 29733). |
 | `supabase/migrations/` | Esquema versionado (aplicar en orden). |
 | `supabase/functions/admin-invite/` | Edge Function de invitaciones (Deno). |
+| `supabase/functions/cleanup-receipts/` | Edge Function que borra del Storage las constancias sin registro. |
 
 ## Flujo de datos
 `useMe()` (perfil + is_admin + consentimiento) → `useCoupleData(coupleId)` → `computeDashboard()` (puro)
@@ -53,7 +55,7 @@ Despliegue: push a `main` → `.github/workflows/deploy-pages.yml` (lint + tests
 - Usuario: `create_couple`, `join_couple`, `is_admin`, `accept_terms`, `delete_my_account`.
 - Admin: `admin_list_users`, `admin_stats`, `admin_set_banned`, `admin_remove_from_couple`,
   `admin_set_admin`, `admin_delete_user`, `admin_audit_log`, `admin_list_invitations`, `admin_revoke_invitation`.
-- Solo service_role: `prepare_invitation`.
+- Solo service_role: `prepare_invitation`, `cancel_invitation`, `orphan_receipt_paths`, `log_system_action`.
 
 ## Comandos
 ```bash

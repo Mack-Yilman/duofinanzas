@@ -6,9 +6,8 @@ Lista viva de tareas acordadas que quedan abiertas. Al cerrar una, muévela a `d
 | Prioridad | Tarea | Responsable |
 |---|---|---|
 | 🟡 Media | SMTP propio + plantillas de correo en español | Titular (panel de Supabase) |
-| 🟡 Media | Purgar el DNI del historial público de Git | Titular (requiere push forzado) |
-| 🟢 Baja | Limpieza de imágenes huérfanas en Storage | Agente |
-| 🟢 Baja | Activar “Leaked password protection” | Titular (si el plan lo incluye) |
+| 🟡 Media | Pedir a GitHub Support que purgue las vistas de los PR #4 y #5 (DNI) | Titular |
+| ⚪ Opcional | “Leaked password protection” (requiere plan Pro) | Titular, si se escala |
 | ⚪ Opcional | Inscribir el banco de datos ante la ANPD | Titular |
 
 ## SMTP propio + plantillas en español
@@ -25,19 +24,15 @@ Pasos (Gmail, gratis, ~500 correos/día):
 4. Authentication → **Email Templates** → “Invite user” y “Reset Password” en español
    (conservar siempre `{{ .ConfirmationURL }}`).
 
-## Purgar el DNI del historial de Git
-El DNI ya no se publica (PR #5), pero sigue en el historial del repositorio público (commit del PR #4,
-`lib/legal.ts`). Para eliminarlo hay que reescribir `main` (p. ej. `git filter-repo` + push forzado).
-La sesión del agente no tiene permiso para hacer push forzado.
+## Purga del DNI en GitHub
+El historial de `main` se reescribió (el número de DNI → `[REDACTADO]`). Las páginas de los PR #4 y #5 y sus
+referencias `refs/pull/*` son de solo lectura: hay que pedir a **GitHub Support** que las purguen
+(https://support.github.com/request → “Remove sensitive data” / cached views).
 
-## Limpieza de imágenes huérfanas
-Cuando el admin elimina una cuenta o una pareja queda vacía, la base borra los registros pero los
-archivos de Storage no se pueden borrar con SQL (`storage.protect_delete`). Opción: Edge Function
-programada que compare `storage.objects` del bucket `receipts` con la tabla `receipts`.
 
 ## Leaked password protection
-Aviso de Supabase Advisors. Authentication → Sign In / Providers → Email → *Prevent use of leaked
-passwords* (puede requerir plan Pro).
+No disponible en el plan Free (verificado el 2026-11-04). Mientras tanto se puede activar
+*Password requirements* (dígitos, mayúsculas, minúsculas y símbolos) en Auth → Email.
 
 ## Inscripción ante la ANPD
 Opcional mientras el uso sea exclusivamente personal o familiar (excepción del art. 3 de la Ley 29733).

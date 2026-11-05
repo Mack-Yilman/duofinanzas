@@ -112,12 +112,12 @@ export async function listInvitations(): Promise<Invitation[]> {
   }));
 }
 
-/** Invita (o reenvía) vía la Edge Function `admin-invite`, que verifica el rol admin. */
-export async function inviteUser(email: string) {
-  const { data, error } = await supabase.functions.invoke("admin-invite", { body: { email } });
+/** Llama a una Edge Function y traduce su error JSON a un mensaje legible. */
+async function invokeFn<T>(name: string, body: Record<string, unknown>, fallback: string): Promise<T> {
+  const { data, error } = await supabase.functions.invoke(name, { body });
   if (error) {
     // El cuerpo del error trae el mensaje legible de la función.
-    let message = "No se pudo enviar la invitación.";
+    let message = fallback;
     try {
       const body = await (error as { context?: Response }).context?.json();
       if (body?.error) message = body.error;
@@ -126,7 +126,17 @@ export async function inviteUser(email: string) {
     }
     throw new Error(message);
   }
-  return data;
+  return data as T;
+}
+
+/** Invita (o reenvía) vía la Edge Function `admin-invite`, que verifica el rol admin. */
+export function inviteUser(email: string) {
+  return invokeFn<{ ok: boolean }>("admin-invite", { email }, "No se pudo enviar la invitación.");
+}
+
+/** Borra del Storage las constancias sin registro (cuentas o parejas eliminadas). */
+export function cleanupOrphanReceipts() {
+  return invokeFn<{ removed: number }>("cleanup-receipts", {}, "No se pudo limpiar el almacenamiento.");
 }
 
 export async function revokeInvitation(email: string) {

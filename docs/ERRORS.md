@@ -38,3 +38,11 @@ Resultado: **sin vulnerabilidades explotables con confianza ≥ 8/10**. Se endur
   reabrir el registro · `lock table app_admins` en `delete_my_account` y `admin_set_admin`, que ahora exige ≥ 1 admin.
 - **Advisors**: quedan como WARN solo las RPC intencionalmente invocables (cada una valida `auth.uid()` o
   `admin_assert()`), y “Leaked password protection” (ajuste del panel de Auth).
+
+## 2026-11-04 · Datos personales y almacenamiento
+- **Privacidad** — el DNI del titular quedó en el historial público de Git (PR #4) aunque luego se quitó
+  de la web (PR #5) · borrar un dato del código no lo elimina del historial · reescritura con
+  `git filter-repo --replace-text` + push forzado; purga de las vistas de los PR pendiente con GitHub Support.
+- **Storage** — imágenes huérfanas al eliminar cuentas o parejas · el borrado en cascada de SQL no alcanza
+  a Storage · Edge Function `cleanup-receipts` + RPC `orphan_receipt_paths`.
+
