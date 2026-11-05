@@ -51,13 +51,20 @@ export function mockData(consentVersion: string) {
       { id: "r1", couple_id: COUPLE, name: "Alquiler", amount: 1200, currency: "PEN", category_id: CAT, paid_by: U1, split_mode: "proportional",
         is_shared: true, day_of_month: 5, next_date: ymd(nextMonth), is_active: true },
     ],
-    goal_contributions: [],
-    goals: [],
+    goal_contributions: [
+      { id: "gc1", couple_id: COUPLE, goal_id: "g1", user_id: U1, name: "Aporte", amount: 200, currency: "PEN", date: ymd(new Date(today.getFullYear(), today.getMonth() - 1, 10)) },
+      { id: "gc2", couple_id: COUPLE, goal_id: "g1", user_id: U2, name: "Aporte", amount: 100, currency: "PEN", date: ymd(today) },
+    ],
+    goals: [
+      { id: "g1", couple_id: COUPLE, name: "Viaje", target_amount: 2000, current_amount: 300, currency: "PEN", target_date: null, contribution_mode: "proportional", icon: "✈️", is_achieved: false },
+    ],
     receipts: [],
   } as Record<string, Record<string, unknown>[]>;
 }
 
-export async function mockSupabase(page: Page, consentVersion: string) {
+export interface Mutation { method: string; table: string; url: string; body: unknown }
+
+export async function mockSupabase(page: Page, consentVersion: string, mutations: Mutation[] = []) {
   const data = mockData(consentVersion);
   const session = fakeSession();
   await page.addInitScript(
@@ -72,7 +79,10 @@ export async function mockSupabase(page: Page, consentVersion: string) {
     }
     if (url.pathname === "/rest/v1/rpc/is_admin") return route.fulfill({ json: false });
     const table = url.pathname.replace("/rest/v1/", "");
-    if (req.method() !== "GET") return route.fulfill({ status: 201, json: [] });
+    if (req.method() !== "GET") {
+      mutations.push({ method: req.method(), table, url: req.url(), body: req.postDataJSON?.() ?? null });
+      return route.fulfill({ status: req.method() === "POST" ? 201 : 204, json: [] });
+    }
     let rows = data[table] ?? [];
     const idEq = url.searchParams.get("id");
     if (idEq?.startsWith("eq.")) rows = rows.filter((r) => r.id === idEq.slice(3));

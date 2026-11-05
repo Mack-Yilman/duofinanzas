@@ -12,11 +12,14 @@ export function PeriodSelector({
   view,
   offset,
   label,
+  keep = "",
 }: {
   basePath: string;
   view: "current" | "global";
   offset: number;
   label: string;
+  /** Query extra que se conserva al cambiar de periodo (p. ej. filtros: "&q=luz"). */
+  keep?: string;
 }) {
   const isGlobal = view === "global";
 
@@ -24,7 +27,7 @@ export function PeriodSelector({
     <div className="flex flex-wrap items-center gap-2">
       <div className="inline-flex rounded-xl bg-muted p-1">
         <Link
-          href={`${basePath}?view=current`}
+          href={`${basePath}?view=current${keep}`}
           className={cn(
             "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
             !isGlobal ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
@@ -33,7 +36,7 @@ export function PeriodSelector({
           Mensual
         </Link>
         <Link
-          href={`${basePath}?view=global`}
+          href={`${basePath}?view=global${keep}`}
           className={cn(
             "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
             isGlobal ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
@@ -46,7 +49,7 @@ export function PeriodSelector({
       {!isGlobal && (
         <div className="inline-flex items-center gap-1">
           <Link
-            href={`${basePath}?view=current&offset=${offset - 1}`}
+            href={`${basePath}?view=current&offset=${offset - 1}${keep}`}
             aria-label="Periodo anterior"
             className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
@@ -54,7 +57,7 @@ export function PeriodSelector({
           </Link>
           <span className="min-w-[150px] text-center text-sm font-medium">{label}</span>
           <Link
-            href={offset < 0 ? `${basePath}?view=current&offset=${offset + 1}` : "#"}
+            href={offset < 0 ? `${basePath}?view=current&offset=${offset + 1}${keep}` : "#"}
             aria-label="Periodo siguiente"
             aria-disabled={offset >= 0}
             className={cn(

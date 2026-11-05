@@ -12,12 +12,16 @@ import { useGoals } from "@/lib/goals-data";
 import { ReceiptInput } from "@/components/receipt-input";
 import { PageError, PageSkeleton } from "@/components/page-state";
 import { formatMoney } from "@/lib/domain/money";
+import { useCoupleData } from "@/lib/couple-data";
+import { GoalEta } from "@/components/goal-eta";
 
 const pct = (current: number, target: number) => (target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0);
 
 export default function GoalsPage() {
   const { data: me } = useMe();
   const { data: goals, isLoading, error } = useGoals(me?.coupleId);
+  // Aportes de la pareja (ya en caché del dashboard) para estimar la fecha de cada meta.
+  const contributions = useCoupleData(me?.coupleId).data?.contributions ?? [];
 
   if (error) return <PageError error={error} />;
   if (isLoading || !goals) return <PageSkeleton />;
@@ -109,6 +113,7 @@ export default function GoalsPage() {
                     <div className="space-y-2">
                       <Progress value={percentage} className="h-2" />
                       <p className="text-xs text-right text-muted-foreground">{percentage}% completado</p>
+                      <GoalEta goal={goal} contributions={contributions} />
                     </div>
                     
                     <form action={contributeToGoalAction} className="flex flex-wrap gap-2">

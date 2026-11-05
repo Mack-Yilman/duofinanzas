@@ -7,6 +7,26 @@ y [SemVer](https://semver.org/lang/es/): **MAJOR** = cambios incompatibles, **MI
 > Regla: cada PR a `main` sube la versión en `package.json` y añade aquí su entrada. Al fusionar,
 > GitHub Actions crea el tag `vX.Y.Z` y su Release automáticamente.
 
+## [1.3.0] - 2026-11-05
+
+### Añadido
+- **Estadísticas en el dashboard**: gasto del periodo frente al anterior (total y top categorías con % ↑/↓),
+  **proyección de cierre** al ritmo diario frente a los presupuestos, y **tasa de ahorro** personal y de la pareja.
+- **Gráfico de evolución** acumulado día a día frente al periodo anterior (sustituye al de barras por fecha).
+- **Fecha estimada de metas** según el ritmo de aportes de los últimos 3 meses (aviso si llega tarde).
+- **Búsqueda y filtros** en Gastos (texto sin tildes, categoría, quién pagó, estado), en la URL y conservados al
+  cambiar de periodo; la exportación CSV/PDF respeta los filtros.
+- **Editar ingresos** (`/income/edit?id=`), incluido marcarlos como inactivos.
+- **Liquidar todo**: salda de una vez los gastos compartidos pendientes, con resumen y constancia opcional.
+- **Importar gastos desde CSV** (`/expenses/import`): acepta el formato de la exportación u otro con Fecha,
+  Descripción y Monto; vista previa, errores por fila y detección de duplicados.
+- **Deshacer al eliminar** gastos, ingresos y metas (5 s).
+- 7 E2E nuevos (38 en total en escritorio y móvil) y 14 tests unitarios nuevos (53).
+
+### Corregido
+- “Descargar mis datos” no incluía presupuestos ni gastos recurrentes (derecho de acceso, Ley 29733).
+- Metas sin fecha objetivo se trataban como si vencieran hoy (`targetDate` ahora es opcional).
+
 ## [1.2.0] - 2026-11-05
 
 ### Añadido

@@ -84,3 +84,13 @@ Formato: **tema**. Decisión. *Por qué.*
 - **E2E con Supabase simulado**: `e2e/mock-supabase.ts` inyecta una sesión falsa en localStorage (supabase-js no
   verifica la firma en el navegador) y responde `/rest/v1`. La seguridad real se prueba con SQL en transacciones
   revertidas, no con E2E.
+- **Estadísticas en PEN** (`amountBase`) sobre los gastos visibles para quien mira (compartidos + personales
+  propios). La tasa de ahorro “de la pareja” usa solo gastos compartidos: los personales del otro no son visibles.
+- **Proyección lineal** (ritmo diario × días del periodo): con menos de 7 días se marca como preliminar.
+- **Deshacer sin servidor**: `deferDelete` oculta el elemento en la caché de TanStack Query y borra tras 5 s;
+  si se cierra la app antes, no se borra nada (falla hacia lo seguro). Por eso esos borrados no usan `action()`,
+  que invalida la caché al terminar y “resucitaría” el elemento.
+- **Liquidar todo** asocia la constancia al gasto pendiente más reciente: el modelo exige `expense_id` por constancia.
+- **Importar CSV**: mismo `computeExpenseFields` que un gasto manual; duplicado = fecha + monto + descripción
+  normalizada; los personales se asignan a quien importa (no se pueden crear personales de la pareja).
+- **Filtros en la URL** (`?q=&cat=&who=&status=`): se pueden compartir/guardar y el selector de periodo los conserva.

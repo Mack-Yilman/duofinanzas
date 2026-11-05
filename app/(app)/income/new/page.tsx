@@ -1,12 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { addIncomeAction } from "@/lib/actions/incomes";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import Link from "next/link";
+import { IncomeForm } from "@/components/income-form";
 
 export default function NewIncomePage() {
   return (
@@ -15,78 +10,13 @@ export default function NewIncomePage() {
         <h1 className="text-3xl font-bold tracking-tight">Nuevo Ingreso</h1>
         <p className="text-muted-foreground mt-2">Registra un nuevo ingreso.</p>
       </div>
-
       <Card>
         <CardHeader>
           <CardTitle>Detalles del Ingreso</CardTitle>
           <CardDescription>Completa los datos de tu nueva fuente de ingreso.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={addIncomeAction} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Descripción del Ingreso</Label>
-              <Input id="name" name="name" placeholder="Ej. Salario, Bono, etc." required />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="amount">Monto</Label>
-                <Input id="amount" name="amount" type="number" step="0.01" min="0.01" placeholder="0.00" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="currency">Moneda</Label>
-                <Select name="currency" defaultValue="PEN">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Moneda" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PEN">Soles (PEN)</SelectItem>
-                    <SelectItem value="USD">Dólares (USD)</SelectItem>
-                    <SelectItem value="EUR">Euros (EUR)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="type">Tipo</Label>
-                <Select name="type" defaultValue="salary">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="salary">Salario</SelectItem>
-                    <SelectItem value="freelance">Freelance</SelectItem>
-                    <SelectItem value="bonus">Bono</SelectItem>
-                    <SelectItem value="other">Otro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="period">Periodicidad</Label>
-                <Select name="period" defaultValue="monthly">
-                  <SelectTrigger>
-                    <SelectValue placeholder="Periodo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="monthly">Mensual</SelectItem>
-                    <SelectItem value="one_time">Ocasional</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="effectiveDate">Fecha Efectiva</Label>
-              <Input id="effectiveDate" name="effectiveDate" type="date" required />
-            </div>
-
-            <div className="pt-4 flex justify-end gap-3">
-              <Link href="/income" className={buttonVariants({ variant: "outline" })}>Cancelar</Link>
-              <Button type="submit">Guardar Ingreso</Button>
-            </div>
-          </form>
+          <IncomeForm />
         </CardContent>
       </Card>
     </div>

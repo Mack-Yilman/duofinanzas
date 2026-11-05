@@ -12,6 +12,19 @@ App de finanzas en pareja. **Sitio 100 % estático** (Next.js 16 `output: "expor
 - `docs/PENDIENTES.md`: tareas acordadas que siguen abiertas y propuestas de mejora.
 - `docs/SECURITY-AUDIT.md`: última auditoría de seguridad (actualízala si cambias RLS, Storage o Edge Functions).
 
+## Mapa rápido del código
+| Dónde | Qué |
+|---|---|
+| `lib/domain/*.ts` | Lógica pura **con tests** (`*.test.ts`): `split` (reparto), `period`, `fx`, `dashboard`, `budgets`, `recurring`, `stats` (comparativa, proyección, ahorro, ETA de metas, evolución), `filters`, `export`/`import` (CSV), `annual`. |
+| `lib/repos/*.ts` | Acceso a Supabase (snake_case ↔ camelCase en `mappers.ts`). |
+| `lib/actions/*.ts` | Mutaciones de formularios. `action()` = toast + invalidar caché; los borrados usan `deferDelete` (`lib/undo.ts`, “Deshacer” 5 s). |
+| `lib/couple-data.ts` | Todo lo de la pareja en 9 consultas paralelas (TanStack Query); `computeDashboard` lo procesa en memoria. |
+| `app/(app)/*` | Rutas con sesión: `/`, `/expenses` (filtros `?q=&cat=&who=&status=`, CSV/PDF, liquidar todo), `/expenses/import`, `/recurring`, `/income` (+ `/income/edit?id=`), `/goals`, `/summary`, `/categories`, `/settings`. |
+| `e2e/` | Playwright contra `out/` con Supabase simulado (`mock-supabase.ts` registra las escrituras para comprobarlas). |
+
+Convenciones: lógica nueva → función pura en `lib/domain` + test; UI visible nueva → E2E en `e2e/app.spec.ts`;
+montos de estadísticas en PEN (`amountBase`); gastos visibles = compartidos + personales propios.
+
 ## Reglas del proyecto
 1. **Cada bug o hallazgo nuevo se registra** en `docs/ERRORS.md` (síntoma · causa · solución) y cada
    decisión o aprendizaje no obvio en `docs/INSIGHTS.md`, en el mismo PR que lo corrige. Lo que el

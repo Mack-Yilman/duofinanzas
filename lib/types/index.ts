@@ -106,7 +106,7 @@ export const GoalSchema = z.object({
   targetAmount: z.number(),
   currentAmount: z.number(),
   currency: CurrencySchema,
-  targetDate: z.date(),
+  targetDate: z.date().optional(), // null en metas antiguas sin fecha
   contributionMode: GoalContributionModeSchema,
   icon: z.string(),
   coupleId: z.string(),

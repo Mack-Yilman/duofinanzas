@@ -2,7 +2,7 @@
 
 import { Expense, Category } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from "recharts";
 
 const COLORS = [
   'var(--chart-1)',
@@ -22,7 +22,9 @@ const tooltipStyle = {
   boxShadow: '0 10px 30px -12px rgba(0,0,0,0.25)',
 };
 
-export function DashboardCharts({ expenses, categories }: { expenses: Expense[], categories: Category[] }) {
+export interface EvolutionPoint { day: number; actual: number | null; anterior: number | null }
+
+export function DashboardCharts({ expenses, categories, evolution }: { expenses: Expense[], categories: Category[], evolution: EvolutionPoint[] }) {
   // Aggregate expenses by category
   const categoryTotals: Record<string, number> = {};
   
@@ -41,22 +43,6 @@ export function DashboardCharts({ expenses, categories }: { expenses: Expense[],
       value: categoryTotals[catId]
     };
   }).filter(d => d.value > 0);
-
-  // Group by date for bar chart (last 7 days or similar)
-  // Let's do a simple grouping by Day
-  const dailyTotals: Record<string, number> = {};
-  expenses.forEach(exp => {
-    const dayStr = exp.date.toLocaleDateString(undefined, { day: '2-digit', month: 'short' });
-    if (!dailyTotals[dayStr]) {
-      dailyTotals[dayStr] = 0;
-    }
-    dailyTotals[dayStr] += exp.amountBase;
-  });
-
-  const barData = Object.keys(dailyTotals).map(day => ({
-    name: day,
-    total: dailyTotals[day]
-  })).reverse(); // Assuming it's already sorted DESC, we reverse for chronological order
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
@@ -95,18 +81,20 @@ export function DashboardCharts({ expenses, categories }: { expenses: Expense[],
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium text-muted-foreground">Evolución de Gastos (Base)</CardTitle>
+          <CardTitle className="text-sm font-medium text-muted-foreground">Gasto acumulado vs. periodo anterior</CardTitle>
         </CardHeader>
         <CardContent className="h-[300px]">
-          {barData.length > 0 ? (
+          {evolution.some((p) => (p.actual ?? 0) > 0 || (p.anterior ?? 0) > 0) ? (
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData}>
+              <LineChart data={evolution} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" />
-                <YAxis fontSize={12} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" tickFormatter={(value) => `S/${value}`} />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'color-mix(in oklch, var(--primary) 8%, transparent)' }} formatter={(value) => `S/ ${Number(value).toFixed(2)}`} />
-                <Bar dataKey="total" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
-              </BarChart>
+                <XAxis dataKey="day" fontSize={12} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" tickFormatter={(d) => `Día ${d}`} minTickGap={24} />
+                <YAxis fontSize={12} tickLine={false} axisLine={false} stroke="var(--muted-foreground)" tickFormatter={(value) => `S/${value}`} width={56} />
+                <Tooltip contentStyle={tooltipStyle} labelFormatter={(d) => `Día ${d}`} formatter={(value) => `S/ ${Number(value).toFixed(2)}`} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+                <Line type="monotone" dataKey="anterior" name="Periodo anterior" stroke="var(--muted-foreground)" strokeDasharray="4 4" dot={false} connectNulls={false} />
+                <Line type="monotone" dataKey="actual" name="Este periodo" stroke="var(--chart-1)" strokeWidth={2.5} dot={false} connectNulls={false} />
+              </LineChart>
             </ResponsiveContainer>
           ) : (
             <div className="h-full flex items-center justify-center text-muted-foreground">

@@ -72,7 +72,7 @@ export const toGoal = (r: Row): Goal => ({
   targetAmount: num(r.target_amount),
   currentAmount: num(r.current_amount),
   currency: pick(CurrencySchema, r.currency, "PEN"),
-  targetDate: parseLocalDate(r.target_date),
+  targetDate: r.target_date ? parseLocalDate(r.target_date) : undefined,
   contributionMode: pick(GoalContributionModeSchema, r.contribution_mode, "proportional"),
   icon: r.icon ?? "🎯",
   coupleId: r.couple_id,

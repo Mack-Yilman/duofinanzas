@@ -9,7 +9,9 @@ import { computeBudgets } from "../domain/budgets";
 import { getPeriodRange } from "../domain/period";
 import { nextMonthly } from "../domain/recurring";
 import { toast } from "sonner";
-import { createExpense, updateExpense, deleteExpense, settleExpense } from "../repos/expenses";
+import { deferDelete } from "../undo";
+import { createExpense, createExpenses, updateExpense, deleteExpense, settleExpense, settleExpenses } from "../repos/expenses";
+import type { ImportRow } from "../domain/import";
 import { calculateEquity, calculateExpenseSplit } from "../domain/split";
 import { convertSync, getRate } from "../domain/fx";
 import { roundMoney, formatMoney } from "../domain/money";
@@ -118,14 +120,19 @@ export const updateExpenseAction = action(async (fd: FormData) => {
   navigate("/expenses");
 }, "Gasto actualizado");
 
-export const deleteExpenseAction = action(async (fd: FormData) => {
-  if (!confirm("¿Eliminar este gasto y sus constancias?")) return;
+/** Eliminar con "Deshacer" (5 s): las constancias se borran solo al confirmarse. */
+export async function deleteExpenseAction(fd: FormData) {
   const id = str(fd, "id");
-  const paths = await receiptPathsFor({ expenseId: id });
-  await deleteExpense(id);
-  await removeReceiptFiles(paths);
-  return "Gasto eliminado";
-});
+  deferDelete({
+    id,
+    label: "Gasto eliminado",
+    commit: async () => {
+      const paths = await receiptPathsFor({ expenseId: id });
+      await deleteExpense(id);
+      await removeReceiptFiles(paths);
+    },
+  });
+}
 
 /** Marca como pagado; opcionalmente adjunta la constancia de la transferencia. */
 export const settleExpenseAction = action(async (fd: FormData) => {
@@ -134,3 +141,40 @@ export const settleExpenseAction = action(async (fd: FormData) => {
   await settleExpense(id);
   await attachReceipt(optionalFile(fd, "receipt"), me.coupleId, { kind: "settlement", expenseId: id });
 }, "Gasto marcado como pagado");
+
+/**
+ * Liquidar todo: marca como pagados todos los gastos compartidos pendientes de la pareja.
+ * La constancia (opcional) se asocia al gasto pendiente más reciente, porque cada constancia
+ * de liquidación pertenece a un gasto.
+ */
+export const settleAllAction = action(async (fd: FormData) => {
+  const me = await requireCoupleUser();
+  const data = await getCoupleDataCached(me.coupleId, true);
+  const pending = data.expenses.filter((e) => e.isShared && !e.isSettled).sort((a, b) => b.date.getTime() - a.date.getTime());
+  if (!pending.length) return "No hay gastos pendientes";
+  await settleExpenses(pending.map((e) => e.id));
+  await attachReceipt(optionalFile(fd, "receipt"), me.coupleId, { kind: "settlement", expenseId: pending[0].id });
+  return pending.length === 1 ? "1 gasto liquidado" : `${pending.length} gastos liquidados`;
+});
+
+/**
+ * Importa filas ya validadas (ver lib/domain/import.ts) con el mismo cálculo de tipo de cambio
+ * y reparto que un gasto manual. Los gastos personales se asignan siempre a quien importa.
+ */
+export async function importExpenses(rows: ImportRow[]): Promise<number> {
+  const me = await requireCoupleUser();
+  const data = await getCoupleDataCached(me.coupleId, true);
+  const list = [];
+  for (const r of rows) {
+    const paidBy = r.isShared ? (r.payerId ?? me.id) : me.id;
+    const fields = await computeExpenseFields(
+      { name: r.name, amount: r.amount, currency: r.currency, date: r.date, categoryId: r.categoryId, isShared: r.isShared, splitMode: "proportional" },
+      data,
+      paidBy
+    );
+    list.push({ ...fields, paidById: paidBy, isSettled: false, notes: "Importado desde CSV" });
+  }
+  await createExpenses(list);
+  return list.length;
+}
+

@@ -2,6 +2,7 @@ import type { CoupleData } from "../couple-data";
 import { calculateEquity, calculatePersonalLiquidity, calculateBalanceBreakdown } from "./split";
 import { getPeriodRange, isInPeriod, daysUntilEnd, SETTLE_REMINDER_DAYS } from "./period";
 import { computeBudgets } from "./budgets";
+import { comparePeriods, evolutionSeries, projectPeriod, savingsRate } from "./stats";
 import { convertSync } from "./fx";
 
 export type DashboardView = "current" | "global";
@@ -62,6 +63,22 @@ export function computeDashboard(
   const categoryById = Object.fromEntries(categories.map((c) => [c.id, c]));
   const names = Object.fromEntries(users.map((u) => [u.id, u.name]));
 
+  // Estadísticas del periodo seleccionado frente al anterior (en "global", el periodo actual).
+  function computeStats() {
+    const base = view === "global" ? currentPeriod : selectedPeriod;
+    const previous = getPeriodRange(cutoffDay, base.start, -1);
+    const isCurrent = base.start.getTime() === currentPeriod.start.getTime();
+    const comparison = comparePeriods(userExpenses, categories, base, previous);
+    const budgetTotal = (data.budgets ?? []).reduce((s, b) => s + b.amount, 0);
+    return {
+      comparison,
+      previousLabel: previous.label,
+      projection: isCurrent ? projectPeriod(comparison.total, base, now, budgetTotal) : null,
+      savings: savingsRate(incomes, userExpenses, currentUserId, equity.userA, base, (a, c) => convertSync(a, c, "PEN", fxRate)),
+      evolution: evolutionSeries(userExpenses, base, previous, now),
+    };
+  }
+
   return {
     equity: { ...equity, nameA: nameOf(equity.userA, "Usuario A"), nameB: nameOf(equity.userB, "Usuario B") },
     expenses: [...statsExpenses].sort((a, b) => b.date.getTime() - a.date.getTime()),
@@ -80,6 +97,8 @@ export function computeDashboard(
     receiptsByExpense,
     categoryById,
     names,
+    stats: computeStats(),
+    pendingCount: userExpenses.filter((e) => e.isShared && !e.isSettled).length,
     // Presupuestos: siempre del periodo actual.
     budgets: computeBudgets(data.budgets ?? [], categories, userExpenses, currentPeriod),
     settleReminder: settleReminder(breakdown, currentPeriod, now),

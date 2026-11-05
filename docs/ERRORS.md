@@ -54,6 +54,14 @@ Resultado: **sin vulnerabilidades explotables con confianza ≥ 8/10**. Se endur
 - **CI** — el primer “Tag y Release” falló con `fatal: empty ident name` · `git tag -a` requiere
   `user.name/email` en el runner · el tag se crea con `gh release create --target <sha>` (v1.0.1).
 
+## 2026-11-05 · v1.3.0
+- **ARCO** — “Descargar mis datos” omitía `budgets` y `recurring_expenses` (tablas de v1.2.0) · la exportación
+  lista las tablas a mano · se añadieron; al crear una tabla nueva hay que sumarla a `exportMyData`.
+- **Metas** — una meta sin `target_date` mostraba la fecha de hoy (`parseLocalDate(null)` devuelve “ahora”) ·
+  `targetDate` pasa a opcional en el tipo y el mapper.
+- **Gráfico** — “Evolución” agrupaba por texto de fecha local y asumía un orden descendente · serie acumulada por
+  índice de día del periodo (`evolutionSeries`).
+
 ## 2026-11-05 · v1.2.0
 - **CI** — los PR de Dependabot (#6, #7) no se podían fusionar · el check obligatorio `version-check` exige subir
   versión y CHANGELOG y Dependabot no lo hace · el job se omite si `github.actor == 'dependabot[bot]'` (un check

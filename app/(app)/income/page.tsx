@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
-import { Wallet, Plus, Briefcase, Globe, TrendingUp, Coins, Trash2 } from "lucide-react";
+import { Wallet, Plus, Briefcase, Globe, TrendingUp, Coins, Trash2, Pencil } from "lucide-react";
 import { deleteIncomeAction } from "@/lib/actions/incomes";
 import { useMe } from "@/components/auth-provider";
 import { useCoupleData } from "@/lib/couple-data";
@@ -54,6 +54,9 @@ export default function IncomePage() {
                     {inc.type === "freelance" && <Globe className="w-4 h-4 text-muted-foreground" />}
                     {inc.type === "bonus" && <TrendingUp className="w-4 h-4 text-muted-foreground" />}
                     {inc.type === "other" && <Coins className="w-4 h-4 text-muted-foreground" />}
+                    <Link href={`/income/edit?id=${inc.id}`} title="Editar" aria-label={`Editar ${inc.name}`} className="text-muted-foreground hover:text-brand-500">
+                      <Pencil className="w-4 h-4" />
+                    </Link>
                     <form action={deleteIncomeAction}>
                       <input type="hidden" name="id" value={inc.id} />
                       <button type="submit" title="Eliminar" aria-label="Eliminar" className="text-muted-foreground hover:text-destructive">
