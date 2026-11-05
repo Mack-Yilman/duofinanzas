@@ -7,6 +7,18 @@ y [SemVer](https://semver.org/lang/es/): **MAJOR** = cambios incompatibles, **MI
 > Regla: cada PR a `main` sube la versión en `package.json` y añade aquí su entrada. Al fusionar,
 > GitHub Actions crea el tag `vX.Y.Z` y su Release automáticamente.
 
+## [1.0.2] - 2026-11-05
+
+### Corregido
+- Edge Functions `admin-invite` y `cleanup-receipts`: desactivada la verificación JWT de la plataforma,
+  incompatible con las claves de firma asimétricas (ES256) del proyecto. Cada función ya valida al usuario
+  por dentro (`auth.getUser()` + `is_admin`). Se añade `supabase/config.toml`.
+- Workflows actualizados a acciones con Node 24 (`checkout@v6`, `setup-node@v6`, `configure-pages@v6`,
+  `upload-pages-artifact@v5`, `deploy-pages@v5`); se quita `enablement`, que requiere un token especial.
+
+### Cambiado
+- README renovado: insignias de versión y despliegue, arquitectura, flujo de trabajo y backend.
+
 ## [1.0.1] - 2026-11-05
 
 ### Corregido

@@ -1,0 +1,11 @@
+# Configuración de Supabase CLI para este proyecto (solo se usa al desplegar con la CLI).
+project_id = "vjglzizutcijcyexcume"
+
+# El proyecto firma los JWT con claves asimétricas (ES256). La verificación previa de la
+# plataforma ("Verify JWT") no es compatible, así que se desactiva y cada función valida
+# al usuario por dentro con auth.getUser() + rpc("is_admin").
+[functions.admin-invite]
+verify_jwt = false
+
+[functions.cleanup-receipts]
+verify_jwt = false

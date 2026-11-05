@@ -45,4 +45,8 @@ Formato: **tema**. Decisión. *Por qué.*
   La versión se muestra en el pie de página (`NEXT_PUBLIC_APP_VERSION` desde `next.config.ts`).
 - **Vistas de PR en GitHub** no se pueden reescribir: un dato sensible que llegó a un PR solo desaparece
   recreando el repo o con GitHub Support.
+- **JWT ES256**: el proyecto usa claves de firma asimétricas. Las Edge Functions deben desplegarse con
+  `verify_jwt = false` y validar con `auth.getUser()` (ver `supabase/config.toml`).
+- **Logs de Supabase**: `query_logs` sobre `edge_logs` (estado HTTP en `log_attributes['response.status_code']`)
+  es la forma rápida de detectar errores reales en producción.
 

@@ -26,6 +26,7 @@ Versionado: `pr-version-check.yml` (cada PR sube versión + CHANGELOG) y `releas
 | `supabase/migrations/` | Esquema versionado (aplicar en orden). |
 | `supabase/functions/admin-invite/` | Edge Function de invitaciones (Deno). |
 | `supabase/functions/cleanup-receipts/` | Edge Function que borra del Storage las constancias sin registro. |
+| `supabase/config.toml` | Config de la CLI: `verify_jwt = false` en las funciones (JWT ES256). |
 
 ## Flujo de datos
 `useMe()` (perfil + is_admin + consentimiento) → `useCoupleData(coupleId)` → `computeDashboard()` (puro)

@@ -54,3 +54,11 @@ Resultado: **sin vulnerabilidades explotables con confianza ≥ 8/10**. Se endur
 - **CI** — el primer “Tag y Release” falló con `fatal: empty ident name` · `git tag -a` requiere
   `user.name/email` en el runner · el tag se crea con `gh release create --target <sha>` (v1.0.1).
 
+## 2026-11-05 · Revisión de Supabase y CI
+- **Edge Functions** — riesgo de 401 al invitar o limpiar: el proyecto firma los JWT con ES256 y la opción
+  *Verify JWT* de la plataforma no es compatible con claves asimétricas · `verify_jwt = false` en ambas
+  funciones (validan al usuario por dentro) + `supabase/config.toml` (v1.0.2).
+- **CI** — avisos “Node.js 20 is deprecated” · acciones antiguas · actualizadas a versiones con Node 24.
+- **CI** — `workflow_dispatch` de “Tag y Release” lanzado desde la integración devolvió 403 al crear el
+  Release · el token de la integración no tiene ese permiso · lanzarlo manualmente desde la pestaña Actions.
+
