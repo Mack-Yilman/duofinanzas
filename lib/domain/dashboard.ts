@@ -1,6 +1,7 @@
 import type { CoupleData } from "../couple-data";
 import { calculateEquity, calculatePersonalLiquidity, calculateBalanceBreakdown } from "./split";
-import { getPeriodRange, isInPeriod } from "./period";
+import { getPeriodRange, isInPeriod, daysUntilEnd, SETTLE_REMINDER_DAYS } from "./period";
+import { computeBudgets } from "./budgets";
 import { convertSync } from "./fx";
 
 export type DashboardView = "current" | "global";
@@ -79,5 +80,19 @@ export function computeDashboard(
     receiptsByExpense,
     categoryById,
     names,
+    // Presupuestos: siempre del periodo actual.
+    budgets: computeBudgets(data.budgets ?? [], categories, userExpenses, currentPeriod),
+    settleReminder: settleReminder(breakdown, currentPeriod, now),
   };
+}
+
+/** Aviso de liquidación: faltan pocos días para el cierre y hay saldos pendientes. */
+function settleReminder(
+  breakdown: Record<string, { owedToYou: number; youOwe: number }>,
+  period: ReturnType<typeof getPeriodRange>,
+  now: Date
+) {
+  const daysLeft = daysUntilEnd(period, now);
+  const pending = Object.values(breakdown).some((b) => b.owedToYou > 0 || b.youOwe > 0);
+  return pending && daysLeft <= SETTLE_REMINDER_DAYS ? { daysLeft } : null;
 }

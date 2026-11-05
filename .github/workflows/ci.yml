@@ -1,6 +1,7 @@
 name: CI
 
-# Valida cada PR antes de fusionar: tipos, lint, tests y build estático (el mismo que publica Pages).
+# Valida cada PR antes de fusionar: tipos, lint, tests unitarios, build estático (el mismo que
+# publica Pages) y pruebas E2E con Playwright contra ese build (Supabase simulado, sin red).
 # Recomendado: marcar el check "checks" como obligatorio en el ruleset de main.
 on:
   pull_request:
@@ -16,11 +17,11 @@ concurrency:
 jobs:
   checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -43,3 +44,15 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://vjglzizutcijcyexcume.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_-5jemi-CUKFZT1qHElyxSg_FAne0LLb
           NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Navegador para E2E
+        run: npx playwright install --with-deps chromium
+      - name: Pruebas E2E (Playwright)
+        run: npm run e2e -- --project=desktop --project=mobile
+      - name: Informe E2E si falla
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: test-results/
+          retention-days: 7

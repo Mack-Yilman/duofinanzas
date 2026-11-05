@@ -13,6 +13,7 @@ import { LogoutButton } from "@/components/logout-button";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MyDataCard } from "@/components/my-data-card";
+import { MfaCard } from "@/components/mfa-card";
 import { PageHeader } from "@/components/page-header";
 import { updateNameAction } from "@/lib/actions/account";
 
@@ -142,6 +143,8 @@ export default function SettingsPage() {
             </form>
           </CardContent>
         </Card>
+
+        <MfaCard />
 
         <MyDataCard email={me.email} />
 

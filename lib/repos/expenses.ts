@@ -19,7 +19,7 @@ export async function getExpense(id: string): Promise<Expense> {
   return toExpense(unwrap(await supabase.from("expenses").select("*").eq("id", id).single())!);
 }
 
-type ExpenseInput = Omit<Expense, "id" | "createdAt" | "createdById" | "settlementId" | "recurringSourceId" | "receiptUrl">;
+type ExpenseInput = Omit<Expense, "id" | "createdAt" | "createdById" | "settlementId" | "receiptUrl">;
 
 function toRow(data: Partial<ExpenseInput>) {
   const row: Record<string, unknown> = {};
@@ -38,6 +38,7 @@ function toRow(data: Partial<ExpenseInput>) {
   if (data.isShared !== undefined) row.is_shared = data.isShared;
   if (data.isSettled !== undefined) row.is_settled = data.isSettled;
   if (data.notes !== undefined) row.notes = data.notes;
+  if (data.recurringSourceId !== undefined) row.recurring_id = data.recurringSourceId || null;
   return row;
 }
 

@@ -2,7 +2,8 @@
 
 import { Suspense } from "react";
 import Link from "next/link";
-import { Plus, Receipt } from "lucide-react";
+import { Plus, Receipt, Repeat } from "lucide-react";
+import { ExportButtons } from "@/components/export-buttons";
 import { EmptyState } from "@/components/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import { PeriodSelector } from "@/components/period-selector";
@@ -23,11 +24,23 @@ function Expenses() {
         <div>
           <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Gastos</h1>
           <p className="mt-1.5 text-muted-foreground">
-            {view === "global" ? "Todo el historial de gastos." : "Gastos del periodo seleccionado."}
+            {view === "global" ? "Todo el historial de gastos." : `Gastos del periodo ${data.periodLabel}.`}
           </p>
+          <div className="mt-3">
+            <ExportButtons
+              expenses={data.expenses}
+              categories={data.categories}
+              names={data.names}
+              label={view === "global" ? "historico" : data.periodLabel}
+            />
+          </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 print:hidden">
           <PeriodSelector basePath="/expenses" view={view} offset={offset} label={data.periodLabel} />
+          <Link href="/recurring" className={buttonVariants({ variant: "outline", className: "gap-2" })}>
+            <Repeat className="w-4 h-4" />
+            <span className="hidden sm:inline">Recurrentes</span>
+          </Link>
           <Link href="/expenses/new" className={buttonVariants({ className: "gap-2" })}>
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Nuevo Gasto</span>

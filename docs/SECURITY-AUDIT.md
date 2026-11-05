@@ -15,7 +15,12 @@ prueba con Playwright del build (CSP sin violaciones).
 | Storage | Bucket `receipts` privado, 5 MB, solo imágenes, políticas por carpeta `<couple_id>/`, sin UPDATE | ✅ |
 | Registro | Trigger `enforce_invite_only` en `auth.users` (solo por invitación) | ✅ |
 | Edge Functions | CORS por lista, JWT + `is_admin`, `redirectTo` en el servidor, límite de invitaciones | ✅ |
-| Cron | Secreto de 256 bits generado en Vault y validado por una RPC solo para service_role | ✅ nuevo |
+| Cron | Secreto de 256 bits generado en Vault y validado por una RPC solo para service_role | ✅ |
+| Tablas nuevas (v1.2.0) | `budgets`, `recurring_expenses`: RLS, revoke a anon, políticas por pareja; categoría y pagador validados; recurrentes personales solo visibles para quien paga | ✅ probado con SQL |
+| `expenses.recurring_id` | La política impide enlazar plantillas de otra pareja (las FK no aplican RLS) | ✅ corregido |
+| MFA (TOTP) | Opcional; con factor verificado, RLS y admin exigen AAL2 en la BD (`private.mfa_ok`) | ✅ probado: AAL1 → 0 filas, AAL2 → acceso |
+| Service worker | Solo GET del mismo origen; nunca cachea Supabase ni datos financieros | ✅ |
+| Exportar CSV | Celdas que empiezan con `= + - @` se neutralizan (inyección de fórmulas) | ✅ test |
 | Secretos | Sin service role, `sb_secret_` ni JWT en el historial; `.env*` ignorado | ✅ |
 | Dependencias | `npm audit --omit=dev`: 0 vulnerabilidades (antes 1 crítica y 3 altas) | ✅ corregido |
 | CSP | Antes `*.supabase.co`; ahora el host exacto del proyecto + `frame-src 'none'` | ✅ corregido |
@@ -38,4 +43,9 @@ prueba con Playwright del build (CSP sin violaciones).
 | Subida directa de archivos de 5 MB (saltándose la compresión) | Usuarios invitados, máx. 5 por registro, caducidad de 12 meses | Si se abre a más personas, bajar el límite del bucket |
 | Pausa del proyecto Free | `keepalive.yml` | Revisar el correo de Supabase |
 | Copias de seguridad (Free no tiene PITR) | Exportación ARCO desde la app | Descargar los datos cada mes (*Ajustes → Mis datos → Descargar*) |
-| MFA | No disponible en la UI | Futuro: TOTP de Supabase Auth (gratis) para administradores |
+| Cuenta admin sin MFA | MFA disponible en Ajustes | Activarla en la cuenta de administrador |
+
+## Pruebas automáticas
+- 41 pruebas unitarias (Vitest) de la lógica de dominio.
+- 24 E2E (Playwright, escritorio y móvil): CSP sin violaciones, redirección sin sesión, PWA offline, presupuestos,
+  CSV, recurrentes, resumen anual y MFA en Ajustes. Corren en cada PR (`ci.yml`).

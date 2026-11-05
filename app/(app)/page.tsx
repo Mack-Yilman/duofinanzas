@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Receipt } from "lucide-react";
+import { BarChart3, Receipt } from "lucide-react";
+import { BudgetsCard } from "@/components/budgets-card";
+import { SettleReminder } from "@/components/settle-reminder";
 import { EmptyState } from "@/components/page-header";
 
 import { Suspense } from "react";
@@ -37,8 +39,15 @@ function Dashboard() {
             {view === "global" ? "Resumen global de todas tus finanzas." : "Resumen del periodo actual."}
           </p>
         </div>
-        <PeriodSelector basePath="/" view={view} offset={offset} label={data.periodLabel} />
+        <div className="flex flex-wrap items-center gap-3">
+          <PeriodSelector basePath="/" view={view} offset={offset} label={data.periodLabel} />
+          <Link href="/summary" className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted">
+            <BarChart3 className="h-4 w-4" aria-hidden /> Resumen anual
+          </Link>
+        </div>
       </div>
+
+      {data.settleReminder && <SettleReminder daysLeft={data.settleReminder.daysLeft} />}
 
       <div className="grid gap-6 md:grid-cols-3">
         <BalanceCard breakdown={data.breakdown} partnerName={data.partnerName} />
@@ -59,6 +68,8 @@ function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <BudgetsCard budgets={data.budgets} />
 
       <DashboardCharts expenses={data.expenses} categories={data.categories} />
 

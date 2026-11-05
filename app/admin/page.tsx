@@ -303,7 +303,7 @@ export default function AdminPage() {
   const enabled = !!me?.isAdmin;
 
   useEffect(() => {
-    if (!meLoading && !me) router.replace("/login");
+    if (!meLoading && (!me || me.mfaPending)) router.replace("/login");
   }, [me, meLoading, router]);
 
   const users = useQuery({ queryKey: ["admin", "users"], queryFn: listUsers, enabled });

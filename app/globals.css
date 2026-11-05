@@ -244,3 +244,11 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Exportar a PDF (Gastos → PDF usa window.print): solo el contenido, en blanco. */
+@media print {
+  @page { margin: 14mm; }
+  html, body { background: #fff !important; color: #000 !important; }
+  [data-sonner-toaster] { display: none !important; }
+  .rounded-2xl, .rounded-xl { break-inside: avoid; }
+}

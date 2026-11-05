@@ -52,3 +52,12 @@ export function isInPeriod(date: Date, range: PeriodRange): boolean {
   const t = date.getTime();
   return t >= range.start.getTime() && t < range.end.getTime();
 }
+
+/** Días completos que faltan hasta el cierre (exclusivo) del periodo; 0 el último día. */
+export function daysUntilEnd(range: PeriodRange, now: Date = new Date()): number {
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  return Math.max(0, Math.round((range.end.getTime() - today) / 86_400_000) - 1);
+}
+
+/** Días antes del cierre en los que se recuerda liquidar. */
+export const SETTLE_REMINDER_DAYS = 3;

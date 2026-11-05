@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, CreditCard, Wallet, Target, Settings } from "lucide-react";
+import { Home, CreditCard, Wallet, Target, Settings, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { label: "Gastos", href: "/expenses", icon: CreditCard },
   { label: "Ingresos", href: "/income", icon: Wallet },
   { label: "Metas", href: "/goals", icon: Target },
+  { label: "Resumen", href: "/summary", icon: BarChart3, desktopOnly: true },
   { label: "Ajustes", href: "/settings", icon: Settings },
 ];
 
@@ -57,8 +58,8 @@ export function SidebarLinks() {
 export function BottomNav() {
   const pathname = usePathname();
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-border/60 bg-card/80 px-2 py-2.5 pb-safe backdrop-blur-xl">
-      {navItems.map((item) => {
+    <nav className="print:hidden md:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-border/60 bg-card/80 px-2 py-2.5 pb-safe backdrop-blur-xl">
+      {navItems.filter((item) => !item.desktopOnly).map((item) => {
         const Icon = item.icon;
         const active = isActive(pathname, item.href);
         return (

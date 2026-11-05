@@ -21,7 +21,7 @@ export function ConsentGate() {
 
   // No bloquear la lectura de las políticas ni la activación de la cuenta.
   const exempt = /^\/(privacidad|terminos|cookies|accept-invite|reset-password|login)/.test(pathname);
-  if (!me || exempt || me.consentVersion === LEGAL.version) return null;
+  if (!me || me.mfaPending || exempt || me.consentVersion === LEGAL.version) return null;
 
   return (
     <div role="dialog" aria-modal="true" aria-labelledby="consent-title" className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">

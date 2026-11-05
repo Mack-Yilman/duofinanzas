@@ -8,31 +8,21 @@ Lista viva de tareas acordadas que quedan abiertas. Al cerrar una, muévela a `d
 | 🟡 Media | SMTP propio + plantillas de correo en español | Titular (panel de Supabase) |
 | ⚪ Opcional | “Leaked password protection” (requiere plan Pro) | Titular, si se escala |
 | ⚪ Opcional | Inscribir el banco de datos ante la ANPD | Titular |
-| 🟡 Media | Marcar el check `checks` (CI) como obligatorio en el ruleset de `main` | Titular (Settings → Rules) |
+| 🟡 Media | Ruleset de `main`: marcar `checks` (CI + E2E) como obligatorio | Titular (Settings → Rules) |
 | 🟡 Media | Auth → *Password requirements* (mínimo 10 caracteres + complejidad) | Titular (panel de Supabase) |
-| 🔵 Propuesta | Mejoras funcionales (ver abajo): elegir cuáles implementar | Titular |
-| 🔵 Propuesta | Limpieza del repositorio (ver abajo): confirmar qué se borra | Titular |
+| 🟢 Recomendado | Activar la verificación en dos pasos en la cuenta de administrador | Titular (Ajustes en la app) |
 
-## Propuestas de mejora (v1.1.0)
-Ordenadas por valor / esfuerzo. Ninguna requiere un plan de pago.
+## Propuestas implementadas (v1.2.0)
+Presupuestos por categoría, gastos recurrentes, PWA, exportar CSV/PDF, recordatorio de liquidación, resumen
+anual, MFA (TOTP) y E2E con Playwright. Limpieza hecha: `netlify.toml`, `PLAN-Finanzas-en-Pareja.md`, script de
+Notion y dependencias muertas.
 
-| # | Agregar | Valor | Esfuerzo | Costo en Supabase |
-|---|---|---|---|---|
-| 1 | **Presupuestos por categoría** con alerta al 80 % y al 100 % | Alto | Medio | Mínimo (1 tabla) |
-| 2 | **Gastos recurrentes** (alquiler, servicios) que se crean solos cada periodo | Alto | Medio | Mínimo (pg_cron ya activo) |
-| 3 | **PWA instalable** (manifest + service worker) con caché offline de la app | Alto | Bajo | Ahorra transferencia |
-| 4 | **Exportar CSV/PDF** del mes para la pareja (en el navegador) | Medio | Bajo | Ninguno |
-| 5 | **Recordatorio de liquidación** a fin de periodo (aviso en la app) | Medio | Bajo | Ninguno |
-| 6 | **Resumen anual** (gráfico por mes y categoría) | Medio | Bajo | Ninguno |
-| 7 | **MFA (TOTP)** para administradores | Medio | Medio | Ninguno (gratis en Auth) |
-| 8 | **Pruebas E2E con Playwright** en CI contra un Supabase simulado | Medio | Medio | Ninguno |
-
-| Quitar o simplificar | Motivo |
-|---|---|
-| `netlify.toml` | No se usa: el hosting es GitHub Pages |
-| `PLAN-Finanzas-en-Pareja.md` | Plan inicial ya ejecutado; mover a `docs/` o borrar |
-| `scripts/migrate-notion-to-supabase.ts` + `@notionhq/client`, `dotenv`, `tsx` | Si la migración desde Notion ya terminó, son dependencias muertas |
-| `@playwright/test` en devDependencies | No hay pruebas E2E en el repo; quitar o usarlo (propuesta 8) |
+## Ideas futuras (sin acordar)
+| Idea | Valor | Nota |
+|---|---|---|
+| Notificaciones push del recordatorio de liquidación | Medio | Requiere Web Push + Edge Function con claves VAPID |
+| Presupuesto por persona (gastos personales) | Medio | Extender `budgets` con `user_id` opcional |
+| Adjuntar PDF de boletas electrónicas (SUNAT) | Bajo | Hoy el bucket solo acepta imágenes |
 
 ## Ahorro del plan Free de Supabase (estado)
 | Límite Free | Uso actual | Medida aplicada |

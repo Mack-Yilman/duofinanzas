@@ -7,16 +7,18 @@ import { getUsersByCoupleId } from "./repos/users";
 import { getCouple } from "./repos/couples";
 import { getAllGoalContributions } from "./repos/goal-contributions";
 import { getCoupleReceipts } from "./repos/receipts";
+import { getBudgets } from "./repos/budgets";
+import { getRecurring } from "./repos/recurring";
 
 export const coupleDataKey = (coupleId: string) => ["couple-data", coupleId] as const;
 
 /**
- * Todo lo que necesitan dashboard, gastos e ingresos en 7 consultas PARALELAS a
+ * Todo lo que necesitan dashboard, gastos e ingresos en 9 consultas PARALELAS a
  * Postgres (antes: decenas de peticiones paginadas a Notion limitadas a ~3 req/s).
  * Cambiar de periodo o vista no vuelve a consultar: se recalcula en memoria.
  */
 export async function fetchCoupleData(coupleId: string) {
-  const [incomes, expenses, categories, users, couple, contributions, receipts] = await Promise.all([
+  const [incomes, expenses, categories, users, couple, contributions, receipts, budgets, recurring] = await Promise.all([
     getIncomes(coupleId),
     getExpenses(coupleId),
     getCategories(coupleId),
@@ -24,8 +26,10 @@ export async function fetchCoupleData(coupleId: string) {
     getCouple(coupleId),
     getAllGoalContributions(coupleId),
     getCoupleReceipts(coupleId),
+    getBudgets(coupleId),
+    getRecurring(coupleId),
   ]);
-  return { incomes, expenses, categories, users, couple, contributions, receipts };
+  return { incomes, expenses, categories, users, couple, contributions, receipts, budgets, recurring };
 }
 
 export type CoupleData = Awaited<ReturnType<typeof fetchCoupleData>>;
@@ -38,6 +42,11 @@ export function useCoupleData(coupleId: string | undefined) {
   });
 }
 
-export function getCoupleDataCached(coupleId: string) {
-  return queryClient.fetchQuery({ queryKey: coupleDataKey(coupleId), queryFn: () => fetchCoupleData(coupleId) });
+/** Datos de la pareja desde la caché; `fresh` fuerza releer (p. ej. tras guardar un gasto). */
+export function getCoupleDataCached(coupleId: string, fresh = false) {
+  return queryClient.fetchQuery({
+    queryKey: coupleDataKey(coupleId),
+    queryFn: () => fetchCoupleData(coupleId),
+    ...(fresh ? { staleTime: 0 } : {}),
+  });
 }

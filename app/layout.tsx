@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Outfit, Fraunces, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppProviders } from "@/components/auth-provider";
 import { Toaster } from "sonner";
+import { ServiceWorkerRegister } from "@/components/sw-register";
 
 /**
  * Origen exacto de Supabase para la CSP (no `*.supabase.co`): si alguien lograra inyectar
@@ -40,9 +41,24 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
+const BASE = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 export const metadata: Metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME || "DúoFinanzas",
   description: "App de Finanzas en Pareja",
+  applicationName: "DúoFinanzas",
+  appleWebApp: { capable: true, title: "DúoFinanzas", statusBarStyle: "default" },
+  icons: {
+    icon: [{ url: `${BASE}/icons/icon.svg`, type: "image/svg+xml" }],
+    apple: [{ url: `${BASE}/icons/apple-touch-icon.png`, sizes: "180x180" }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf7f0" },
+    { media: "(prefers-color-scheme: dark)", color: "#14130e" },
+  ],
 };
 
 export default function RootLayout({
@@ -88,6 +104,7 @@ export default function RootLayout({
         >
           <AppProviders>{children}</AppProviders>
           <Toaster richColors position="top-center" />
+          <ServiceWorkerRegister />
         </ThemeProvider>
       </body>
     </html>

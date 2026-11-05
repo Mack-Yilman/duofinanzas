@@ -142,6 +142,16 @@ export function ExpenseForm({ categories, initialData }: { categories: Category[
             )}
           </div>
 
+          {!initialData && (
+            <div className="flex items-center space-x-2 border p-4 rounded-md">
+              <input type="checkbox" id="repeatMonthly" name="repeatMonthly" className="h-4 w-4 rounded border-gray-300" disabled={isPending} />
+              <Label htmlFor="repeatMonthly" className="flex flex-col cursor-pointer">
+                <span className="font-medium">Repetir cada mes</span>
+                <span className="text-xs text-muted-foreground">Se registrará solo el mismo día de cada mes (máx. día 28). Gestiónalo en Gastos → Recurrentes.</span>
+              </Label>
+            </div>
+          )}
+
           <ReceiptInput
             label={initialData ? "Añadir constancia (opcional)" : "Comprobante del gasto (opcional)"}
             hint="Boleta, factura o voucher. Ayuda a regularizar entre ambos."

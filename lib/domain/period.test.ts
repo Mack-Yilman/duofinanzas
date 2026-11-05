@@ -42,3 +42,12 @@ describe('period logic (día de corte configurable)', () => {
     expect(p.end.getMonth()).toBe(5); // junio
   });
 });
+
+describe("daysUntilEnd", () => {
+  it("cuenta los días que faltan hasta el último día incluido", async () => {
+    const { daysUntilEnd } = await import("./period");
+    const range = { start: new Date(2026, 10, 1), end: new Date(2026, 11, 1), label: "" };
+    expect(daysUntilEnd(range, new Date(2026, 10, 30, 18))).toBe(0);
+    expect(daysUntilEnd(range, new Date(2026, 10, 27))).toBe(3);
+  });
+});

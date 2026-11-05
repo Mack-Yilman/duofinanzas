@@ -20,7 +20,7 @@ export default function SetupPage() {
 
   useEffect(() => {
     if (isLoading) return;
-    if (!me) router.replace("/login");
+    if (!me || me.mfaPending) router.replace("/login");
     else if (me.coupleId) router.replace("/");
   }, [me, isLoading, router]);
 
