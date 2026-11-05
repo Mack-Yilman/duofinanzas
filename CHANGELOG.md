@@ -7,6 +7,14 @@ y [SemVer](https://semver.org/lang/es/): **MAJOR** = cambios incompatibles, **MI
 > Regla: cada PR a `main` sube la versión en `package.json` y añade aquí su entrada. Al fusionar,
 > GitHub Actions crea el tag `vX.Y.Z` y su Release automáticamente.
 
+## [1.3.1] - 2026-11-05
+
+### Añadido
+- **Licencia propietaria** (`LICENSE`): © 2026 Mack Chirinos, todos los derechos reservados (D. Leg. 822, Perú).
+  El código es visible en GitHub pero no se puede copiar, modificar, desplegar ni distribuir sin permiso escrito.
+- Aviso de copyright en el pie de la app, insignia y sección de licencia en el README; `package.json` con
+  `"license": "UNLICENSED"` y autor.
+
 ## [1.3.0] - 2026-11-05
 
 ### Añadido

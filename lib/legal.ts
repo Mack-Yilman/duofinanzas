@@ -11,6 +11,8 @@ export const LEGAL = {
   /** Las imágenes de constancias se eliminan automáticamente pasado este plazo. */
   receiptRetentionMonths: 12,
   appName: "DúoFinanzas",
+  /** Año del aviso de copyright (ver LICENSE: todos los derechos reservados). */
+  copyrightYear: 2026,
   owner: {
     name: "Mack Chirinos",
     address: "Av. Lima Sur Nº 186, Perú",

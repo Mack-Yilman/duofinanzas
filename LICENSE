@@ -1,0 +1,54 @@
+DúoFinanzas — Licencia propietaria · Todos los derechos reservados
+=================================================================
+
+Copyright (c) 2026 Mack Chirinos. Todos los derechos reservados.
+
+1. Titularidad
+   El código fuente, el diseño, los textos, los iconos, la documentación y demás
+   elementos de este repositorio (en adelante, "el Software") son obra protegida de
+   Mack Chirinos (en adelante, "el Titular"), conforme al Decreto Legislativo N.º 822,
+   Ley sobre el Derecho de Autor del Perú, y a los tratados internacionales aplicables
+   (Convenio de Berna).
+
+2. Ninguna licencia concedida
+   Que el repositorio sea visible públicamente NO concede ningún derecho de uso.
+   Salvo autorización previa y por escrito del Titular, queda prohibido:
+   a) copiar, reproducir o descargar el Software, total o parcialmente, para usarlo;
+   b) modificarlo, traducirlo o crear obras derivadas a partir de él;
+   c) distribuirlo, publicarlo, sublicenciarlo, venderlo o cederlo;
+   d) desplegarlo, alojarlo u ofrecerlo como servicio (SaaS, web o app), con o sin
+      fines de lucro;
+   e) usar el nombre "DúoFinanzas", su logotipo o su identidad visual;
+   f) usar el Software para entrenar o evaluar sistemas de inteligencia artificial.
+
+3. Excepción por los Términos de GitHub
+   Únicamente se permite lo que los Términos de Servicio de GitHub exigen a todo
+   repositorio público: ver el código y crear una bifurcación (fork) dentro de GitHub.
+   Esa bifurcación no otorga ningún otro derecho de los enumerados en el punto 2.
+
+4. Componentes de terceros
+   Las dependencias de terceros (listadas en package.json y package-lock.json)
+   conservan sus propias licencias. Esta licencia solo cubre la obra original del Titular.
+
+5. Contribuciones
+   Cualquier contribución enviada al repositorio (issues, pull requests o sugerencias)
+   se entiende cedida al Titular para su uso, modificación y explotación en el Software,
+   sin contraprestación, salvo acuerdo escrito distinto.
+
+6. Sin garantía
+   El Software se proporciona "tal cual", sin garantías de ningún tipo. El Titular no
+   responde por daños derivados de su uso no autorizado.
+
+7. Datos personales
+   Esta licencia regula el código, no los datos de los usuarios de la aplicación, que se
+   rigen por la Política de Privacidad publicada en la app (Ley N.º 29733).
+
+8. Permisos y contacto
+   Para solicitar una licencia o cualquier autorización: mack.yilman@gmail.com
+
+---------------------------------------------------------------------------------
+English summary (non-binding): Copyright (c) 2026 Mack Chirinos. All rights reserved.
+This source code is publicly visible but NOT open source. No permission is granted to
+use, copy, modify, distribute, host, or create derivative works without prior written
+consent, except viewing and forking on GitHub as required by GitHub's Terms of Service.
+The Spanish text above prevails.
