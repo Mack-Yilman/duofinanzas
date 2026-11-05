@@ -17,12 +17,19 @@ Presupuestos por categoría, gastos recurrentes, PWA, exportar CSV/PDF, recordat
 anual, MFA (TOTP) y E2E con Playwright. Limpieza hecha: `netlify.toml`, `PLAN-Finanzas-en-Pareja.md`, script de
 Notion y dependencias muertas.
 
+## Implementado en v1.3.0
+Comparativa con el periodo anterior, proyección de cierre, tasa de ahorro, fecha estimada de metas, gráfico de
+evolución acumulado, búsqueda y filtros, editar ingresos, liquidar todo, importar CSV y deshacer al eliminar.
+
 ## Ideas futuras (sin acordar)
 | Idea | Valor | Nota |
 |---|---|---|
 | Notificaciones push del recordatorio de liquidación | Medio | Requiere Web Push + Edge Function con claves VAPID |
 | Presupuesto por persona (gastos personales) | Medio | Extender `budgets` con `user_id` opcional |
 | Adjuntar PDF de boletas electrónicas (SUNAT) | Bajo | Hoy el bucket solo acepta imágenes |
+| Reglas de categorización automática al importar (p. ej. “Wong” → Supermercado) | Medio | Tabla `category_rules` por pareja |
+| Comparativa interanual (mismo mes del año pasado) en `/summary` | Bajo | Reutiliza `comparePeriods` |
+| Historial de liquidaciones (quién pagó a quién y cuándo) | Medio | Tabla `settlements` + vínculo a los gastos |
 
 ## Ahorro del plan Free de Supabase (estado)
 | Límite Free | Uso actual | Medida aplicada |

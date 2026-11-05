@@ -29,3 +29,15 @@ export async function createIncome(data: Partial<Income>) {
 export async function deleteIncome(id: string) {
   unwrap(await supabase.from("incomes").delete().eq("id", id));
 }
+
+export async function updateIncome(id: string, data: Partial<Income>) {
+  const patch: Record<string, unknown> = {};
+  if (data.name !== undefined) patch.name = data.name;
+  if (data.amount !== undefined) patch.amount = data.amount;
+  if (data.currency !== undefined) patch.currency = data.currency;
+  if (data.type !== undefined) patch.type = data.type;
+  if (data.period !== undefined) patch.period = data.period;
+  if (data.effectiveDate !== undefined) patch.effective_date = toDateString(data.effectiveDate);
+  if (data.isActive !== undefined) patch.is_active = data.isActive;
+  unwrap(await supabase.from("incomes").update(patch).eq("id", id));
+}

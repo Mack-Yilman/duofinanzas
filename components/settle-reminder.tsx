@@ -9,8 +9,8 @@ export function SettleReminder({ daysLeft }: { daysLeft: number }) {
       <BellRing className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
       <p>
         <strong className="font-semibold">Hora de liquidar:</strong> {when} y tienen saldos pendientes.{" "}
-        <Link href="/expenses?view=global" className="font-medium text-primary underline-offset-2 hover:underline">
-          Revisar gastos sin liquidar
+        <Link href="/expenses?view=global&status=pending#liquidar" className="font-medium text-primary underline-offset-2 hover:underline">
+          Liquidar ahora
         </Link>
       </p>
     </div>

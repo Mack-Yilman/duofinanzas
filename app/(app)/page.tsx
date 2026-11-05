@@ -4,6 +4,7 @@ import Link from "next/link";
 import { BarChart3, Receipt } from "lucide-react";
 import { BudgetsCard } from "@/components/budgets-card";
 import { SettleReminder } from "@/components/settle-reminder";
+import { StatsCard } from "@/components/stats-card";
 import { EmptyState } from "@/components/page-header";
 
 import { Suspense } from "react";
@@ -69,9 +70,11 @@ function Dashboard() {
         </Card>
       </div>
 
+      <StatsCard stats={data.stats} />
+
       <BudgetsCard budgets={data.budgets} />
 
-      <DashboardCharts expenses={data.expenses} categories={data.categories} />
+      <DashboardCharts expenses={data.expenses} categories={data.categories} evolution={data.stats.evolution} />
 
       <div className="space-y-4">
         <h2 className="text-xl font-semibold tracking-tight">

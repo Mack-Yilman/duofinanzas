@@ -36,7 +36,8 @@ CI/CD:
 | `components/` | UI. `ui/` = primitivas shadcn/Base UI. |
 | `lib/repos/` | Acceso a datos (Supabase). Mapeo snake_case → camelCase en `mappers.ts`. |
 | `lib/actions/` | Mutaciones de formularios en el cliente (`action()` = toast + invalidar caché). |
-| `lib/domain/` | Lógica pura testeada: reparto (`split.ts`), periodos, FX, fechas, dashboard, presupuestos, recurrentes, exportación CSV, resumen anual. |
+| `lib/domain/` | Lógica pura testeada: reparto (`split.ts`), periodos, FX, fechas, dashboard, presupuestos, recurrentes, estadísticas (`stats.ts`), filtros, exportación/importación CSV, resumen anual. |
+| `lib/undo.ts` | Borrado diferido con “Deshacer” (oculta en caché y borra a los 5 s). |
 | `lib/recurring-runner.ts` | Registra los gastos recurrentes vencidos al abrir la app (idempotente). |
 | `lib/mfa.ts` | Verificación en dos pasos (TOTP): activar, verificar al entrar, desactivar. |
 | `public/sw.js` + `app/manifest.ts` | PWA: service worker (solo estáticos del mismo origen) y manifest. |
@@ -77,8 +78,9 @@ CI/CD:
    límite de 20 invitaciones/hora, `redirectTo` calculado en el servidor (no lo controla el cliente).
 
 ## Rutas de la app
-`/` dashboard (presupuestos, recordatorio de liquidación) · `/expenses` (CSV/PDF) · `/recurring` · `/summary?year=` ·
-`/income` · `/goals` · `/categories` (presupuestos) · `/settings` (MFA) · `/admin`.
+`/` dashboard (estadísticas, presupuestos, recordatorio, evolución) · `/expenses` (filtros `?q=&cat=&who=&status=`,
+CSV/PDF, liquidar todo) · `/expenses/import` · `/recurring` · `/summary?year=` · `/income` (+ `/income/edit?id=`) ·
+`/goals` (fecha estimada) · `/categories` (presupuestos) · `/settings` (MFA) · `/admin`.
 
 ## MFA
 `private.mfa_ok()` = sesión AAL2 **o** sin factor TOTP verificado. Está dentro de `private.my_couple_id()` y

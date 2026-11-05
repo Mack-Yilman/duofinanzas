@@ -1,4 +1,5 @@
 import { action, str, positiveNumber, optionalFile } from "./safe";
+import { deferDelete } from "../undo";
 import { attachReceipt } from "./receipt-helpers";
 import { receiptPathsFor, removeReceiptFiles } from "../repos/receipts";
 import { navigate } from "../nav";
@@ -34,15 +35,20 @@ export const updateGoalAction = action(async (fd: FormData) => {
   navigate("/goals");
 }, "Meta actualizada");
 
-export const deleteGoalAction = action(async (fd: FormData) => {
-  if (!confirm("¿Eliminar esta meta, su historial de aportes y sus constancias?")) return;
+/** Eliminar meta (con sus aportes y constancias) con "Deshacer" (5 s). */
+export async function deleteGoalAction(fd: FormData) {
   const id = str(fd, "id");
-  const contributions = await getGoalContributions(id);
-  const paths = await receiptPathsFor({ contributionIds: contributions.map((c) => c.id) });
-  await deleteGoal(id);
-  await removeReceiptFiles(paths);
-  return "Meta eliminada";
-});
+  deferDelete({
+    id,
+    label: "Meta eliminada",
+    commit: async () => {
+      const contributions = await getGoalContributions(id);
+      const paths = await receiptPathsFor({ contributionIds: contributions.map((c) => c.id) });
+      await deleteGoal(id);
+      await removeReceiptFiles(paths);
+    },
+  });
+}
 
 /** El aporte se guarda en la moneda de la meta; un trigger suma current_amount. */
 export const contributeToGoalAction = action(async (fd: FormData) => {
