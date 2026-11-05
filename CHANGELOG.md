@@ -1,0 +1,23 @@
+# Changelog
+
+Todas las versiones de DúoFinanzas. Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/)
+y [SemVer](https://semver.org/lang/es/): **MAJOR** = cambios incompatibles, **MINOR** = funcionalidades,
+**PATCH** = correcciones.
+
+> Regla: cada PR a `main` sube la versión en `package.json` y añade aquí su entrada. Al fusionar,
+> GitHub Actions crea el tag `vX.Y.Z` y su Release automáticamente.
+
+## [1.0.0] - 2026-11-05
+Primera versión estable publicada en GitHub Pages.
+
+### Añadido
+- Sitio estático (Next.js 16) en GitHub Pages con Supabase (Auth, Postgres con RLS, Storage y Edge Functions).
+- Acceso solo por invitación del administrador; panel `/admin` con gestión de usuarios, invitaciones,
+  auditoría y mantenimiento (limpieza de constancias huérfanas).
+- Constancias en imagen opcionales al registrar gastos, al pagar y al aportar a metas.
+- Modo claro, oscuro o del sistema.
+- Cumplimiento Ley N.º 29733: privacidad, términos, cookies, consentimiento registrado y derechos ARCO.
+- Versionado obligatorio por PR, tags y releases automáticos.
+
+### Seguridad
+- Aislamiento por pareja con RLS, helpers en esquema `private`, CSP y auditoría `security-review`.

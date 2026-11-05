@@ -1,0 +1,25 @@
+name: Versión obligatoria
+
+# Cada PR a main debe subir la versión (package.json) y documentarla en CHANGELOG.md.
+# Marca este check como "required" en la protección de la rama main.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  version-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Comprobar versión y CHANGELOG
+        run: |
+          BASE_VERSION=$(git show "origin/${{ github.base_ref }}:package.json" | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>console.log(JSON.parse(s).version))")
+          node scripts/check-version.mjs "$BASE_VERSION"

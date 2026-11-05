@@ -1,0 +1,41 @@
+name: Tag y Release
+
+# Al fusionar en main crea el tag vX.Y.Z (según package.json) y un Release con su entrada del CHANGELOG.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Crear tag y Release si no existen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v$VERSION"
+          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+            echo "El tag $TAG ya existe; nada que hacer."
+            exit 0
+          fi
+          # Notas: la sección "## [VERSION]" del CHANGELOG hasta la siguiente versión.
+          awk -v v="$VERSION" '
+            $0 ~ "^## \\[" v "\\]" {on=1; next}
+            on && /^## \[/ {exit}
+            on {print}
+          ' CHANGELOG.md > notes.md
+          git tag -a "$TAG" -m "DúoFinanzas $TAG"
+          git push origin "$TAG"
+          gh release create "$TAG" --title "DúoFinanzas $TAG" --notes-file notes.md --verify-tag

@@ -46,3 +46,9 @@ Resultado: **sin vulnerabilidades explotables con confianza ≥ 8/10**. Se endur
 - **Storage** — imágenes huérfanas al eliminar cuentas o parejas · el borrado en cascada de SQL no alcanza
   a Storage · Edge Function `cleanup-receipts` + RPC `orphan_receipt_paths`.
 
+## 2026-11-05 · Repositorio recreado
+- **Privacidad** — tras reescribir el historial, el DNI seguía visible en las páginas de los PR #4 y #5
+  (`refs/pull/*` son inmutables) y por SHA directo · GitHub conserva las referencias de los PR · el titular
+  borró y recreó el repositorio, y se subió el historial ya limpio. Se perdieron los PR #1–#7 y el historial
+  de Actions (el código y los docs se conservan).
+

@@ -1,6 +1,6 @@
 {
   "name": "duofinanzas",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -8,7 +8,8 @@
     "start": "npx serve@14 out",
     "lint": "eslint",
     "test": "vitest run",
-    "migrate:notion": "tsx scripts/migrate-notion-to-supabase.ts"
+    "migrate:notion": "tsx scripts/migrate-notion-to-supabase.ts",
+    "version:check": "node scripts/check-version.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

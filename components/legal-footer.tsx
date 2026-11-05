@@ -7,6 +7,9 @@ export function LegalFooter({ className }: { className?: string }) {
       <Link href="/privacidad" className="hover:text-foreground hover:underline">Privacidad</Link>
       <Link href="/terminos" className="hover:text-foreground hover:underline">Términos</Link>
       <Link href="/cookies" className="hover:text-foreground hover:underline">Cookies</Link>
+      {process.env.NEXT_PUBLIC_APP_VERSION && (
+        <span title="Versión de la aplicación" className="tabular">v{process.env.NEXT_PUBLIC_APP_VERSION}</span>
+      )}
     </nav>
   );
 }

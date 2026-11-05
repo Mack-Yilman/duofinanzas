@@ -6,7 +6,7 @@ Lista viva de tareas acordadas que quedan abiertas. Al cerrar una, muévela a `d
 | Prioridad | Tarea | Responsable |
 |---|---|---|
 | 🟡 Media | SMTP propio + plantillas de correo en español | Titular (panel de Supabase) |
-| 🟡 Media | Pedir a GitHub Support que purgue las vistas de los PR #4 y #5 (DNI) | Titular |
+| 🟡 Media | Proteger `main`: exigir el check “Versión obligatoria” (Settings → Branches) | Titular |
 | ⚪ Opcional | “Leaked password protection” (requiere plan Pro) | Titular, si se escala |
 | ⚪ Opcional | Inscribir el banco de datos ante la ANPD | Titular |
 
@@ -24,11 +24,10 @@ Pasos (Gmail, gratis, ~500 correos/día):
 4. Authentication → **Email Templates** → “Invite user” y “Reset Password” en español
    (conservar siempre `{{ .ConfirmationURL }}`).
 
-## Purga del DNI en GitHub
-El historial de `main` se reescribió (el número de DNI → `[REDACTADO]`). Las páginas de los PR #4 y #5 y sus
-referencias `refs/pull/*` son de solo lectura: hay que pedir a **GitHub Support** que las purguen
-(https://support.github.com/request → “Remove sensitive data” / cached views).
-
+## Proteger la rama main
+Para que el versionado sea realmente obligatorio: GitHub → Settings → Branches → *Add branch ruleset*
+(o *Add classic branch protection rule*) para `main` → *Require a pull request before merging* y
+*Require status checks to pass* → añadir **version-check**.
 
 ## Leaked password protection
 No disponible en el plan Free (verificado el 2026-11-04). Mientras tanto se puede activar

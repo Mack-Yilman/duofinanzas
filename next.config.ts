@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import pkg from "./package.json";
 
 /**
  * Export 100 % estático para GitHub Pages.
@@ -13,6 +14,8 @@ const nextConfig: NextConfig = {
   basePath,
   images: { unoptimized: true },
   trailingSlash: true,
+  // Versión visible en la app (pie de página); viene de package.json.
+  env: { NEXT_PUBLIC_APP_VERSION: pkg.version },
 };
 
 export default nextConfig;

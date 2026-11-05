@@ -11,6 +11,7 @@ Navegador (GitHub Pages: HTML/JS estático, basePath /duofinanzas)
  └─ fetch ─────────────────────────────► api.frankfurter.dev (tipos de cambio, sin datos personales)
 ```
 Despliegue: push a `main` → `.github/workflows/deploy-pages.yml` (lint + tests + build + deploy).
+Versionado: `pr-version-check.yml` (cada PR sube versión + CHANGELOG) y `release.yml` (tag + Release al fusionar).
 
 ## Carpetas
 | Ruta | Rol |

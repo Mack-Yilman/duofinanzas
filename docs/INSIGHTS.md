@@ -40,4 +40,9 @@ Formato: **tema**. Decisión. *Por qué.*
   `cleanup-receipts` los borra con la API de Storage. Se ejecuta al eliminar cuentas desde `/admin` o a mano.
 - **Datos sensibles en Git**: quitar un dato del código no lo borra del historial. Hay que reescribir con
   `git filter-repo --replace-text` + push forzado, y pedir a GitHub Support que purgue las vistas de los PR.
+- **Versionado**: SemVer en `package.json` + `CHANGELOG.md`, verificado por `scripts/check-version.mjs`
+  (workflow “Versión obligatoria” en cada PR). Al fusionar, `release.yml` crea el tag `vX.Y.Z` y el Release.
+  La versión se muestra en el pie de página (`NEXT_PUBLIC_APP_VERSION` desde `next.config.ts`).
+- **Vistas de PR en GitHub** no se pueden reescribir: un dato sensible que llegó a un PR solo desaparece
+  recreando el repo o con GitHub Support.
 
