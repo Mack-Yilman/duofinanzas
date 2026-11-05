@@ -1,104 +1,89 @@
 <div align="center">
-  <h1>💖 DúoFinanzas</h1>
-  <p><b>La plataforma definitiva para gestionar las finanzas en pareja de forma transparente, equitativa y sin estrés.</b></p>
-  
-  [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
-  [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
-  [![Supabase](https://img.shields.io/badge/Supabase-Postgres_+_Auth-3ECF8E?style=flat-square&logo=supabase)](https://supabase.com/)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+
+# 💚 DúoFinanzas
+
+**Finanzas en pareja, claras y justas.** Registren ingresos y gastos, repartan cada pago según lo que gana
+cada uno y lleven sus metas de ahorro juntos, con constancias de pago y privacidad por diseño.
+
+[![Release](https://img.shields.io/github/v/release/Mack-Yilman/duofinanzas?label=versi%C3%B3n&style=flat-square)](https://github.com/Mack-Yilman/duofinanzas/releases)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/Mack-Yilman/duofinanzas/deploy-pages.yml?label=GitHub%20Pages&style=flat-square)](https://github.com/Mack-Yilman/duofinanzas/actions/workflows/deploy-pages.yml)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20RLS-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
+**[Abrir la app →](https://mack-yilman.github.io/duofinanzas/)**
+
 </div>
 
----
+## ✨ Qué hace
 
-DúoFinanzas es una aplicación web para parejas que desean organizar sus finanzas compartidas: registra ingresos, calcula la proporción justa de aportes (Equity) y controla gastos y metas de ahorro.
-
-Es un **sitio 100 % estático** (Next.js `output: "export"`) que se publica en **GitHub Pages**. Los datos y el login viven en **Supabase** (Postgres + Auth), y la seguridad la imponen políticas **Row Level Security**: cada pareja solo puede leer y modificar sus propios registros.
-
-## ✨ Características
-
-- 📊 **Equity:** gastos 50/50 o proporcionales a los ingresos de cada uno.
-- 💸 **Gastos e ingresos** en PEN, USD y EUR, con categorías personalizables.
-- 🎯 **Metas de ahorro** con historial de aportes por persona.
-- 📅 **Periodos** con día de corte configurable y vista mensual/global.
-- 🔐 **Acceso solo por invitación** del administrador + RLS por pareja.
-- 🧾 **Constancias en imagen** (opcionales) al registrar gastos, al pagar y al aportar a metas.
-- 🌗 **Modo claro, oscuro o del sistema.**
-- ⚖️ **Ley N.º 29733**: políticas de privacidad, términos, cookies, consentimiento y derechos ARCO.
-
-## 📚 Documentación
-
-- [`CLAUDE.md`](CLAUDE.md): reglas del proyecto para agentes.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), [`docs/INSIGHTS.md`](docs/INSIGHTS.md), [`docs/ERRORS.md`](docs/ERRORS.md).
+| | Función |
+|---|---|
+| 📊 | **Reparto justo**: cada gasto se divide 50/50 o en proporción a los ingresos de cada uno. |
+| 💸 | **Gastos e ingresos** en PEN, USD y EUR, con categorías y periodos según tu día de corte. |
+| 🧾 | **Constancias opcionales**: foto del voucher al registrar, al pagar o al aportar a una meta. |
+| 🎯 | **Metas de ahorro** con historial de aportes por persona. |
+| 🌗 | **Modo claro, oscuro o del sistema**, pensado para el móvil. |
+| 🔐 | **Acceso solo por invitación** del administrador, con panel de gestión y auditoría. |
+| ⚖️ | **Ley N.º 29733 (Perú)**: privacidad, términos, cookies, consentimiento y derechos ARCO en la app. |
 
 ## 🏗️ Arquitectura
 
 ```
-GitHub Pages (HTML/JS estático)
-  └── Navegador ── supabase-js (anon key pública) ──► Supabase
-                                                     ├── Auth (email + contraseña)
-                                                     └── Postgres + RLS (por pareja)
+GitHub Pages (Next.js 16 · export estático)
+ └── Navegador ── supabase-js ──► Supabase
+                                  ├── Auth (solo por invitación)
+                                  ├── Postgres + Row Level Security (aislamiento por pareja)
+                                  ├── Storage privado (constancias, URLs firmadas)
+                                  └── Edge Functions (admin-invite, cleanup-receipts)
 ```
 
-| Carpeta | Contenido |
-|---|---|
-| `app/` | Páginas (componentes cliente) |
-| `lib/repos/` | Acceso a datos (Supabase) |
-| `lib/actions/` | Mutaciones de formularios (cliente) |
-| `lib/domain/` | Lógica pura y testeada: reparto, periodos, FX |
-| `supabase/migrations/` | Esquema SQL, triggers, RPCs y políticas RLS |
-| `scripts/` | Migración única desde Notion |
+No hay servidor propio: la seguridad vive en las políticas RLS de Postgres. Detalle completo en
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
-## 🚀 Puesta en marcha
-
-### 1. Supabase
-1. Crea un proyecto en [supabase.com](https://supabase.com).
-2. **SQL Editor** → ejecuta en orden los archivos de `supabase/migrations/` (`0001` a `0005`).
-3. Despliega la Edge Function `supabase/functions/admin-invite` y desactiva *Allow new users to sign up* (Authentication → Sign In / Providers).
-3. **Authentication → URL Configuration**: agrega la URL de tu sitio (p. ej. `https://<usuario>.github.io/duofinanzas/`).
-4. Opcional para pruebas: **Authentication → Providers → Email** → desactiva *Confirm email*.
-
-### 2. Local
+## 🚀 Desarrollo local
 
 ```bash
-cp .env.example .env.local   # completa NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY
+git clone https://github.com/Mack-Yilman/duofinanzas.git
+cd duofinanzas
 npm install
+cp .env.example .env.local   # URL y clave publishable de Supabase
 npm run dev                  # http://localhost:3000
-npm test                     # pruebas de dominio (vitest)
-npm run build                # genera out/ (sitio estático)
 ```
 
-### 3. GitHub Pages
-1. **Settings → Pages → Source:** *GitHub Actions*.
-2. **Settings → Secrets and variables → Actions → Variables:** crea `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-3. Cada push a `main` ejecuta lint + tests + build y publica (`.github/workflows/deploy-pages.yml`).
+| Comando | Para qué |
+|---|---|
+| `npm test` | Pruebas de la lógica de dominio (Vitest) |
+| `npm run lint` | ESLint |
+| `npm run build` | Genera el sitio estático en `out/` |
+| `npm run version:check` | Verifica que subiste la versión y el CHANGELOG |
 
-### 4. Migrar datos desde Notion (una sola vez)
-Con `SUPABASE_SERVICE_ROLE_KEY`, `NOTION_TOKEN` y los `*_DB_ID` en `.env.local` (nunca en el repo):
+## 🔄 Flujo de trabajo
 
-```bash
-npm run migrate:notion
+```
+rama ─► subir versión (package.json) + CHANGELOG.md ─► PR ─► check "version-check" ✅
+     ─► fusionar en main ─► tag vX.Y.Z + Release ─► despliegue automático a GitHub Pages
 ```
 
-El script imprime contraseñas temporales; cada usuario puede cambiarla en **Ajustes → Cambiar contraseña**.
+Versionado [SemVer](https://semver.org/lang/es/): **patch** = arreglos · **minor** = funcionalidades ·
+**major** = cambios incompatibles. Historial en [`CHANGELOG.md`](CHANGELOG.md).
 
-## 🛡️ Administración y seguridad
+## 🗄️ Backend (Supabase)
 
-- **Panel `/admin`** (solo cuentas en `app_admins`): **invitaciones** (enviar, reenviar, revocar), estadísticas, búsqueda de usuarios, enviar correo de recuperación, bloquear/desbloquear (cierra sesiones), quitar de una pareja, dar/quitar rol de admin y eliminar cuentas. Todo queda en `admin_audit`.
-- El admin **no** puede ver los datos financieros de las parejas: solo gestiona cuentas.
-- Para nombrar otro admin desde SQL:
-  ```sql
-  insert into public.app_admins (user_id)
-  select id from auth.users where email = 'correo@ejemplo.com' on conflict do nothing;
-  ```
-- RLS en todas las tablas, `anon` sin acceso, helpers de RLS en un esquema `private` no expuesto, CSP que solo permite conexiones a Supabase y a la API de tipos de cambio, y contraseñas de 8+ caracteres.
+1. Ejecuta en orden los archivos de [`supabase/migrations/`](supabase/migrations).
+2. Despliega las funciones de [`supabase/functions/`](supabase/functions) con `verify_jwt = false`
+   (ver [`supabase/config.toml`](supabase/config.toml): validan al usuario por dentro).
+3. En Auth: desactiva *Allow new users to sign up* y configura la *Site URL* del sitio.
+4. El primer administrador se registra en `public.app_admins`.
 
-## 📌 Roadmap de Funcionalidades
-- [x] Corrección de errores de renderizado SSR/Client Components.
-- [x] CRUD completo (Eliminar registros directamente desde la interfaz).
-- [x] Módulo de gestión de categorías dinámico.
-- [x] Migración a Supabase + GitHub Pages (sitio estático).
-- [ ] Exportación de reportes mensuales en PDF/Excel.
-- [ ] Recordatorios de pagos recurrentes.
+## 📚 Documentación
 
----
-*Hecho con ❤️ para parejas que construyen su futuro juntas.*
+| Archivo | Contenido |
+|---|---|
+| [`CLAUDE.md`](CLAUDE.md) | Reglas del proyecto y cómo retomar el trabajo |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Arquitectura, modelo de datos y seguridad |
+| [`docs/INSIGHTS.md`](docs/INSIGHTS.md) | Decisiones y aprendizajes |
+| [`docs/ERRORS.md`](docs/ERRORS.md) | Bitácora de errores y soluciones |
+| [`docs/PENDIENTES.md`](docs/PENDIENTES.md) | Tareas abiertas |
+
+<div align="center"><sub>Proyecto personal sin fines comerciales · Hecho con ❤️ en Perú</sub></div>
