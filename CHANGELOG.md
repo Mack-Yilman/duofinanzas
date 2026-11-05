@@ -7,6 +7,12 @@ y [SemVer](https://semver.org/lang/es/): **MAJOR** = cambios incompatibles, **MI
 > Regla: cada PR a `main` sube la versión en `package.json` y añade aquí su entrada. Al fusionar,
 > GitHub Actions crea el tag `vX.Y.Z` y su Release automáticamente.
 
+## [1.0.3] - 2026-11-05
+
+### Cambiado
+- Documentación: `main` protegida con un ruleset (PR obligatorio, check `version-check` requerido, sin
+  push forzado). Se cierra el pendiente correspondiente.
+
 ## [1.0.2] - 2026-11-05
 
 ### Corregido
