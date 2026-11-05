@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { ImagePlus, X } from "lucide-react";
 import { RECEIPT_TYPES, validateReceipt } from "@/lib/image";
+import { LEGAL } from "@/lib/legal";
 import { cn } from "@/lib/utils";
 
 /**
@@ -82,6 +83,7 @@ export function ReceiptInput({
         </label>
         <div className="min-w-0 flex-1 text-xs text-muted-foreground">
           {name ? <p className="truncate font-medium text-foreground">{name}</p> : <p>{hint}</p>}
+          {!name && <p className="opacity-80">Se conserva {LEGAL.receiptRetentionMonths} meses.</p>}
           {error && <p className="mt-1 text-destructive" role="alert">{error}</p>}
         </div>
         {name && (

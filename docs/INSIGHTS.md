@@ -55,3 +55,17 @@ Formato: **tema**. Decisión. *Por qué.*
 - **Tags antiguos**: el `GITHUB_TOKEN` solo puede etiquetar commits cuyos workflows coincidan con los
   actuales. Para versiones pasadas: GitHub → Releases → *Draft a new release* → tag nuevo + commit destino.
 
+- **Presupuesto del plan Free** (1 GB de Storage, 5 GB de transferencia al mes, 500 MB de BD, pausa tras 7 días
+  sin actividad). Las constancias son lo que más pesa: se comprimen a ≤ 1280 px y unos 80-400 KB, caducan a
+  los 12 meses (`private.expire_old_receipts`) y un job semanal de `pg_cron` borra los archivos huérfanos.
+  Con unos 10 vouchers al mes por pareja, 1 GB alcanza para cientos de parejas.
+- **Cron → Edge Function sin compartir secretos**: el job lee `cron_secret` de Vault y lo manda en
+  `x-cron-secret`; la función lo valida con la RPC `verify_cron_secret` (solo service_role). El secreto se generó
+  dentro de la BD (`gen_random_bytes`): no existe en el repo, en los secretos de la función ni en el chat.
+- **Transferencia de imágenes**: los objetos se suben con `cacheControl` de 1 año (nombre UUID inmutable) y la
+  galería reutiliza la misma URL firmada (TanStack Query, 12 min). Una URL nueva invalida la caché del
+  navegador y vuelve a descargar.
+- **Keep-alive**: `keepalive.yml` hace una consulta REST (RLS no devuelve datos) 3 veces por semana. Si
+  falla con 5xx o sin respuesta, el proyecto puede estar pausado: se restaura desde el panel.
+- **Clave publishable en CI**: `ci.yml` y `keepalive.yml` la usan en claro, igual que el deploy. Es pública
+  por diseño.

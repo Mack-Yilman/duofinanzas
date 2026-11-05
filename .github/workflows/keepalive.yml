@@ -1,0 +1,30 @@
+name: Keep-alive Supabase
+
+# El plan Free pausa los proyectos tras ~7 días sin actividad. Este job hace una consulta
+# mínima cada 3 días (lunes, jueves y sábado al mediodía de Lima) para mantenerlo activo.
+# Solo usa la clave publishable (pública por diseño); RLS no devuelve datos.
+on:
+  schedule:
+    - cron: "23 17 * * 1,4,6"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Consulta a la API de Supabase
+        env:
+          URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://vjglzizutcijcyexcume.supabase.co' }}
+          KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_-5jemi-CUKFZT1qHElyxSg_FAne0LLb' }}
+        run: |
+          CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 \
+            -H "apikey: $KEY" "$URL/rest/v1/couples?select=id&limit=1")
+          echo "HTTP $CODE"
+          # 2xx/4xx = el proyecto respondió (activo). 5xx o 000 = caído o pausado.
+          if [ "$CODE" = "000" ] || [ "$CODE" -ge 500 ]; then
+            echo "::error::Supabase no responde (HTTP $CODE). ¿Proyecto pausado? Restáuralo en el panel."
+            exit 1
+          fi

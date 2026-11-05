@@ -9,7 +9,8 @@ App de finanzas en pareja. **Sitio 100 % estático** (Next.js 16 `output: "expor
 - `docs/ARCHITECTURE.md`: arquitectura, modelo de datos, seguridad y comandos.
 - `docs/INSIGHTS.md`: decisiones y aprendizajes no obvios (léelo antes de cambiar algo “raro”).
 - `docs/ERRORS.md`: bitácora de errores encontrados y cómo se resolvieron.
-- `docs/PENDIENTES.md`: tareas acordadas que siguen abiertas.
+- `docs/PENDIENTES.md`: tareas acordadas que siguen abiertas y propuestas de mejora.
+- `docs/SECURITY-AUDIT.md`: última auditoría de seguridad (actualízala si cambias RLS, Storage o Edge Functions).
 
 ## Reglas del proyecto
 1. **Cada bug o hallazgo nuevo se registra** en `docs/ERRORS.md` (síntoma · causa · solución) y cada

@@ -44,7 +44,11 @@ export async function uploadReceipt(
   const { blob, type, ext } = await compressReceipt(file);
   const path = `${coupleId}/${crypto.randomUUID()}.${ext}`;
 
-  const up = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: type, upsert: false });
+  const up = await supabase.storage.from(BUCKET).upload(path, blob, {
+    contentType: type,
+    upsert: false,
+    cacheControl: "31536000", // inmutable (nombre UUID): el navegador/CDN no la vuelve a descargar
+  });
   if (up.error) throw new Error(`No se pudo subir la constancia: ${up.error.message}`);
 
   const res = await supabase.from("receipts").insert({
@@ -59,10 +63,15 @@ export async function uploadReceipt(
   }
 }
 
-/** URLs firmadas de corta duración (5 min): el bucket es privado. */
+/** Validez de las URLs firmadas. La galería las reutiliza mientras sigan vigentes (ver `SIGNED_URL_STALE_MS`). */
+export const SIGNED_URL_TTL_S = 15 * 60;
+/** Margen de 3 min antes de que caduquen: misma URL ⇒ caché del navegador ⇒ sin volver a descargar. */
+export const SIGNED_URL_STALE_MS = (SIGNED_URL_TTL_S - 3 * 60) * 1000;
+
+/** URLs firmadas de corta duración (15 min): el bucket es privado. */
 export async function signedUrls(paths: string[]): Promise<Record<string, string>> {
   if (!paths.length) return {};
-  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrls(paths, 300);
+  const { data, error } = await supabase.storage.from(BUCKET).createSignedUrls(paths, SIGNED_URL_TTL_S);
   if (error) throw new Error(error.message);
   const out: Record<string, string> = {};
   for (const d of data ?? []) if (d.path && d.signedUrl) out[d.path] = d.signedUrl;

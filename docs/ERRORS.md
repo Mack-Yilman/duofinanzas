@@ -54,6 +54,17 @@ Resultado: **sin vulnerabilidades explotables con confianza ≥ 8/10**. Se endur
 - **CI** — el primer “Tag y Release” falló con `fatal: empty ident name` · `git tag -a` requiere
   `user.name/email` en el runner · el tag se crea con `gh release create --target <sha>` (v1.0.1).
 
+## 2026-11-05 · Auditoría v1.1.0
+- **Dependencias** — `npm audit` marcaba `next@16.2.9` como crítico y `zod` como alto · versiones antiguas ·
+  `next` 16.4.5 y `zod` 4.6.7. En un export estático casi todo afectaba solo al servidor, que no existe.
+- **npm** — `npm install`/`npm audit fix` fallaban con `Cannot read properties of null (reading 'edgesOut')`
+  (fallo de Arborist en npm 10.9) · el lockfile se regeneró con `npx npm@11 install`; `npm ci` con npm 10 funciona.
+- **CI** — los PR solo validaban la versión: un error de tipos o de build se veía recién en `main` · nuevo
+  `ci.yml` (tsc + lint + test + build) y `tsc` también en el deploy.
+- **CSP** — `*.supabase.co` permitía conectar con cualquier proyecto de Supabase · host exacto del proyecto.
+- **Clickjacking** — Pages no envía `X-Frame-Options` y `frame-ancestors` no funciona en `<meta>` · script que
+  saca la app de iframes ajenos.
+
 ## 2026-11-05 · Revisión de Supabase y CI
 - **Edge Functions** — riesgo de 401 al invitar o limpiar: el proyecto firma los JWT con ES256 y la opción
   *Verify JWT* de la plataforma no es compatible con claves asimétricas · `verify_jwt = false` en ambas

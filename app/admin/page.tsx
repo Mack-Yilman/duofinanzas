@@ -41,6 +41,7 @@ const ACTION_LABEL: Record<string, string> = {
   revoke_invitation: "Revocó la invitación de",
   self_delete: "Cuenta eliminada por su titular:",
   cleanup_receipts: "Limpió constancias huérfanas",
+  expire_receipts: "Caducaron constancias de más de 12 meses",
 };
 
 const INVITE_STATUS: Record<string, [string, string]> = {
@@ -156,7 +157,7 @@ function MaintenancePanel() {
         <CardTitle>Mantenimiento</CardTitle>
         <CardDescription>
           Borra del almacenamiento las imágenes de constancias que ya no pertenecen a ningún registro (por ejemplo,
-          de cuentas o parejas eliminadas). Se ejecuta también automáticamente al eliminar una cuenta.
+          de cuentas o parejas eliminadas). Se ejecuta automáticamente cada domingo y al eliminar una cuenta.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-3 sm:flex-row sm:items-center">

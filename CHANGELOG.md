@@ -7,6 +7,29 @@ y [SemVer](https://semver.org/lang/es/): **MAJOR** = cambios incompatibles, **MI
 > Regla: cada PR a `main` sube la versión en `package.json` y añade aquí su entrada. Al fusionar,
 > GitHub Actions crea el tag `vX.Y.Z` y su Release automáticamente.
 
+## [1.1.0] - 2026-11-05
+
+### Añadido
+- **Mantenimiento automático de Storage** (migración `0008`): un job semanal de `pg_cron` (domingos 03:17 en Lima)
+  caduca las constancias con más de 12 meses y llama a `cleanup-receipts` para borrar los archivos huérfanos.
+  El secreto del cron se genera dentro de Supabase Vault (no está en el repositorio).
+- Workflow **CI** en cada PR: tipos (`tsc`), lint, tests y build estático.
+- Workflow **Keep-alive**: consulta mínima cada 2-3 días para que el plan Free no pause el proyecto.
+- **Dependabot** mensual y agrupado para npm y GitHub Actions.
+
+### Cambiado
+- Constancias más livianas: lado máximo de 1280 px y WebP con calidad 0,72 (0,6 si pasa de 400 KB), con JPEG
+  como respaldo en navegadores sin WebP. `Cache-Control` de 1 año y URLs firmadas de 15 min reutilizadas
+  desde la caché, para no volver a descargar las imágenes.
+- CSP limitada al host exacto del proyecto de Supabase, con `frame-src`/`worker-src`/`manifest-src` y
+  protección contra clickjacking.
+- Deploy: `tsc --noEmit`, caché de `.next/cache` y timeouts.
+- Política de privacidad (v2026-11-05): retención de constancias de 12 meses. Se vuelve a pedir el consentimiento.
+
+### Seguridad
+- `next` 16.2.9 → 16.4.5 y `zod` → 4.6.7: 0 vulnerabilidades en producción (`npm audit --omit=dev`).
+- Auditoría completa en `docs/SECURITY-AUDIT.md`.
+
 ## [1.0.4] - 2026-11-05
 
 ### Corregido
