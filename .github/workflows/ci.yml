@@ -1,0 +1,45 @@
+name: CI
+
+# Valida cada PR antes de fusionar: tipos, lint, tests y build estático (el mismo que publica Pages).
+# Recomendado: marcar el check "checks" como obligatorio en el ruleset de main.
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Caché de compilación de Next
+        uses: actions/cache@v6
+        with:
+          path: .next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('app/**', 'components/**', 'lib/**') }}
+          restore-keys: next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm test
+      - name: Build estático
+        run: npm run build
+        env:
+          NEXT_PUBLIC_BASE_PATH: /duofinanzas
+          NEXT_PUBLIC_SUPABASE_URL: https://vjglzizutcijcyexcume.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: sb_publishable_-5jemi-CUKFZT1qHElyxSg_FAne0LLb
+          NEXT_TELEMETRY_DISABLED: 1

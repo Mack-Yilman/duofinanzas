@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Paperclip, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
-import { deleteReceipt, signedUrls, type Receipt } from "@/lib/repos/receipts";
+import { useQuery } from "@tanstack/react-query";
+import { deleteReceipt, signedUrls, SIGNED_URL_STALE_MS, type Receipt } from "@/lib/repos/receipts";
 import { queryClient } from "@/lib/query-client";
 import { cn } from "@/lib/utils";
 
@@ -14,8 +15,9 @@ const KIND_LABEL: Record<string, string> = {
 };
 
 /**
- * Botón "N constancias" que abre un visor. Las URLs se firman al abrir (5 min):
- * el bucket es privado y no hay enlaces permanentes.
+ * Botón "N constancias" que abre un visor. Las URLs se firman al abrir (15 min) y se
+ * reutilizan desde la caché mientras siguen vigentes: misma URL ⇒ el navegador no vuelve a
+ * descargar la imagen (ahorra transferencia del plan Free). El bucket es privado.
  */
 export function ReceiptGallery({
   receipts,
@@ -27,21 +29,23 @@ export function ReceiptGallery({
   className?: string;
 }) {
   const [open, setOpen] = useState(false);
-  const [urls, setUrls] = useState<Record<string, string>>({});
-  const [loading, setLoading] = useState(false);
+  const paths = receipts.map((r) => r.path).sort();
+  const { data: urls = {}, isFetching: loading, error } = useQuery({
+    queryKey: ["receipt-urls", paths],
+    queryFn: () => signedUrls(paths),
+    enabled: open && paths.length > 0,
+    staleTime: SIGNED_URL_STALE_MS,
+    gcTime: SIGNED_URL_STALE_MS,
+  });
+
+  useEffect(() => {
+    if (error) toast.error(error instanceof Error ? error.message : "No se pudieron cargar las constancias");
+  }, [error]);
 
   if (!receipts.length) return null;
 
-  async function show() {
+  function show() {
     setOpen(true);
-    setLoading(true);
-    try {
-      setUrls(await signedUrls(receipts.map((r) => r.path)));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "No se pudieron cargar las constancias");
-    } finally {
-      setLoading(false);
-    }
   }
 
   async function remove(r: Receipt) {

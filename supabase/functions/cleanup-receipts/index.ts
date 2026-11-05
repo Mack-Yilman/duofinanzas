@@ -1,4 +1,7 @@
-// Edge Function: borra constancias huérfanas del bucket `receipts` (solo administradores).
+// Edge Function: borra constancias huérfanas del bucket `receipts`.
+// La invocan (a) un administrador desde /admin (JWT + is_admin, solo desde el sitio) o
+// (b) el job semanal de pg_cron con la cabecera `x-cron-secret` (secreto en Vault, validado
+// por la RPC `verify_cron_secret`, solo service_role).
 // Storage no permite borrar con SQL; aquí se usa la API de Storage con la service role.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -24,22 +27,32 @@ Deno.serve(async (req) => {
   const origin = req.headers.get("origin") ?? "";
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(origin) });
   if (req.method !== "POST") return json({ error: "Método no permitido" }, 405, origin);
-  if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: "Origen no permitido" }, 403, origin);
 
   const url = Deno.env.get("SUPABASE_URL")!;
   const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-  const userClient = createClient(url, anonKey, {
-    global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
-    auth: { persistSession: false },
-  });
-  const { data: userData, error: userErr } = await userClient.auth.getUser();
-  if (userErr || !userData.user) return json({ error: "No autenticado" }, 401, origin);
-  const { data: isAdmin } = await userClient.rpc("is_admin");
-  if (isAdmin !== true) return json({ error: "Solo un administrador puede limpiar el almacenamiento." }, 403, origin);
-
   const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+
+  let actorId: string | null = null; // null = sistema (cron)
+  const cronSecret = req.headers.get("x-cron-secret");
+  if (cronSecret !== null) {
+    // (b) pg_cron: sin Origin; el secreto de 64 hex se valida contra Vault.
+    if (!/^[0-9a-f]{64}$/.test(cronSecret)) return json({ error: "No autorizado" }, 401, origin);
+    const { data: ok } = await admin.rpc("verify_cron_secret", { p_secret: cronSecret });
+    if (ok !== true) return json({ error: "No autorizado" }, 401, origin);
+  } else {
+    // (a) administrador desde el sitio.
+    if (!ALLOWED_ORIGINS.includes(origin)) return json({ error: "Origen no permitido" }, 403, origin);
+    const userClient = createClient(url, anonKey, {
+      global: { headers: { Authorization: req.headers.get("Authorization") ?? "" } },
+      auth: { persistSession: false },
+    });
+    const { data: userData, error: userErr } = await userClient.auth.getUser();
+    if (userErr || !userData.user) return json({ error: "No autenticado" }, 401, origin);
+    const { data: isAdmin } = await userClient.rpc("is_admin");
+    if (isAdmin !== true) return json({ error: "Solo un administrador puede limpiar el almacenamiento." }, 403, origin);
+    actorId = userData.user.id;
+  }
   const { data: rows, error } = await admin.rpc("orphan_receipt_paths");
   if (error) return json({ error: "No se pudieron listar los archivos" }, 500, origin);
 
@@ -53,9 +66,9 @@ Deno.serve(async (req) => {
   }
 
   await admin.rpc("log_system_action", {
-    p_admin: userData.user.id,
+    p_admin: actorId,
     p_action: "cleanup_receipts",
-    p_detail: { removed },
+    p_detail: { removed, source: actorId ? "admin" : "cron" },
   });
   return json({ removed }, 200, origin);
 });

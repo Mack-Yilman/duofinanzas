@@ -70,6 +70,8 @@ export default function PrivacidadPage() {
         Conservamos tus datos mientras tu cuenta esté activa. Al eliminar tu cuenta se borran tu perfil, tus ingresos y
         tus aportes; los registros compartidos de la pareja se eliminan cuando la pareja se queda sin miembros. Las
         copias de seguridad del proveedor pueden conservar información hasta por 30 días antes de su borrado definitivo.
+        Las <strong>imágenes de constancias</strong> se eliminan automáticamente a los {LEGAL.receiptRetentionMonths} meses
+        de haberse subido (el gasto o aporte al que pertenecen se conserva).
         El registro de auditoría de acciones administrativas se conserva por razones de seguridad.
       </p>
 

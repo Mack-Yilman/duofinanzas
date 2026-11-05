@@ -5,13 +5,29 @@
 Navegador (GitHub Pages: HTML/JS estático, basePath /duofinanzas)
  ├─ supabase-js (clave publishable) ──► Supabase Auth   (email + contraseña, solo por invitación)
  ├─────────────────────────────────────► Postgres + RLS (aislamiento por pareja)
- ├─────────────────────────────────────► Storage        (bucket privado `receipts`, URLs firmadas 5 min)
+ ├─────────────────────────────────────► Storage        (bucket privado `receipts`, URLs firmadas 15 min)
  ├─ functions.invoke('admin-invite') ──► Edge Function  (service role; solo administradores)
- ├─ functions.invoke('cleanup-receipts') ► Edge Function (borra constancias huérfanas; solo admins)
+ ├─ functions.invoke('cleanup-receipts') ► Edge Function (borra constancias huérfanas; admins o cron)
  └─ fetch ─────────────────────────────► api.frankfurter.dev (tipos de cambio, sin datos personales)
 ```
-Despliegue: push a `main` → `.github/workflows/deploy-pages.yml` (lint + tests + build + deploy).
-Versionado: `pr-version-check.yml` (cada PR sube versión + CHANGELOG) y `release.yml` (tag + Release al fusionar).
+
+Mantenimiento automático:
+```
+pg_cron (domingos 08:17 UTC) ─► private.run_receipts_maintenance()
+ ├─ expire_old_receipts()  (borra filas de constancias con más de 12 meses)
+ └─ net.http_post ─► cleanup-receipts (x-cron-secret de Vault) ─► borra los archivos huérfanos del Storage
+```
+
+CI/CD:
+
+| Workflow | Cuándo | Qué hace |
+|---|---|---|
+| `ci.yml` | PR a `main` | tsc + lint + tests + build |
+| `pr-version-check.yml` | PR a `main` | Exige subir versión + CHANGELOG |
+| `deploy-pages.yml` | push a `main` | tsc + lint + tests + build + deploy a Pages |
+| `release.yml` | push a `main` | Crea el tag `vX.Y.Z` y el Release |
+| `keepalive.yml` | 3 veces por semana | Ping REST para que el plan Free no pause el proyecto |
+| `dependabot.yml` | mensual | PR agrupados de npm y Actions |
 
 ## Carpetas
 | Ruta | Rol |
@@ -48,8 +64,9 @@ Versionado: `pr-version-check.yml` (cada PR sube versión + CHANGELOG) y `releas
 2. **RLS** en todas las tablas; helpers en el esquema `private` (no expuesto por la API).
 3. **RPCs admin** (`admin_*`) verifican `admin_assert()` y escriben en `admin_audit`. El admin no ve finanzas.
 4. **Storage**: bucket privado, 5 MB, solo imágenes; políticas por carpeta `<couple_id>/`.
-   La app re-codifica a WebP (quita EXIF/GPS).
-5. **CSP** por `<meta>` (Pages no permite cabeceras): `connect-src` solo Supabase y Frankfurter.
+   La app re-codifica a WebP/JPEG ≤ 1280 px (quita EXIF/GPS). Caducidad a los 12 meses + limpieza semanal.
+5. **CSP** por `<meta>` (Pages no permite cabeceras): `connect-src` solo el host del proyecto Supabase y
+   Frankfurter; script anti-clickjacking (sale de iframes ajenos).
 6. **Edge Function** `admin-invite`: CORS solo para el sitio y localhost, verifica JWT + rol admin,
    límite de 20 invitaciones/hora, `redirectTo` calculado en el servidor (no lo controla el cliente).
 
@@ -57,7 +74,9 @@ Versionado: `pr-version-check.yml` (cada PR sube versión + CHANGELOG) y `releas
 - Usuario: `create_couple`, `join_couple`, `is_admin`, `accept_terms`, `delete_my_account`.
 - Admin: `admin_list_users`, `admin_stats`, `admin_set_banned`, `admin_remove_from_couple`,
   `admin_set_admin`, `admin_delete_user`, `admin_audit_log`, `admin_list_invitations`, `admin_revoke_invitation`.
-- Solo service_role: `prepare_invitation`, `cancel_invitation`, `orphan_receipt_paths`, `log_system_action`.
+- Solo service_role: `prepare_invitation`, `cancel_invitation`, `orphan_receipt_paths`, `log_system_action`,
+  `verify_cron_secret`.
+- Internas (`private`, sin acceso por API): `expire_old_receipts`, `run_receipts_maintenance`.
 
 ## Comandos
 ```bash

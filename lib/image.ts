@@ -1,7 +1,12 @@
 /** Validación y compresión de constancias en el navegador. */
 export const RECEIPT_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"] as const;
 export const RECEIPT_MAX_BYTES = 5 * 1024 * 1024;
-const MAX_SIDE = 1600;
+/** Lado mayor máximo: suficiente para leer un voucher y ~4× menos píxeles que una foto de móvil. */
+const MAX_SIDE = 1280;
+/** Calidades de compresión: se prueba la primera y, si el archivo sigue siendo grande, la segunda. */
+export const RECEIPT_QUALITIES = [0.72, 0.6] as const;
+/** Objetivo de tamaño por constancia (ahorra Storage y transferencia del plan Free). */
+export const RECEIPT_TARGET_BYTES = 400 * 1024;
 
 const EXT: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -32,8 +37,8 @@ export function fitWithin(width: number, height: number, max = MAX_SIDE) {
 }
 
 /**
- * Reduce a máx. 1600 px y re-codifica a WebP. Re-codificar en canvas elimina los
- * metadatos EXIF (incluida la ubicación GPS). Si el navegador no puede decodificar
+ * Reduce a máx. 1280 px y re-codifica a WebP o JPEG (calidad 0,72; 0,6 si pasa de 400 KB).
+ * Re-codificar en canvas elimina los metadatos EXIF (incluida la ubicación GPS). Si el navegador no puede decodificar
  * el formato (p. ej. HEIC fuera de Safari), se sube el original.
  */
 export async function compressReceipt(file: File): Promise<{ blob: Blob; type: string; ext: string }> {
@@ -45,8 +50,17 @@ export async function compressReceipt(file: File): Promise<{ blob: Blob; type: s
     canvas.height = height;
     canvas.getContext("2d")!.drawImage(bitmap, 0, 0, width, height);
     bitmap.close();
-    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/webp", 0.8));
-    if (blob && blob.type === "image/webp") return { blob, type: "image/webp", ext: "webp" };
+    // WebP primero; JPEG si el navegador no codifica WebP (Safari antiguo).
+    for (const type of ["image/webp", "image/jpeg"] as const) {
+      let best: Blob | null = null;
+      for (const q of RECEIPT_QUALITIES) {
+        const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, q));
+        if (!blob || blob.type !== type) break; // formato no soportado al codificar
+        best = blob;
+        if (blob.size <= RECEIPT_TARGET_BYTES) break;
+      }
+      if (best) return { blob: best, type, ext: extensionFor(type) };
+    }
   } catch {
     // formato no decodificable en este navegador
   }

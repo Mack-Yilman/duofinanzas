@@ -15,9 +15,9 @@ describe("constancias", () => {
   });
 
   it("escala sin agrandar y respeta la proporción", () => {
-    expect(fitWithin(4000, 3000)).toEqual({ width: 1600, height: 1200 });
+    expect(fitWithin(4000, 3000)).toEqual({ width: 1280, height: 960 });
     expect(fitWithin(800, 600)).toEqual({ width: 800, height: 600 });
-    expect(fitWithin(1000, 5000)).toEqual({ width: 320, height: 1600 });
+    expect(fitWithin(1000, 5000)).toEqual({ width: 256, height: 1280 });
   });
 
   it("asigna extensión por tipo", () => {
