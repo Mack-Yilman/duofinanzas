@@ -24,8 +24,13 @@ cada uno y lleven sus metas de ahorro juntos, con constancias de pago y privacid
 | 💸 | **Gastos e ingresos** en PEN, USD y EUR, con categorías y periodos según tu día de corte. |
 | 🧾 | **Constancias opcionales**: foto del voucher al registrar, al pagar o al aportar a una meta (comprimida y conservada 12 meses). |
 | 🎯 | **Metas de ahorro** con historial de aportes por persona. |
+| 🐷 | **Presupuestos por categoría** con alerta al 80 % y al 100 %. |
+| 🔁 | **Gastos recurrentes** (alquiler, servicios) que se registran solos cada mes. |
+| 📈 | **Resumen anual** por mes y categoría, y **exportar** a CSV o PDF. |
+| 🔔 | **Recordatorio de liquidación** cuando se acerca el cierre del periodo. |
+| 📱 | **Instalable (PWA)**: se abre como una app y funciona sin conexión. |
 | 🌗 | **Modo claro, oscuro o del sistema**, pensado para el móvil. |
-| 🔐 | **Acceso solo por invitación** del administrador, con panel de gestión y auditoría. |
+| 🔐 | **Acceso solo por invitación**, **verificación en dos pasos** opcional y panel de administración con auditoría. |
 | ⚖️ | **Ley N.º 29733 (Perú)**: privacidad, términos, cookies, consentimiento y derechos ARCO en la app. |
 
 ## 🏗️ Arquitectura
@@ -57,6 +62,7 @@ npm run dev                  # http://localhost:3000
 |---|---|
 | `npx tsc --noEmit` | Revisión de tipos |
 | `npm test` | Pruebas de la lógica de dominio (Vitest) |
+| `npm run e2e` | Pruebas E2E con Playwright sobre `out/` (Supabase simulado) |
 | `npm run lint` | ESLint |
 | `npm run build` | Genera el sitio estático en `out/` |
 | `npm run version:check` | Verifica que subiste la versión y el CHANGELOG |
@@ -68,8 +74,8 @@ rama ─► subir versión (package.json) + CHANGELOG.md ─► PR ─► checks
      ─► fusionar en main ─► tag vX.Y.Z + Release ─► despliegue automático a GitHub Pages
 ```
 
-Además: **Dependabot** abre PRs mensuales agrupados y **Keep-alive** consulta Supabase 3 veces por semana
-para que el plan Free no pause el proyecto.
+Además: **Dependabot** abre PRs mensuales agrupados (exentos de subir versión: sus cambios salen en la siguiente)
+y **Keep-alive** consulta Supabase 3 veces por semana para que el plan Free no pause el proyecto.
 
 Versionado [SemVer](https://semver.org/lang/es/): **patch** = arreglos · **minor** = funcionalidades ·
 **major** = cambios incompatibles. Historial en [`CHANGELOG.md`](CHANGELOG.md).
@@ -82,6 +88,7 @@ Versionado [SemVer](https://semver.org/lang/es/): **patch** = arreglos · **mino
 3. En Auth: desactiva *Allow new users to sign up* y configura la *Site URL* del sitio.
 4. El primer administrador se registra en `public.app_admins`.
 5. La migración `0008` activa `pg_cron` + `pg_net` y genera el secreto del cron en Vault (nada que configurar).
+6. `0009` crea presupuestos y gastos recurrentes; `0010` hace que la BD exija el código MFA a quien lo activó.
 
 ### 💾 Cómo rinde el plan Free
 | Límite | Medida |

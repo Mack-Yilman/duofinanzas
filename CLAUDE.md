@@ -27,11 +27,13 @@ App de finanzas en pareja. **Sitio 100 % estático** (Next.js 16 `output: "expor
 7. **Secretos**: la service role key solo existe en la Edge Function. La URL y la clave *publishable*
    de Supabase son públicas por diseño (van en el JS).
 8. Datos personales → respeta `lib/legal.ts` (Ley N.º 29733). Si cambias las políticas, sube `LEGAL.version`.
-9. Antes de hacer push: `npx tsc --noEmit && npm run lint && npm test && npm run build`.
+9. Antes de hacer push: `npx tsc --noEmit && npm run lint && npm test && npm run build && npm run e2e`
+   (el build con `NEXT_PUBLIC_BASE_PATH=/duofinanzas`; en el sandbox usa `PW_CHROMIUM=/opt/pw-browsers/chromium`).
 10. Responde y documenta en español.
 11. **Versionado obligatorio en cada PR**: sube `version` en `package.json` (SemVer: patch = arreglos,
     minor = funcionalidades, major = incompatibles) y añade `## [X.Y.Z] - fecha` en `CHANGELOG.md`.
-    El check “Versión obligatoria” bloquea el PR si falta; al fusionar se crean el tag `vX.Y.Z` y el Release.
+    El check “Versión obligatoria” bloquea el PR si falta (excepto los PR de Dependabot); al fusionar se crean el tag
+   `vX.Y.Z` y el Release.
     Comprueba en local con `npm run version:check`.
 
 ## Cómo retomar el trabajo (nueva sesión)

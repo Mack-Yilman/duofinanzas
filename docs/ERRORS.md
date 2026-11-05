@@ -54,6 +54,17 @@ Resultado: **sin vulnerabilidades explotables con confianza ≥ 8/10**. Se endur
 - **CI** — el primer “Tag y Release” falló con `fatal: empty ident name` · `git tag -a` requiere
   `user.name/email` en el runner · el tag se crea con `gh release create --target <sha>` (v1.0.1).
 
+## 2026-11-05 · v1.2.0
+- **CI** — los PR de Dependabot (#6, #7) no se podían fusionar · el check obligatorio `version-check` exige subir
+  versión y CHANGELOG y Dependabot no lo hace · el job se omite si `github.actor == 'dependabot[bot]'` (un check
+  omitido cuenta como aprobado) y sus cambios se incluyeron en v1.2.0.
+- **MFA** — `getAuthenticatorAssuranceLevel()` puede lanzar con un JWT mal formado y dejaba `useMe` en error
+  (todos al login) · se captura y se asume “sin MFA pendiente”; la BD igual exige AAL2 a quien la activó.
+- **Seguridad** — `expenses.recurring_id` permitía enlazar una plantilla de otra pareja (las FK se validan sin
+  RLS) · la política `expenses_all` comprueba que la plantilla sea de la propia pareja (migración `0009`).
+- **E2E** — `@playwright/test` 1.64 no encuentra su navegador en el sandbox · variable `PW_CHROMIUM` para usar un
+  Chromium instalado; en CI se instala con `npx playwright install --with-deps chromium`.
+
 ## 2026-11-05 · Auditoría v1.1.0
 - **Dependencias** — `npm audit` marcaba `next@16.2.9` como crítico y `zod` como alto · versiones antiguas ·
   `next` 16.4.5 y `zod` 4.6.7. En un export estático casi todo afectaba solo al servidor, que no existe.

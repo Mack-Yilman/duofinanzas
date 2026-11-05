@@ -22,8 +22,8 @@ CI/CD:
 
 | Workflow | Cuándo | Qué hace |
 |---|---|---|
-| `ci.yml` | PR a `main` | tsc + lint + tests + build |
-| `pr-version-check.yml` | PR a `main` | Exige subir versión + CHANGELOG |
+| `ci.yml` | PR a `main` | tsc + lint + tests + build + E2E (Playwright) |
+| `pr-version-check.yml` | PR a `main` | Exige subir versión + CHANGELOG (se omite en PR de Dependabot) |
 | `deploy-pages.yml` | push a `main` | tsc + lint + tests + build + deploy a Pages |
 | `release.yml` | push a `main` | Crea el tag `vX.Y.Z` y el Release |
 | `keepalive.yml` | 3 veces por semana | Ping REST para que el plan Free no pause el proyecto |
@@ -36,8 +36,12 @@ CI/CD:
 | `components/` | UI. `ui/` = primitivas shadcn/Base UI. |
 | `lib/repos/` | Acceso a datos (Supabase). Mapeo snake_case → camelCase en `mappers.ts`. |
 | `lib/actions/` | Mutaciones de formularios en el cliente (`action()` = toast + invalidar caché). |
-| `lib/domain/` | Lógica pura testeada: reparto (`split.ts`), periodos, FX, fechas, dashboard. |
-| `lib/couple-data.ts` | Carga paralela de todo lo de la pareja (7 consultas) con TanStack Query. |
+| `lib/domain/` | Lógica pura testeada: reparto (`split.ts`), periodos, FX, fechas, dashboard, presupuestos, recurrentes, exportación CSV, resumen anual. |
+| `lib/recurring-runner.ts` | Registra los gastos recurrentes vencidos al abrir la app (idempotente). |
+| `lib/mfa.ts` | Verificación en dos pasos (TOTP): activar, verificar al entrar, desactivar. |
+| `public/sw.js` + `app/manifest.ts` | PWA: service worker (solo estáticos del mismo origen) y manifest. |
+| `e2e/` | Pruebas Playwright contra `out/` con Supabase simulado (`npm run e2e`). |
+| `lib/couple-data.ts` | Carga paralela de todo lo de la pareja (9 consultas) con TanStack Query. |
 | `lib/legal.ts` | Datos del titular y versión de las políticas (Ley 29733). |
 | `supabase/migrations/` | Esquema versionado (aplicar en orden). |
 | `supabase/functions/admin-invite/` | Edge Function de invitaciones (Deno). |
@@ -54,6 +58,8 @@ CI/CD:
 | `couples` | `invite_code` (DUO-XXXXXXXX), `fx_rate` USD→PEN, `cutoff_day`. Alta solo vía `create_couple`. |
 | `profiles` | 1:1 con `auth.users`; `couple_id`, `role`, `consent_version/at`. Editable solo `name`, `avatar_color`. |
 | `categories`, `incomes`, `expenses`, `goals`, `goal_contributions` | Todas con `couple_id` (default `private.my_couple_id()`). |
+| `budgets` | Presupuesto por categoría y periodo (PEN); único por `(couple_id, category_id)`. |
+| `recurring_expenses` | Plantillas mensuales (día 1-28, `next_date`). Las personales solo las ve quien paga. `expenses.recurring_id` + índice único `(recurring_id, date)`. |
 | `receipts` | Constancias: `kind` = expense / settlement / goal_contribution; `path` = `<couple_id>/<uuid>.<ext>`; máx. 5 por registro. |
 | `invitations` | Correos invitados. Sin políticas: solo la Edge Function (service role) y RPCs. |
 | `app_admins`, `admin_audit` | Administradores y auditoría. Sin políticas: solo vía RPC. |
@@ -70,6 +76,14 @@ CI/CD:
 6. **Edge Function** `admin-invite`: CORS solo para el sitio y localhost, verifica JWT + rol admin,
    límite de 20 invitaciones/hora, `redirectTo` calculado en el servidor (no lo controla el cliente).
 
+## Rutas de la app
+`/` dashboard (presupuestos, recordatorio de liquidación) · `/expenses` (CSV/PDF) · `/recurring` · `/summary?year=` ·
+`/income` · `/goals` · `/categories` (presupuestos) · `/settings` (MFA) · `/admin`.
+
+## MFA
+`private.mfa_ok()` = sesión AAL2 **o** sin factor TOTP verificado. Está dentro de `private.my_couple_id()` y
+`private.is_admin()`: con MFA activa y solo contraseña, RLS no devuelve datos y las RPC de admin fallan.
+
 ## RPCs
 - Usuario: `create_couple`, `join_couple`, `is_admin`, `accept_terms`, `delete_my_account`.
 - Admin: `admin_list_users`, `admin_stats`, `admin_set_banned`, `admin_remove_from_couple`,
@@ -84,4 +98,5 @@ npm run dev            # http://localhost:3000 (con .env.local)
 npm test               # vitest (lógica de dominio)
 npm run lint
 npm run build          # genera out/
+npm run e2e            # Playwright contra out/ (build con NEXT_PUBLIC_BASE_PATH=/duofinanzas)
 ```

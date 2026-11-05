@@ -2,6 +2,8 @@ name: Versión obligatoria
 
 # Cada PR a main debe subir la versión (package.json) y documentarla en CHANGELOG.md.
 # Marca este check como "required" en la protección de la rama main.
+# Excepción: los PR de Dependabot (no puede editar versión/CHANGELOG). El job se omite y GitHub
+# cuenta un check omitido como aprobado; sus cambios se anotan en la siguiente versión.
 on:
   pull_request:
     branches: [main]
@@ -11,12 +13,13 @@ permissions:
 
 jobs:
   version-check:
+    if: github.actor != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
       - name: Comprobar versión y CHANGELOG

@@ -97,40 +97,6 @@ export const ExpenseSchema = z.object({
 });
 export type Expense = z.infer<typeof ExpenseSchema>;
 
-// Budgets
-export const BudgetSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  categoryId: z.string().optional(),
-  amountBase: z.number(),
-  month: z.string(), // YYYY-MM or 'recurring'
-  isRecurring: z.boolean(),
-  coupleId: z.string(),
-});
-export type Budget = z.infer<typeof BudgetSchema>;
-
-// Debts
-export const DebtKindSchema = z.enum(["loan_owed", "loan_given", "credit_card", "mortgage"]);
-export const DebtResponsibilitySchema = z.enum(["shared", "userA", "userB"]);
-
-export const DebtSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  kind: DebtKindSchema,
-  principal: z.number(),
-  currentBalance: z.number(),
-  currency: CurrencySchema,
-  interestRate: z.number().optional(),
-  monthlyPayment: z.number(),
-  responsibility: DebtResponsibilitySchema,
-  dueDay: z.number(),
-  startDate: z.date(),
-  endDate: z.date().optional(),
-  coupleId: z.string(),
-  isClosed: z.boolean(),
-});
-export type Debt = z.infer<typeof DebtSchema>;
-
 // Goals
 export const GoalContributionModeSchema = z.enum(["proportional", "equal", "custom"]);
 
@@ -159,39 +125,24 @@ export const GoalContributionSchema = z.object({
 });
 export type GoalContribution = z.infer<typeof GoalContributionSchema>;
 
-// RecurringExpenses
-export const RecurringFrequencySchema = z.enum(["monthly", "weekly", "yearly"]);
+// Presupuestos (límite por categoría y periodo de corte, en PEN)
+export interface Budget {
+  id: string;
+  categoryId: string;
+  amount: number;
+}
 
-export const RecurringExpenseSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  amount: z.number(),
-  currency: CurrencySchema,
-  categoryId: z.string(),
-  paidById: z.string(),
-  splitMode: SplitModeSchema,
-  frequency: RecurringFrequencySchema,
-  dayOfMonth: z.number(),
-  nextRun: z.date(),
-  isActive: z.boolean(),
-  coupleId: z.string(),
-});
-export type RecurringExpense = z.infer<typeof RecurringExpenseSchema>;
-
-// Settlements
-export const SettlementStatusSchema = z.enum(["draft", "confirmed", "paid"]);
-
-export const SettlementSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  periodStart: z.date(),
-  periodEnd: z.date(),
-  fromUserId: z.string(),
-  toUserId: z.string(),
-  amountBase: z.number(),
-  status: SettlementStatusSchema,
-  expensesCount: z.number(),
-  coupleId: z.string(),
-  confirmedAt: z.date().optional(),
-});
-export type Settlement = z.infer<typeof SettlementSchema>;
+// Gastos recurrentes (plantillas mensuales)
+export interface RecurringExpense {
+  id: string;
+  name: string;
+  amount: number;
+  currency: Currency;
+  categoryId: string;
+  paidById: string;
+  splitMode: SplitMode;
+  isShared: boolean;
+  dayOfMonth: number;
+  nextDate: Date;
+  isActive: boolean;
+}

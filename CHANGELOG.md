@@ -7,6 +7,30 @@ y [SemVer](https://semver.org/lang/es/): **MAJOR** = cambios incompatibles, **MI
 > Regla: cada PR a `main` sube la versión en `package.json` y añade aquí su entrada. Al fusionar,
 > GitHub Actions crea el tag `vX.Y.Z` y su Release automáticamente.
 
+## [1.2.0] - 2026-11-05
+
+### Añadido
+- **Presupuestos por categoría** (en Categorías): tarjeta en el dashboard con barras, alerta al 80 % y al
+  100 % y aviso al guardar un gasto que los cruza. Migración `0009`.
+- **Gastos recurrentes** (`/recurring` y “Repetir cada mes” al crear un gasto): se registran solos al abrir la
+  app, con el mismo cálculo de tipo de cambio y reparto, sin duplicados entre la pareja (índice único).
+- **Exportar** los gastos de la vista a CSV (Excel, protegido contra inyección de fórmulas) o PDF (impresión).
+- **Recordatorio de liquidación** en el dashboard cuando faltan ≤ 3 días para el cierre y hay saldos pendientes.
+- **Resumen anual** (`/summary`): gastos por mes (compartido/personal), top de categorías y pagado por cada uno.
+- **App instalable (PWA)**: manifest, iconos y service worker con modo sin conexión (no guarda datos financieros).
+- **Verificación en dos pasos (TOTP)** opcional en Ajustes. Quien la activa necesita el código para entrar y la
+  base de datos le niega los datos con solo la contraseña (migración `0010`).
+- **Pruebas E2E con Playwright** en CI (24 pruebas, escritorio y móvil, Supabase simulado).
+
+### Cambiado
+- Los PR de Dependabot quedan exentos de “Versión obligatoria” (no pueden editar versión/CHANGELOG); sus
+  cambios se publican con la siguiente versión. Incluidas sus actualizaciones: `actions/checkout@v7`,
+  `actions/setup-node@v7` y React 19.3.1.
+
+### Eliminado
+- `netlify.toml`, `PLAN-Finanzas-en-Pareja.md`, el script de migración desde Notion y sus dependencias
+  (`@notionhq/client`, `dotenv`, `tsx`), y tipos legacy sin uso.
+
 ## [1.1.0] - 2026-11-05
 
 ### Añadido

@@ -9,7 +9,7 @@ export function RedirectIfAuthed() {
   const router = useRouter();
   const { data: me } = useMe();
   useEffect(() => {
-    if (me) router.replace(me.coupleId ? "/" : "/setup");
+    if (me && !me.mfaPending) router.replace(me.coupleId ? "/" : "/setup");
   }, [me, router]);
   return null;
 }

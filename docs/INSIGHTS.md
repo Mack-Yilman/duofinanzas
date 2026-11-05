@@ -69,3 +69,18 @@ Formato: **tema**. Decisión. *Por qué.*
   falla con 5xx o sin respuesta, el proyecto puede estar pausado: se restaura desde el panel.
 - **Clave publishable en CI**: `ci.yml` y `keepalive.yml` la usan en claro, igual que el deploy. Es pública
   por diseño.
+- **Dependabot y versionado**: sus PR no suben versión (no editan `package.json` version ni CHANGELOG); se les
+  omite el check y los cambios salen en la siguiente versión. Al fusionar no se crea tag (la versión no cambió).
+- **Gastos recurrentes sin servidor**: los crea el navegador al abrir la app (`lib/recurring-runner.ts`), con
+  `computeExpenseFields` (mismo cálculo que un gasto manual, incluido el tipo de cambio EUR de Frankfurter, que
+  pg_cron no puede consultar). Índice único `(recurring_id, date)` + avance condicional de `next_date` = idempotente.
+- **MFA en la base de datos, no en la UI**: `private.mfa_ok()` (AAL2 o sin factor verificado) está dentro de
+  `private.my_couple_id()` y `private.is_admin()`. Todas las políticas de pareja y las RPC/Edge Functions de admin
+  quedan protegidas con un solo cambio. Quien no activa MFA no nota nada.
+- **Service worker**: solo cachea el HTML estático y `/_next/static` del mismo origen; nunca respuestas de Supabase.
+  Se registra con `?v=<versión>`: cada despliegue crea una caché nueva y borra la anterior.
+- **Exportar a PDF** usa `window.print()` + `print:` de Tailwind (sin librerías). El layout quita `h-screen` y
+  `overflow` al imprimir; si no, solo se imprimiría la parte visible.
+- **E2E con Supabase simulado**: `e2e/mock-supabase.ts` inyecta una sesión falsa en localStorage (supabase-js no
+  verifica la firma en el navegador) y responde `/rest/v1`. La seguridad real se prueba con SQL en transacciones
+  revertidas, no con E2E.

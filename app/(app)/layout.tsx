@@ -11,6 +11,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { LegalFooter } from "@/components/legal-footer";
 import { avatarBg } from "@/lib/avatar";
 import { cn } from "@/lib/utils";
+import { runRecurring } from "@/lib/recurring-runner";
 
 function Logo() {
   return (
@@ -36,28 +37,33 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isLoading) return;
-    if (!me) router.replace("/login");
+    if (!me || me.mfaPending) router.replace("/login");
     else if (!me.coupleId) router.replace("/setup");
   }, [me, isLoading, router]);
 
-  const ready = !isLoading && me?.coupleId;
+  // Gastos recurrentes vencidos: se registran una vez por carga de la app.
+  useEffect(() => {
+    if (me?.coupleId && !me.mfaPending) void runRecurring(me);
+  }, [me]);
+
+  const ready = !isLoading && me?.coupleId && !me.mfaPending;
   const showFab = ready && !/^\/(expenses\/(new|edit)|settings|admin)/.test(pathname);
 
   return (
-    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-background md:flex-row">
+    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-background md:flex-row print:block print:h-auto print:overflow-visible">
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden>
         <div className="absolute left-[-12%] top-[-12%] h-[42%] w-[42%] rounded-full bg-[var(--user-a)] opacity-[0.10] blur-[130px]" />
         <div className="absolute bottom-[-14%] right-[-10%] h-[44%] w-[44%] rounded-full bg-brand-600 opacity-[0.12] blur-[130px]" />
       </div>
 
       {/* Barra superior (móvil) */}
-      <header className="z-20 flex items-center justify-between border-b border-border/60 bg-background/85 px-4 py-3 backdrop-blur-xl md:hidden">
+      <header className="print:hidden z-20 flex items-center justify-between border-b border-border/60 bg-background/85 px-4 py-3 backdrop-blur-xl md:hidden">
         <Logo />
         <ThemeToggle compact />
       </header>
 
       {/* Sidebar (desktop) */}
-      <aside className="z-10 hidden w-64 flex-col border-r border-border/60 bg-sidebar/80 px-4 py-7 backdrop-blur-xl md:flex">
+      <aside className="print:hidden z-10 hidden w-64 flex-col border-r border-border/60 bg-sidebar/80 px-4 py-7 backdrop-blur-xl md:flex">
         <div className="mb-9 px-3">
           <Logo />
         </div>
@@ -97,14 +103,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto pb-24 md:pb-0">{ready ? children : <PageSkeleton />}</main>
+      <main className="flex-1 overflow-y-auto pb-24 md:pb-0 print:overflow-visible print:pb-0">{ready ? children : <PageSkeleton />}</main>
 
       {/* Acción principal en móvil: nuevo gasto */}
       {showFab && (
         <Link
           href="/expenses/new"
           aria-label="Nuevo gasto"
-          className="fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95 md:hidden"
+          className="print:hidden fixed bottom-20 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg shadow-primary/30 transition-transform active:scale-95 md:hidden"
         >
           <Plus className="h-6 w-6" />
         </Link>

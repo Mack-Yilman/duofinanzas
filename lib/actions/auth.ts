@@ -16,13 +16,28 @@ function translate(message: string) {
   return message;
 }
 
-export async function login(formData: FormData): Promise<{ error?: string }> {
+export async function login(formData: FormData): Promise<{ error?: string; mfa?: boolean }> {
   const { error } = await supabase.auth.signInWithPassword({
     email: String(formData.get("email") ?? ""),
     password: String(formData.get("password") ?? ""),
   });
   if (error) return { error: translate(error.message) };
   await queryClient.invalidateQueries({ queryKey: ME_KEY });
+  // Con verificación en dos pasos activa, falta el código antes de entrar.
+  const { mfaPending } = await import("../mfa");
+  if (await mfaPending()) return { mfa: true };
+  navigate("/");
+  return {};
+}
+
+/** Segundo paso del inicio de sesión (código TOTP de 6 dígitos). */
+export async function loginMfa(code: string): Promise<{ error?: string }> {
+  const { verifyLogin } = await import("../mfa");
+  try {
+    await verifyLogin(code);
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Código inválido" };
+  }
   navigate("/");
   return {};
 }
