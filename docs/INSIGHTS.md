@@ -49,4 +49,7 @@ Formato: **tema**. Decisión. *Por qué.*
   `verify_jwt = false` y validar con `auth.getUser()` (ver `supabase/config.toml`).
 - **Logs de Supabase**: `query_logs` sobre `edge_logs` (estado HTTP en `log_attributes['response.status_code']`)
   es la forma rápida de detectar errores reales en producción.
+- **`main` protegida** (ruleset “Proteger main”, 2026-11-05): todo entra por PR, el check `version-check` es
+  obligatorio y el push forzado y el borrado están bloqueados. Para reescribir historial hay que poner la
+  regla en *Disabled* antes (Settings → Rules).
 
