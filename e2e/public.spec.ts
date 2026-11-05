@@ -24,6 +24,17 @@ test.describe("páginas públicas", () => {
     expect(problems).toEqual([]);
   });
 
+  test("anti-clickjacking: dentro de un <iframe sandbox> la app no se muestra", async ({ page }) => {
+    await page.goto(`${BASE}/login/`);
+    await expect(page.locator("html")).toHaveAttribute("data-top", "");
+    // Un iframe con sandbox sin `allow-top-navigation` no puede redirigir: la página debe quedar oculta.
+    await page.setContent(`<iframe sandbox="allow-scripts allow-same-origin" src="${page.url()}" width="800" height="600"></iframe>`);
+    const frame = page.frameLocator("iframe");
+    await expect(frame.locator("html")).toBeAttached();
+    await expect(frame.locator("html")).not.toHaveAttribute("data-top", /.*/);
+    await expect(frame.getByRole("button", { name: "Iniciar sesión" })).toBeHidden();
+  });
+
   test("la CSP solo permite el proyecto de Supabase", async ({ page }) => {
     await page.goto(`${BASE}/login/`);
     const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute("content");

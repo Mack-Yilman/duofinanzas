@@ -10,9 +10,10 @@ import { getPeriodRange } from "../domain/period";
 import { nextMonthly } from "../domain/recurring";
 import { toast } from "sonner";
 import { deferDelete } from "../undo";
-import { createExpense, createExpenses, updateExpense, deleteExpense, settleExpense, settleExpenses } from "../repos/expenses";
+import { createExpense, createExpenses, updateExpense, deleteExpense } from "../repos/expenses";
+import { recordSettlement } from "../repos/settlements";
 import type { ImportRow } from "../domain/import";
-import { calculateEquity, calculateExpenseSplit } from "../domain/split";
+import { buildSettlements, calculateEquity, calculateExpenseSplit } from "../domain/split";
 import { convertSync, getRate } from "../domain/fx";
 import { roundMoney, formatMoney } from "../domain/money";
 import { CurrencySchema, SplitModeSchema } from "../types";
@@ -74,12 +75,12 @@ function readDraft(fd: FormData): ExpenseDraft {
 }
 
 /** Avisa si el gasto deja su categoría al 80 % o más del presupuesto del periodo. */
-async function warnBudget(me: User, categoryId: string) {
+async function warnBudget(me: User, categoryId: string, isShared: boolean) {
   if (!categoryId) return;
   const data = await getCoupleDataCached(me.coupleId, true);
   const period = getPeriodRange(data.couple.cutoffDay || 1);
   const visible = data.expenses.filter((e) => e.isShared || e.paidById === me.id);
-  const st = computeBudgets(data.budgets, data.categories, visible, period).find((b) => b.categoryId === categoryId);
+  const st = computeBudgets(data.budgets, data.categories, visible, period).find((b) => b.categoryId === categoryId && b.personal === !isShared);
   if (!st || st.level === "ok") return;
   const msg = `${st.icon} ${st.name}: ${st.pct} % del presupuesto (${formatMoney(st.spent, "PEN")} de ${formatMoney(st.limit, "PEN")}).`;
   if (st.level === "over") toast.error(`Presupuesto superado · ${msg}`);
@@ -107,7 +108,7 @@ export const createExpenseAction = action(async (fd: FormData) => {
       nextDate: nextMonthly(draft.date, day),
     });
   }
-  await warnBudget(me, draft.categoryId);
+  await warnBudget(me, draft.categoryId, draft.isShared);
   navigate("/expenses");
 }, "Gasto guardado");
 
@@ -134,16 +135,36 @@ export async function deleteExpenseAction(fd: FormData) {
   });
 }
 
+/**
+ * Registra en el historial la liquidación de los gastos indicados (una fila por moneda) y los
+ * marca como pagados. Devuelve los planes registrados.
+ */
+async function settle(data: CoupleData, me: User, expenseIds: string[]) {
+  const partner = data.users.find((u) => u.id !== me.id);
+  if (!partner) throw new Error("Tu pareja aún no se ha unido");
+  const userAId = calculateEquity(
+    data.incomes,
+    BASE_CURRENCY,
+    (a, from, to) => convertSync(a, from, to, data.couple.fxRate),
+    data.users.map((u) => u.id)
+  ).userA;
+  const wanted = new Set(expenseIds);
+  const plans = buildSettlements(data.expenses.filter((e) => wanted.has(e.id)), me.id, partner.id, userAId);
+  for (const p of plans) await recordSettlement(p);
+  return plans;
+}
+
 /** Marca como pagado; opcionalmente adjunta la constancia de la transferencia. */
 export const settleExpenseAction = action(async (fd: FormData) => {
   const me = await requireCoupleUser();
   const id = str(fd, "id");
-  await settleExpense(id);
+  const data = await getCoupleDataCached(me.coupleId, true);
+  if (!(await settle(data, me, [id])).length) return "Este gasto ya estaba liquidado";
   await attachReceipt(optionalFile(fd, "receipt"), me.coupleId, { kind: "settlement", expenseId: id });
 }, "Gasto marcado como pagado");
 
 /**
- * Liquidar todo: marca como pagados todos los gastos compartidos pendientes de la pareja.
+ * Liquidar todo: registra la liquidación (por moneda) de todos los gastos compartidos pendientes.
  * La constancia (opcional) se asocia al gasto pendiente más reciente, porque cada constancia
  * de liquidación pertenece a un gasto.
  */
@@ -152,7 +173,7 @@ export const settleAllAction = action(async (fd: FormData) => {
   const data = await getCoupleDataCached(me.coupleId, true);
   const pending = data.expenses.filter((e) => e.isShared && !e.isSettled).sort((a, b) => b.date.getTime() - a.date.getTime());
   if (!pending.length) return "No hay gastos pendientes";
-  await settleExpenses(pending.map((e) => e.id));
+  await settle(data, me, pending.map((e) => e.id));
   await attachReceipt(optionalFile(fd, "receipt"), me.coupleId, { kind: "settlement", expenseId: pending[0].id });
   return pending.length === 1 ? "1 gasto liquidado" : `${pending.length} gastos liquidados`;
 });

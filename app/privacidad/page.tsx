@@ -29,7 +29,7 @@ export default function PrivacidadPage() {
       <ul>
         <li><strong>Identificación y cuenta:</strong> nombre, correo electrónico, contraseña (almacenada cifrada, nunca en texto plano), fechas de alta y de último acceso.</li>
         <li><strong>Datos financieros que tú registras:</strong> ingresos, gastos, categorías, metas de ahorro, aportes y tipo de cambio.</li>
-        <li><strong>Imágenes de constancias</strong> (opcionales) que adjuntes como prueba de un pago. Antes de subirlas, la app elimina los metadatos de ubicación (EXIF/GPS) cuando el formato lo permite.</li>
+        <li><strong>Constancias</strong> (opcionales): imágenes o PDF (p. ej. boletas electrónicas) que adjuntes como prueba de un pago. Antes de subir una imagen, la app elimina los metadatos de ubicación (EXIF/GPS); si no puede procesarla, no la sube.</li>
         <li><strong>Datos técnicos mínimos</strong> necesarios para la seguridad: registros de acceso del proveedor de infraestructura.</li>
       </ul>
       <p>No tratamos datos sensibles con fines distintos al servicio, ni elaboramos perfiles comerciales.</p>
@@ -52,7 +52,7 @@ export default function PrivacidadPage() {
 
       <h2>5. Con quién se comparten</h2>
       <ul>
-        <li><strong>Tu pareja dentro de la app:</strong> los datos financieros compartidos y las constancias son visibles para el otro miembro de tu pareja. Los gastos personales solo los ves tú.</li>
+        <li><strong>Tu pareja dentro de la app:</strong> los datos financieros compartidos, sus constancias y el historial de liquidaciones son visibles para el otro miembro de tu pareja. Los gastos personales, sus constancias y tus presupuestos personales solo los ves tú (lo garantiza la base de datos, no solo la app). Tu pareja puede ver tus ingresos (se usan para el reparto), pero solo tú puedes modificarlos.</li>
         <li><strong>Administrador de la plataforma:</strong> puede ver tu nombre, correo, pareja y fechas de acceso para gestionar cuentas. No accede a tus datos financieros desde la aplicación.</li>
         <li><strong>Encargados del tratamiento</strong> (proveedores de infraestructura): {LEGAL.hosting.database}; {LEGAL.hosting.web}.</li>
       </ul>
@@ -70,16 +70,16 @@ export default function PrivacidadPage() {
         Conservamos tus datos mientras tu cuenta esté activa. Al eliminar tu cuenta se borran tu perfil, tus ingresos y
         tus aportes; los registros compartidos de la pareja se eliminan cuando la pareja se queda sin miembros. Las
         copias de seguridad del proveedor pueden conservar información hasta por 30 días antes de su borrado definitivo.
-        Las <strong>imágenes de constancias</strong> se eliminan automáticamente a los {LEGAL.receiptRetentionMonths} meses
+        Las <strong>constancias</strong> (imágenes y PDF) se eliminan automáticamente a los {LEGAL.receiptRetentionMonths} meses
         de haberse subido (el gasto o aporte al que pertenecen se conserva).
         El registro de auditoría de acciones administrativas se conserva por razones de seguridad.
       </p>
 
       <h2>8. Medidas de seguridad</h2>
       <ul>
-        <li>Acceso solo por invitación del administrador y contraseñas de al menos 8 caracteres.</li>
+        <li>Acceso solo por invitación del administrador y contraseñas de al menos 10 caracteres.</li>
         <li>Aislamiento por pareja en la base de datos (Row Level Security): nadie puede leer datos de otra pareja.</li>
-        <li>Constancias en almacenamiento privado, accesibles solo con enlaces temporales de 5 minutos.</li>
+        <li>Constancias en almacenamiento privado, accesibles solo con enlaces temporales de 15 minutos; los gastos personales y sus constancias solo los ve quien los registró.</li>
         <li>Cifrado TLS en todas las comunicaciones y registro de auditoría de acciones administrativas.</li>
       </ul>
 

@@ -55,16 +55,6 @@ export async function deleteExpense(id: string) {
   unwrap(await supabase.from("expenses").delete().eq("id", id));
 }
 
-export async function settleExpense(id: string) {
-  unwrap(await supabase.from("expenses").update({ is_settled: true }).eq("id", id));
-}
-
-/** Marca varios gastos como liquidados en una sola petición (RLS limita a la pareja). */
-export async function settleExpenses(ids: string[]) {
-  if (!ids.length) return;
-  unwrap(await supabase.from("expenses").update({ is_settled: true }).in("id", ids));
-}
-
 /** Inserción masiva (importar CSV): en lotes de 100 filas. */
 export async function createExpenses(list: ExpenseInput[]) {
   for (let i = 0; i < list.length; i += 100) {

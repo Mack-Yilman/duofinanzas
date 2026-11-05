@@ -29,6 +29,7 @@ function fakeSession() {
 const today = new Date();
 const ymd = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 5);
+const lastYear = new Date(today.getFullYear() - 1, today.getMonth(), 1);
 
 export function mockData(consentVersion: string) {
   return {
@@ -45,8 +46,18 @@ export function mockData(consentVersion: string) {
     expenses: [
       { id: "e1", couple_id: COUPLE, name: "Supermercado", amount: 85, currency: "PEN", amount_base: 85, fx_rate: 1, fx_date: ymd(today), date: ymd(today),
         category_id: CAT, paid_by: U1, split_mode: "equal", split_share_a: 50, split_share_b: 50, is_shared: true, is_settled: false, notes: "", created_by: U1, created_at: today.toISOString() },
+      { id: "e0", couple_id: COUPLE, name: "Cine", amount: 40, currency: "PEN", amount_base: 40, fx_rate: 1, fx_date: ymd(lastYear), date: ymd(lastYear),
+        category_id: CAT, paid_by: U2, split_mode: "equal", split_share_a: 50, split_share_b: 50, is_shared: true, is_settled: true, settlement_id: "s1",
+        notes: "", created_by: U2, created_at: lastYear.toISOString() },
     ],
-    budgets: [{ id: "b1", couple_id: COUPLE, category_id: CAT, amount: 100 }],
+    budgets: [
+      { id: "b1", couple_id: COUPLE, category_id: CAT, amount: 100, user_id: null },
+      { id: "b2", couple_id: COUPLE, category_id: CAT, amount: 40, user_id: U1 },
+    ],
+    settlements: [
+      { id: "s1", couple_id: COUPLE, from_user: U1, to_user: U2, amount: 20, currency: "PEN", expense_count: 1, created_by: U1, created_at: lastYear.toISOString() },
+    ],
+    category_rules: [{ id: "cr1", couple_id: COUPLE, pattern: "farma", category_id: CAT }],
     recurring_expenses: [
       { id: "r1", couple_id: COUPLE, name: "Alquiler", amount: 1200, currency: "PEN", category_id: CAT, paid_by: U1, split_mode: "proportional",
         is_shared: true, day_of_month: 5, next_date: ymd(nextMonth), is_active: true },

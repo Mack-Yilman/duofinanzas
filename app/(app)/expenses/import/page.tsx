@@ -33,7 +33,7 @@ export default function ImportPage() {
     if (!file) return;
     if (file.size > IMPORT_MAX_BYTES) return toast.error("El archivo supera 1 MB.");
     const visible = data!.expenses.filter((e) => e.isShared || e.paidById === me!.id);
-    setResult(buildImport(await file.text(), { categories: data!.categories, users: data!.users, existing: visible }));
+    setResult(buildImport(await file.text(), { categories: data!.categories, users: data!.users, existing: visible, rules: data!.categoryRules }));
   }
 
   const toImport = result?.rows.filter((r) => includeDup || !r.duplicate) ?? [];

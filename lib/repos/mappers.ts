@@ -1,5 +1,5 @@
 import { CurrencySchema, SplitModeSchema, IncomeTypeSchema, IncomePeriodSchema, GoalContributionModeSchema, CategoryKindSchema, UserRoleSchema } from "../types";
-import type { Budget, Category, Expense, Goal, GoalContribution, Income, RecurringExpense, User } from "../types";
+import type { Budget, Category, CategoryRule, Expense, Goal, GoalContribution, Income, RecurringExpense, Settlement, User } from "../types";
 import { parseLocalDate } from "../domain/dates";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -62,6 +62,7 @@ export const toExpense = (r: Row): Expense => ({
   isSettled: !!r.is_settled,
   notes: r.notes ?? "",
   recurringSourceId: r.recurring_id ?? undefined,
+  settlementId: r.settlement_id ?? undefined,
   createdById: r.created_by ?? "",
   createdAt: new Date(r.created_at ?? Date.now()),
 });
@@ -93,6 +94,24 @@ export const toBudget = (r: Row): Budget => ({
   id: r.id,
   categoryId: r.category_id,
   amount: num(r.amount),
+  userId: r.user_id ?? undefined,
+});
+
+export const toSettlement = (r: Row): Settlement => ({
+  id: r.id,
+  fromUserId: r.from_user ?? "",
+  toUserId: r.to_user ?? "",
+  amount: num(r.amount),
+  currency: pick(CurrencySchema, r.currency, "PEN"),
+  expenseCount: Number(r.expense_count) || 0,
+  createdById: r.created_by ?? "",
+  createdAt: new Date(r.created_at ?? Date.now()),
+});
+
+export const toCategoryRule = (r: Row): CategoryRule => ({
+  id: r.id,
+  pattern: r.pattern ?? "",
+  categoryId: r.category_id,
 });
 
 export const toRecurring = (r: Row): RecurringExpense => ({

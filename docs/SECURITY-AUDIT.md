@@ -1,4 +1,32 @@
-# Auditoría de seguridad — v1.1.0 (2026-11-05)
+# Auditoría de seguridad — v1.4.0 (2026-11-05)
+
+## v1.4.0 · Segunda auditoría
+Método: revisión manual de migraciones, Edge Functions, cliente y workflows; consultas a `pg_policies` y
+`column_privileges` del proyecto; pruebas de RLS con SQL (usuarios ficticios en transacciones revertidas);
+`get_advisors`; `npm audit --omit=dev` (0 vulnerabilidades); E2E (46, incluida la prueba de `<iframe sandbox>`).
+
+| Sev. | Hallazgo | Corrección (migración `0012`) | Verificado |
+|---|---|---|---|
+| 🔴 Alta | Gastos personales legibles/editables/borrables por la pareja vía API | RLS por operación `is_shared or paid_by = auth.uid()` | ✅ SQL: pareja ve 2 de 3, UPDATE/DELETE = 0 filas |
+| 🔴 Alta | Constancias de gastos personales visibles; Storage listable por carpeta | `receipt_target_visible`, `receipt_path_visible`; SELECT de objetos por fila visible u `owner_id` | ✅ SQL: pareja ve 1 de 3 objetos |
+| 🟠 Media | Sin AAL2 en `delete_my_account`, `accept_terms`, `profiles_update` | `private.mfa_ok()` | ✅ |
+| 🟠 Media | Código de invitación sin rotación | Rota al completarse la pareja y al salir alguien; oculto en Ajustes | ✅ |
+| 🟠 Media | `join_couple`: carrera, fuerza bruta, enumeración | `for update`, 10 intentos/hora, respuesta única | ✅ SQL: 11.º intento bloqueado |
+| 🟠 Media | Subida directa sin cuota ni formato | Regex de nombre + 500 archivos/pareja + 30/hora; bucket 3 MB | ✅ |
+| 🟠 Media | Anti-clickjacking burlable con `sandbox` | Página oculta hasta comprobar `self === top` | ✅ E2E |
+| 🟡 Baja | `created_by` falsificable; ingresos con `user_id` ajeno; checks de reparto/FX/textos | Trigger `stamp_created_by`; RLS de ingresos propia; checks | ✅ SQL |
+| 🟡 Baja | Reenvíos saltaban el límite de invitaciones; secreto del cron con `=` | Conteo en `admin_audit`; comparación por SHA-256 | ✅ |
+| 🟡 Baja | HEIC con EXIF subido sin procesar; errores crudos; CSV `＝`/espacios; CSP con comodín | Rechazo, mensajes genéricos, regex ampliada, build falla sin URL | ✅ tests |
+| 🟡 Baja | Workflows: `id-token` en el build, credenciales persistidas, `github.actor` | Permisos por job, `persist-credentials: false`, autor del PR | ✅ |
+
+**Aceptados**: acciones fijadas por tag (Dependabot las actualiza); un JWT emitido sigue válido ~1 h tras banear;
+email en `admin_audit` (seguridad); sin límite de peticiones en la ruta cron de `cleanup-receipts` (secreto de
+256 bits); `goals.current_amount` editable por la pareja (sus propios datos).
+
+**Pendiente del titular** (panel de Supabase): *Secure password change*, mínimo de contraseña 10 y
+*Password requirements*. Ver `docs/PENDIENTES.md`.
+
+## v1.1.0 · Primera auditoría
 
 Alcance: código del sitio estático, workflows de GitHub, Edge Functions, base de datos y Storage del proyecto
 Supabase `vjglzizutcijcyexcume` (plan Free). Método: `get_advisors` (security y performance), consultas al
@@ -46,6 +74,7 @@ prueba con Playwright del build (CSP sin violaciones).
 | Cuenta admin sin MFA | MFA disponible en Ajustes | Activarla en la cuenta de administrador |
 
 ## Pruebas automáticas
-- 41 pruebas unitarias (Vitest) de la lógica de dominio.
-- 24 E2E (Playwright, escritorio y móvil): CSP sin violaciones, redirección sin sesión, PWA offline, presupuestos,
-  CSV, recurrentes, resumen anual y MFA en Ajustes. Corren en cada PR (`ci.yml`).
+- 58 pruebas unitarias (Vitest) de la lógica de dominio (v1.4.0).
+- 46 E2E (Playwright, escritorio y móvil): CSP sin violaciones, anti-clickjacking con `<iframe sandbox>`,
+  redirección sin sesión, PWA offline, presupuestos compartido/personal, CSV, reglas de importación, liquidaciones,
+  recurrentes, resumen anual con comparativa interanual y MFA en Ajustes. Corren en cada PR (`ci.yml`).

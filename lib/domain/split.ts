@@ -296,3 +296,43 @@ export function calculatePersonalLiquidity(
 
   return liquidity;
 }
+
+export interface SettlementPlan {
+  currency: string;
+  /** Quien paga el neto (si el neto es 0, el usuario actual por convención). */
+  fromUserId: string;
+  toUserId: string;
+  amount: number;
+  expenseIds: string[];
+}
+
+/**
+ * Plan de liquidación por moneda para los gastos compartidos pendientes indicados:
+ * usa el mismo neto que `calculateBalanceBreakdown` (te deben − debes) y decide quién paga a quién.
+ * Una fila por moneda: así cada liquidación del historial queda en su moneda original.
+ */
+export function buildSettlements(
+  expenses: Expense[],
+  currentUserId: string,
+  partnerId: string,
+  userAId: string
+): SettlementPlan[] {
+  const pending = expenses.filter((e) => e.isShared && !e.isSettled);
+  const breakdown = calculateBalanceBreakdown(pending, currentUserId, userAId);
+  const ids: Record<string, string[]> = {};
+  for (const e of pending) (ids[e.currency] ??= []).push(e.id);
+  return Object.keys(ids)
+    .sort()
+    .map((currency) => {
+      const b = breakdown[currency] ?? { owedToYou: 0, youOwe: 0 };
+      const net = roundMoney(b.owedToYou - b.youOwe);
+      const partnerPays = net > 0;
+      return {
+        currency,
+        fromUserId: partnerPays ? partnerId : currentUserId,
+        toUserId: partnerPays ? currentUserId : partnerId,
+        amount: Math.abs(net),
+        expenseIds: ids[currency],
+      };
+    });
+}

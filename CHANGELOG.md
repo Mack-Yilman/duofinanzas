@@ -7,6 +7,40 @@ y [SemVer](https://semver.org/lang/es/): **MAJOR** = cambios incompatibles, **MI
 > Regla: cada PR a `main` sube la versión en `package.json` y añade aquí su entrada. Al fusionar,
 > GitHub Actions crea el tag `vX.Y.Z` y su Release automáticamente.
 
+## [1.4.0] - 2026-11-05
+
+### Añadido
+- **Historial de liquidaciones** (`/settlements`): cada liquidación queda registrada por moneda (quién pagó a quién,
+  monto, fecha, gastos que cerró y su constancia). “Liquidar” y “Liquidar todo” usan la RPC atómica
+  `record_settlement` (tabla `settlements` + `expenses.settlement_id`).
+- **Reglas de categorización al importar** (tabla `category_rules`): “si la descripción contiene *Wong* →
+  Supermercado”, gestionadas en Categorías; gana la regla más específica y la columna Categoría del CSV manda.
+- **Presupuesto personal** por categoría (`budgets.user_id`): cuenta solo tus gastos personales y solo lo ves tú;
+  el compartido cuenta los gastos compartidos.
+- **Comparativa interanual** en `/summary`: total y top categorías frente al año anterior (en el año en curso,
+  del 1 de enero a hoy frente al mismo tramo).
+- **PDF de boletas electrónicas** como constancia (hasta 2 MB, firma `%PDF-` verificada); se abren en otra pestaña.
+
+### Seguridad
+- **Gastos personales privados en la base de datos**: la pareja podía leerlos, editarlos y borrarlos por la API
+  (solo la UI los ocultaba). RLS por operación con `is_shared or paid_by = auth.uid()`; lo mismo para sus constancias.
+- **Storage**: ya no se puede listar la carpeta de la pareja; nombre de archivo validado y cuota (500 por pareja,
+  30 subidas/hora); bucket a 3 MB.
+- **MFA** también para eliminar la cuenta, aceptar términos y editar el perfil.
+- **Código de invitación**: se desactiva al completarse la pareja y rota si alguien sale; `join_couple` bloquea la
+  fila (sin parejas de 3), limita a 10 intentos/hora y no revela si un código existe.
+- **Ingresos**: cada persona solo puede crear, editar o borrar los suyos. `created_by` lo fija la base de datos.
+- **Integridad**: reparto que suma 100 %, tipo de cambio y textos acotados; límite de invitaciones por envío;
+  secreto del cron comparado por resumen SHA-256.
+- **Anti-clickjacking** resistente a `<iframe sandbox>` (la página nace oculta); CSP con `upgrade-insecure-requests`
+  y sin comodín de Supabase (el build falla si falta la URL).
+- **Cliente**: imágenes no procesables se rechazan (antes se subían con EXIF/GPS); mensajes de error sin detalles
+  internos; CSV neutraliza fórmulas con espacios o signos de ancho completo; contraseñas de 10+ caracteres.
+- **CI**: `id-token` solo en el job de despliegue, `persist-credentials: false`, el check de versión usa el autor del PR.
+
+### Cambiado
+- Política de Privacidad actualizada (versión `2026-11-05.2`): se pedirá aceptarla de nuevo.
+
 ## [1.3.1] - 2026-11-05
 
 ### Añadido

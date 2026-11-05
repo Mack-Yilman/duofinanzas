@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeAnnual, availableYears } from "./annual";
+import { computeAnnual, availableYears, compareYearOverYear } from "./annual";
 import type { Category, Expense } from "../types";
 
 const e = (m: number, amountBase: number, isShared = true, categoryId = "c1", paidById = "u1", y = 2026) =>
@@ -19,5 +19,18 @@ describe("resumen anual", () => {
 
   it("lista años con datos y el actual", () => {
     expect(availableYears([e(0, 1, true, "c1", "u1", 2024)], new Date(2026, 0, 1))).toEqual([2026, 2024]);
+  });
+
+  it("compara con el año anterior (año en curso: mismo tramo hasta hoy)", () => {
+    const cats = [{ id: "c1", name: "Casa", icon: "🏠" }] as Category[];
+    const xs = [
+      e(0, 100), e(3, 50),                       // 2026 hasta abril
+      e(0, 80, true, "c1", "u1", 2025),          // 2025 mismo tramo
+      e(10, 500, true, "c1", "u1", 2025),        // 2025 noviembre: fuera del tramo comparable
+    ];
+    const ytd = compareYearOverYear(xs, cats, 2026, new Date(2026, 4, 1));
+    expect(ytd).toMatchObject({ partial: true, previousYear: 2025, total: 150, prevTotal: 80, deltaPct: 88 });
+    const closed = compareYearOverYear(xs, cats, 2025, new Date(2026, 4, 1));
+    expect(closed).toMatchObject({ partial: false, total: 580, prevTotal: 0, deltaPct: null });
   });
 });

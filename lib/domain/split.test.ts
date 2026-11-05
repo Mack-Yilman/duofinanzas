@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateEquity, calculateExpenseSplit, calculateSettlementBalance, calculatePersonalLiquidity } from './split';
+import { calculateEquity, calculateExpenseSplit, calculateSettlementBalance, calculatePersonalLiquidity, buildSettlements } from './split';
 import { Income, Expense } from '../types';
 
 describe('split domain logic', () => {
@@ -118,5 +118,23 @@ describe('calculateEquity con miembros', () => {
     const eq = calculateEquity(incomes, 'PEN', (a) => a, ['a', 'b']);
     expect(eq.incomeA).toBe(100);
     expect(eq.shareA).toBe(1);
+  });
+
+  it('arma el plan de liquidación por moneda (quién paga a quién)', () => {
+    const base = { isShared: true, isSettled: false, splitShareA: 50, splitShareB: 50 };
+    const expenses = [
+      { ...base, id: 'e1', currency: 'PEN', amount: 100, paidById: 'userA' }, // B debe 50
+      { ...base, id: 'e2', currency: 'PEN', amount: 40, paidById: 'userB' },  // A debe 20
+      { ...base, id: 'e3', currency: 'USD', amount: 30, paidById: 'userB' },  // A debe 15
+      { ...base, id: 'e4', currency: 'PEN', amount: 999, paidById: 'userA', isSettled: true },
+      { ...base, id: 'e5', currency: 'PEN', amount: 50, paidById: 'userA', isShared: false },
+    ] as Expense[];
+    const plan = buildSettlements(expenses, 'userA', 'userB', 'userA');
+    expect(plan).toEqual([
+      { currency: 'PEN', fromUserId: 'userB', toUserId: 'userA', amount: 30, expenseIds: ['e1', 'e2'] },
+      { currency: 'USD', fromUserId: 'userA', toUserId: 'userB', amount: 15, expenseIds: ['e3'] },
+    ]);
+    // Desde el punto de vista de B el resultado es el mismo.
+    expect(buildSettlements(expenses, 'userB', 'userA', 'userA')[0]).toMatchObject({ fromUserId: 'userB', toUserId: 'userA', amount: 30 });
   });
 });

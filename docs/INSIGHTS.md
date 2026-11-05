@@ -98,3 +98,23 @@ Formato: **tema**. Decisión. *Por qué.*
   obligan a permitir ver y hacer fork dentro de GitHub; la licencia lo reconoce y prohíbe todo lo demás. Para una
   protección mayor, el repositorio puede pasar a **privado**: Pages sigue publicando desde Actions en cuentas
   con GitHub Pro, pero en el plan Free un repo privado **no** puede usar Pages.
+- **Privacidad en la BD, no en la UI** (v1.4.0): todo lo “personal” (gastos, sus constancias, presupuestos
+  personales, recurrentes) se filtra con RLS. Las funciones `private.receipt_target_visible/receipt_path_visible`
+  son SECURITY DEFINER para que las políticas de `storage.objects` y `receipts` no dependan de la RLS de otra
+  tabla ni recursen sobre sí mismas.
+- **`record_settlement` es SECURITY INVOKER**: inserta el historial y marca los gastos en una transacción con los
+  permisos de quien llama (RLS aplica igual). El monto lo calcula el cliente con `buildSettlements` (misma lógica
+  testeada que el saldo); la BD valida que los gastos sean compartidos, pendientes, de la pareja y de esa moneda.
+  Una fila por moneda; las liquidaciones previas a v1.4.0 no tienen historial.
+- **Presupuestos**: compartido (`user_id` NULL) = gastos compartidos; personal = mis gastos personales. Índice
+  `unique nulls not distinct (couple_id, category_id, user_id)` (PG 15+) para que el upsert funcione con NULL.
+- **Reglas de categoría**: coincidencia por texto contenido sin tildes ni mayúsculas; gana el patrón más largo.
+  La columna Categoría del CSV tiene prioridad sobre las reglas.
+- **PDF**: no se comprimen; se verifica la firma `%PDF-` (el tipo MIME lo declara el navegador). La CSP
+  (`frame-src`/`object-src 'none'`) impide incrustarlos: se abren en otra pestaña con la URL firmada, que vive en el
+  dominio de Supabase (otro origen: un PDF malicioso no accede a la sesión de la app).
+- **`join_couple` devuelve NULL** si el código no sirve: un `raise exception` revierte la transacción y borraría el
+  registro del intento fallido, así que no habría límite de intentos.
+- **Anti-clickjacking sin cabeceras**: `<style>html:not([data-top]){display:none}</style>` + script que pone
+  `data-top` solo si `self === top`. Quitar el `<style>` no sirve: React lo vuelve a insertar al hidratar.
+

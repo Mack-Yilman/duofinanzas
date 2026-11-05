@@ -23,8 +23,14 @@ export async function createCouple(name: string): Promise<string> {
   return unwrap(await supabase.rpc("create_couple", { p_name: name })) as string;
 }
 
+/**
+ * La RPC devuelve NULL (sin error) si el código no existe o la pareja está completa: el mismo
+ * mensaje para ambos casos no revela qué códigos son válidos. Tras 10 intentos/hora la BD bloquea.
+ */
 export async function joinCouple(inviteCode: string): Promise<string> {
-  return unwrap(await supabase.rpc("join_couple", { p_code: inviteCode })) as string;
+  const id = unwrap(await supabase.rpc("join_couple", { p_code: inviteCode })) as string | null;
+  if (!id) throw new Error("Código inválido o la pareja ya está completa.");
+  return id;
 }
 
 export async function updateCouple(id: string, fxRate: number) {

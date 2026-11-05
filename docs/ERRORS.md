@@ -95,3 +95,26 @@ Resultado: **sin vulnerabilidades explotables con confianza ≥ 8/10**. Se endur
   integration` (también lanzado por el titular) · el `GITHUB_TOKEN` no puede crear refs sobre commits cuyos
   workflows difieren de los actuales · se quita la entrada `ref` (v1.0.4); tags antiguos desde la interfaz.
 
+## 2026-11-05 · v1.4.0 · Auditoría de seguridad
+- **Privacidad (alta)** — la pareja podía leer, editar y borrar los gastos personales del otro y ver sus
+  constancias llamando a la API · `expenses_all` y `receipts_select` solo filtraban por pareja; la UI ocultaba los
+  personales · políticas por operación con `(is_shared or paid_by = auth.uid())` y `receipt_target_visible()` (0012).
+- **Storage** — cualquier miembro podía listar y descargar toda la carpeta `<couple_id>/` y subir sin límite ·
+  la política de SELECT solo miraba la carpeta · objetos visibles solo si su fila en `receipts` es visible o si
+  eres el dueño; INSERT con formato de nombre + `receipt_quota_ok()`.
+- **MFA** — con MFA activa bastaba la contraseña para `delete_my_account`, `accept_terms` y editar el perfil ·
+  no llamaban a `private.mfa_ok()` · añadido.
+- **Invitaciones** — un miembro retirado podía volver a entrar con el código, dos uniones simultáneas podían dejar
+  3 miembros y no había límite de intentos · rotación del código, `for update` y `private.join_attempts`.
+  La RPC devuelve NULL en vez de lanzar error para que el intento fallido quede registrado (un `raise` revierte el insert).
+- **Ingresos** — la pareja podía crear o editar ingresos con el `user_id` del otro y alterar el reparto · RLS de
+  escritura solo propia; la UI oculta editar/borrar los ajenos.
+- **Clickjacking** — el script que salía de iframes no funcionaba con `<iframe sandbox>` · la página nace oculta.
+  Primer intento (quitar un `<style>` al cargar) dejó la app en blanco: React volvía a insertar el `<style>` al
+  hidratar · se usa el atributo `data-top` en `<html>`.
+- **Constancias** — un HEIC no decodificable se subía original, con EXIF/GPS · ahora se rechaza.
+- **Privacidad** — la política decía “enlaces de 5 minutos” y el código usa 15 · texto corregido (versión legal nueva).
+- **Invitaciones** — reenviar al mismo correo no sumaba al límite de 20/hora (actualizaba la misma fila) · se
+  cuentan los envíos en `admin_audit`.
+- **Advisors** — `private.join_attempts` sin clave primaria · `id` identity.
+

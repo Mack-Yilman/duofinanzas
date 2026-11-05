@@ -13,7 +13,8 @@ permissions:
 
 jobs:
   version-check:
-    if: github.actor != 'dependabot[bot]'
+    # Autor del PR (no quien dispara el evento): un push de Dependabot sobre otro PR no omite el check.
+    if: github.event.pull_request.user.login != 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

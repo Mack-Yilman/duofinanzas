@@ -8,6 +8,8 @@ describe("exportación CSV", () => {
     expect(csvCell("-5")).toBe(`"'-5"`);
     expect(csvCell("a;b")).toBe(`"a;b"`);
     expect(csvCell("Pan")).toBe("Pan");
+    expect(csvCell("  =1+1")).toBe(`"'  =1+1"`); // espacios iniciales
+    expect(csvCell("＝SUM(A1)")).toBe(`"'＝SUM(A1)"`); // signo igual de ancho completo
   });
 
   it("genera cabecera, BOM y filas ordenadas por fecha", () => {

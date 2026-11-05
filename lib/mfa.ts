@@ -11,7 +11,8 @@ import { ME_KEY } from "./session";
 function msg(e: { message: string } | null | undefined, fallback: string) {
   if (!e) return fallback;
   if (/invalid.*code|code.*invalid|expired/i.test(e.message)) return "Código incorrecto o vencido. Prueba con el siguiente.";
-  return e.message || fallback;
+  if (/rate limit|too many/i.test(e.message)) return "Demasiados intentos. Espera unos minutos.";
+  return fallback; // sin mensajes crudos del servidor
 }
 
 /** true si el usuario tiene MFA y la sesión aún no pasó el segundo paso. */

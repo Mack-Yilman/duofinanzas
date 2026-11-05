@@ -17,7 +17,7 @@ export const updateCutoffDayAction = action(async (fd: FormData) => {
 
 export const changePasswordAction = action(async (fd: FormData) => {
   const password = str(fd, "password");
-  if (password.length < 8) throw new Error("La contraseña debe tener al menos 8 caracteres");
+  if (password.length < 10) throw new Error("La contraseña debe tener al menos 10 caracteres");
   if (password !== str(fd, "confirm")) throw new Error("Las contraseñas no coinciden");
   const { error } = await supabase.auth.updateUser({ password });
   if (error) throw new Error(error.message);

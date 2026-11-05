@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { ImagePlus, X } from "lucide-react";
-import { RECEIPT_TYPES, validateReceipt } from "@/lib/image";
+import { FileText, ImagePlus, X } from "lucide-react";
+import { RECEIPT_TYPES, isPdfType, validateReceipt } from "@/lib/image";
 import { LEGAL } from "@/lib/legal";
 import { cn } from "@/lib/utils";
 
@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
  */
 export function ReceiptInput({
   label = "Constancia (opcional)",
-  hint = "Foto o captura del pago. JPG, PNG, WEBP o HEIC, máx. 5 MB.",
+  hint = "Foto, captura o PDF (boleta electrónica). Imágenes hasta 5 MB; PDF hasta 2 MB.",
   disabled,
   className,
 }: {
@@ -26,6 +26,7 @@ export function ReceiptInput({
   const [preview, setPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState<string>("");
+  const [pdf, setPdf] = useState(false);
 
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
 
@@ -60,7 +61,8 @@ export function ReceiptInput({
     }
     setError(null);
     setName(file.name);
-    setPreview(URL.createObjectURL(file));
+    setPdf(isPdfType(file.type));
+    setPreview(isPdfType(file.type) ? null : URL.createObjectURL(file));
   }
 
   return (
@@ -77,6 +79,8 @@ export function ReceiptInput({
           {preview ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={preview} alt="Vista previa de la constancia" className="h-full w-full object-cover" />
+          ) : name && pdf ? (
+            <FileText className="h-6 w-6 text-primary" aria-label="PDF seleccionado" />
           ) : (
             <ImagePlus className="h-5 w-5" aria-hidden />
           )}

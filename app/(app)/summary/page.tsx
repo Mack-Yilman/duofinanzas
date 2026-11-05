@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/page-header";
 import { PageError, PageSkeleton } from "@/components/page-state";
 import { useMe } from "@/components/auth-provider";
 import { useCoupleData } from "@/lib/couple-data";
-import { availableYears, computeAnnual } from "@/lib/domain/annual";
+import { availableYears, compareYearOverYear, computeAnnual } from "@/lib/domain/annual";
 import { formatMoney } from "@/lib/domain/money";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +31,7 @@ function Summary() {
   const years = useMemo(() => availableYears(visible), [visible]);
   const year = Number(sp.get("year")) || years[0];
   const r = useMemo(() => computeAnnual(visible, data?.categories ?? [], year), [visible, data, year]);
+  const yoy = useMemo(() => compareYearOverYear(visible, data?.categories ?? [], year), [visible, data, year]);
 
   if (error) return <PageError error={error} />;
   if (isLoading || !data || !me) return <PageSkeleton />;
@@ -79,6 +80,32 @@ function Summary() {
         <CardContent><AnnualChart months={r.months} /></CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Comparado con {yoy.previousYear}</CardTitle>
+          <p className="text-xs text-muted-foreground">
+            {yoy.partial ? `Del 1 de enero a hoy frente al mismo tramo de ${yoy.previousYear}.` : `Año completo frente a ${yoy.previousYear}.`}
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <p className="flex flex-wrap items-baseline gap-x-2" data-testid="yoy-total">
+            <span className="text-xl font-semibold tabular-nums">{formatMoney(yoy.total, "PEN")}</span>
+            <span className="text-muted-foreground">vs {formatMoney(yoy.prevTotal, "PEN")}</span>
+            <DeltaBadge pct={yoy.deltaPct} />
+          </p>
+          {yoy.byCategory.map((c) => (
+            <div key={c.id || "none"} className="flex items-center justify-between gap-2">
+              <span className="truncate">{c.name}</span>
+              <span className="flex items-center gap-2 tabular-nums">
+                {formatMoney(c.amount, "PEN")}
+                <span className="text-xs text-muted-foreground">vs {formatMoney(c.previous, "PEN")}</span>
+                <DeltaBadge pct={c.deltaPct} />
+              </span>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader><CardTitle className="text-base">Top categorías</CardTitle></CardHeader>
@@ -113,5 +140,15 @@ export default function SummaryPage() {
     <Suspense fallback={<PageSkeleton />}>
       <Summary />
     </Suspense>
+  );
+}
+
+/** Variación: más gasto en rojo, menos en verde; sin base de comparación, “nuevo”. */
+function DeltaBadge({ pct }: { pct: number | null }) {
+  if (pct === null) return <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">sin datos previos</span>;
+  return (
+    <span className={cn("rounded px-1.5 py-0.5 text-xs font-medium", pct > 0 ? "bg-destructive/10 text-destructive" : "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400")}>
+      {pct > 0 ? "+" : ""}{pct} %
+    </span>
   );
 }

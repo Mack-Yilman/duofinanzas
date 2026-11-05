@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { mockSupabase } from "./mock-supabase";
+import { mockSupabase, U1, U2 } from "./mock-supabase";
 import { LEGAL } from "../lib/legal";
 
 const BASE = "/duofinanzas";
@@ -42,13 +42,18 @@ test.describe("app con sesión (Supabase simulado)", () => {
     await page.goto(`${BASE}/summary/`);
     await expect(page.getByRole("heading", { name: `Resumen ${new Date().getFullYear()}` })).toBeVisible();
     await expect(page.getByRole("img", { name: "Gastos por mes del año" })).toBeVisible();
-    await expect(page.getByText("🍔 Comida")).toBeVisible();
+    await expect(page.getByText("🍔 Comida").first()).toBeVisible();
+    await expect(page.getByText(`Comparado con ${new Date().getFullYear() - 1}`)).toBeVisible();
+    await expect(page.getByTestId("yoy-total")).toContainText("vs");
     expect(problems).toEqual([]);
   });
 
-  test("categorías permiten editar el presupuesto", async ({ page }) => {
+  test("categorías: presupuesto compartido y personal, y reglas de importación", async ({ page, problems }) => {
     await page.goto(`${BASE}/categories/`);
     await expect(page.getByLabel("Presupuesto de Comida")).toHaveValue("100");
+    await expect(page.getByLabel("Presupuesto personal de Comida")).toHaveValue("40");
+    await expect(page.getByRole("list", { name: "Reglas de categorización" })).toContainText("“farma” → 🍔 Comida");
+    expect(problems).toEqual([]);
   });
 
   test("ajustes ofrece activar la verificación en dos pasos", async ({ page }) => {
@@ -98,16 +103,39 @@ test.describe("v1.3.0: estadísticas y manejo de datos", () => {
     await expect(page.getByLabel(/Activo/)).toBeChecked();
   });
 
-  test("liquidar todo envía un único PATCH", async ({ page }) => {
+  test("liquidar todo registra la liquidación en una sola RPC", async ({ page }) => {
     const mutations: import("./mock-supabase").Mutation[] = [];
     await mockSupabase(page, CONSENT, mutations);
     await page.goto(`${BASE}/expenses/`);
     await page.getByRole("button", { name: "Liquidar todo" }).click();
     await page.getByRole("button", { name: "Confirmar liquidación" }).click();
-    await expect.poll(() => mutations.filter((m) => m.table === "expenses" && m.method === "PATCH").length).toBe(1);
-    const patch = mutations.find((m) => m.method === "PATCH")!;
-    expect(patch.body).toEqual({ is_settled: true });
-    expect(decodeURIComponent(patch.url)).toContain("id=in.(e1)");
+    await expect.poll(() => mutations.filter((m) => m.table === "rpc/record_settlement").length).toBe(1);
+    // Ana pagó 85 a medias → Luis le paga 42,50. Sin PATCH sueltos a `expenses`.
+    expect(mutations.find((m) => m.table === "rpc/record_settlement")!.body).toEqual({
+      p_currency: "PEN", p_from: U2, p_to: U1, p_amount: 42.5, p_expense_ids: ["e1"],
+    });
+    expect(mutations.filter((m) => m.table === "expenses")).toEqual([]);
+  });
+
+  test("historial de liquidaciones", async ({ page, problems }) => {
+    await mockSupabase(page, CONSENT);
+    await page.goto(`${BASE}/expenses/`);
+    await page.getByRole("link", { name: "Historial de liquidaciones" }).click();
+    await expect(page.getByRole("heading", { name: "Liquidaciones" })).toBeVisible();
+    const list = page.getByRole("list", { name: "Historial de liquidaciones" });
+    await expect(list).toContainText("Tú");
+    await expect(list).toContainText("Luis");
+    await expect(list).toContainText("1 gasto: Cine");
+    await expect(list).toContainText(/S\/\s*20\.00/);
+    expect(problems).toEqual([]);
+  });
+
+  test("ajustes: con la pareja completa no muestra el código de invitación", async ({ page }) => {
+    await mockSupabase(page, CONSENT);
+    await page.route("**/auth/v1/factors**", (r) => r.fulfill({ json: [] }));
+    await page.goto(`${BASE}/settings/`);
+    await expect(page.getByText("El código de invitación quedó desactivado")).toBeVisible();
+    await expect(page.getByText("DUO-TEST0001")).toHaveCount(0);
   });
 
   test("importar CSV: vista previa con duplicado y una fila nueva", async ({ page }) => {
@@ -124,6 +152,14 @@ test.describe("v1.3.0: estadísticas y manejo de datos", () => {
     const body = mutations.find((m) => m.method === "POST")!.body as Record<string, unknown>[];
     expect(body).toHaveLength(1);
     expect(body[0]).toMatchObject({ name: "Farmacia", amount: 12.5, currency: "PEN", amount_base: 12.5 });
+  });
+
+  test("importar CSV: aplica las reglas de categoría", async ({ page }) => {
+    await mockSupabase(page, CONSENT);
+    await page.goto(`${BASE}/expenses/import/`);
+    const csv = "Fecha;Descripción;Monto\n01/02/2026;Farmacia Inkafarma;12,50\n";
+    await page.getByLabel("Archivo CSV").setInputFiles({ name: "gastos.csv", mimeType: "text/csv", buffer: Buffer.from(csv) });
+    await expect(page.getByRole("cell", { name: "Comida" })).toBeVisible();
   });
 
   test("eliminar con deshacer no borra nada", async ({ page }) => {

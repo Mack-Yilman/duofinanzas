@@ -74,11 +74,11 @@ export default function AcceptInvitePage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Contraseña</Label>
-                <Input id="password" name="password" type="password" minLength={8} autoComplete="new-password" required disabled={isPending || !session} />
+                <Input id="password" name="password" type="password" minLength={10} autoComplete="new-password" required disabled={isPending || !session} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm">Repetir contraseña</Label>
-                <Input id="confirm" name="confirm" type="password" minLength={8} autoComplete="new-password" required disabled={isPending || !session} />
+                <Input id="confirm" name="confirm" type="password" minLength={10} autoComplete="new-password" required disabled={isPending || !session} />
               </div>
               <label className="flex items-start gap-3 rounded-xl border border-border p-3 text-sm">
                 <input
