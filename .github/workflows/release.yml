@@ -2,16 +2,13 @@ name: Tag y Release
 
 # Al fusionar en main crea el tag vX.Y.Z (según package.json) y un Release con su entrada del CHANGELOG.
 # El tag lo crea la API de GitHub (gh release create --target): no requiere identidad de git en el runner.
-# Manual: "Run workflow" con `ref` permite etiquetar un commit anterior (p. ej. una versión que no se publicó).
+# Manual: "Run workflow" reintenta etiquetar la versión actual de main.
+# Para etiquetar un commit ANTIGUO usa la interfaz de GitHub (Releases → Draft a new release): el
+# GITHUB_TOKEN no puede crear tags sobre commits cuyos workflows difieren de los actuales (HTTP 403).
 on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      ref:
-        description: "Commit o rama a etiquetar (por defecto main)"
-        required: false
-        default: main
 
 permissions:
   contents: write
@@ -26,7 +23,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ inputs.ref || github.sha }}
           fetch-depth: 0
       - name: Crear tag y Release si no existen
         env:

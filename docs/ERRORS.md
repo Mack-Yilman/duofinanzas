@@ -61,4 +61,7 @@ Resultado: **sin vulnerabilidades explotables con confianza ≥ 8/10**. Se endur
 - **CI** — avisos “Node.js 20 is deprecated” · acciones antiguas · actualizadas a versiones con Node 24.
 - **CI** — `workflow_dispatch` de “Tag y Release” lanzado desde la integración devolvió 403 al crear el
   Release · el token de la integración no tiene ese permiso · lanzarlo manualmente desde la pestaña Actions.
+- **CI** — crear el tag `v1.0.0` desde “Run workflow” falló con `HTTP 403: Resource not accessible by
+  integration` (también lanzado por el titular) · el `GITHUB_TOKEN` no puede crear refs sobre commits cuyos
+  workflows difieren de los actuales · se quita la entrada `ref` (v1.0.4); tags antiguos desde la interfaz.
 

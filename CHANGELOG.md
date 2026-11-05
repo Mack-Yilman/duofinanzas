@@ -7,6 +7,12 @@ y [SemVer](https://semver.org/lang/es/): **MAJOR** = cambios incompatibles, **MI
 > Regla: cada PR a `main` sube la versión en `package.json` y añade aquí su entrada. Al fusionar,
 > GitHub Actions crea el tag `vX.Y.Z` y su Release automáticamente.
 
+## [1.0.4] - 2026-11-05
+
+### Corregido
+- “Tag y Release”: se quita la entrada manual `ref`. GitHub impide al `GITHUB_TOKEN` crear tags sobre
+  commits con workflows distintos a los actuales (HTTP 403); los tags antiguos se crean desde la interfaz.
+
 ## [1.0.3] - 2026-11-05
 
 ### Cambiado

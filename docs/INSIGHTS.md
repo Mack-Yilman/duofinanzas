@@ -52,4 +52,6 @@ Formato: **tema**. Decisión. *Por qué.*
 - **`main` protegida** (ruleset “Proteger main”, 2026-11-05): todo entra por PR, el check `version-check` es
   obligatorio y el push forzado y el borrado están bloqueados. Para reescribir historial hay que poner la
   regla en *Disabled* antes (Settings → Rules).
+- **Tags antiguos**: el `GITHUB_TOKEN` solo puede etiquetar commits cuyos workflows coincidan con los
+  actuales. Para versiones pasadas: GitHub → Releases → *Draft a new release* → tag nuevo + commit destino.
 
