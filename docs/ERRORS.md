@@ -51,4 +51,6 @@ Resultado: **sin vulnerabilidades explotables con confianza ≥ 8/10**. Se endur
   (`refs/pull/*` son inmutables) y por SHA directo · GitHub conserva las referencias de los PR · el titular
   borró y recreó el repositorio, y se subió el historial ya limpio. Se perdieron los PR #1–#7 y el historial
   de Actions (el código y los docs se conservan).
+- **CI** — el primer “Tag y Release” falló con `fatal: empty ident name` · `git tag -a` requiere
+  `user.name/email` en el runner · el tag se crea con `gh release create --target <sha>` (v1.0.1).
 
