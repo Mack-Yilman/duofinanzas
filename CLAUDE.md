@@ -43,6 +43,9 @@ montos de estadísticas en PEN (`amountBase`); gastos visibles = compartidos + p
 9. Antes de hacer push: `npx tsc --noEmit && npm run lint && npm test && npm run build && npm run e2e`
    (el build con `NEXT_PUBLIC_BASE_PATH=/duofinanzas`; en el sandbox usa `PW_CHROMIUM=/opt/pw-browsers/chromium`).
 10. Responde y documenta en español.
+12. **Licencia propietaria** (`LICENSE`, `"license": "UNLICENSED"`): todos los derechos reservados a Mack Chirinos.
+    No añadas licencias abiertas ni código de terceros con licencias incompatibles (copyleft como GPL/AGPL)
+    sin consultarlo; las dependencias permisivas (MIT, Apache-2.0, BSD, ISC) están bien.
 11. **Versionado obligatorio en cada PR**: sube `version` en `package.json` (SemVer: patch = arreglos,
     minor = funcionalidades, major = incompatibles) y añade `## [X.Y.Z] - fecha` en `CHANGELOG.md`.
     El check “Versión obligatoria” bloquea el PR si falta (excepto los PR de Dependabot); al fusionar se crean el tag

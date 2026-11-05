@@ -10,6 +10,7 @@ cada uno y lleven sus metas de ahorro juntos, con constancias de pago y privacid
 [![CI](https://img.shields.io/github/actions/workflow/status/Mack-Yilman/duofinanzas/ci.yml?label=CI&style=flat-square)](https://github.com/Mack-Yilman/duofinanzas/actions/workflows/ci.yml)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat-square&logo=next.js)](https://nextjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20RLS-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com/)
+[![Licencia](https://img.shields.io/badge/licencia-propietaria-c0392b?style=flat-square)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
 **[Abrir la app →](https://mack-yilman.github.io/duofinanzas/)**
@@ -109,5 +110,12 @@ Versionado [SemVer](https://semver.org/lang/es/): **patch** = arreglos · **mino
 | [`docs/ERRORS.md`](docs/ERRORS.md) | Bitácora de errores y soluciones |
 | [`docs/PENDIENTES.md`](docs/PENDIENTES.md) | Tareas abiertas y propuestas de mejora |
 | [`docs/SECURITY-AUDIT.md`](docs/SECURITY-AUDIT.md) | Auditoría de seguridad |
+
+## ⚖️ Licencia
+
+**© 2026 Mack Chirinos. Todos los derechos reservados.** El código es visible públicamente pero **no es código
+abierto**: no se permite copiarlo, modificarlo, desplegarlo ni distribuirlo sin autorización escrita (ver
+[`LICENSE`](LICENSE)). Las dependencias de terceros conservan sus propias licencias. Permisos:
+mack.yilman@gmail.com.
 
 <div align="center"><sub>Proyecto personal sin fines comerciales · Hecho con ❤️ en Perú</sub></div>

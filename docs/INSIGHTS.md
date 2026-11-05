@@ -94,3 +94,7 @@ Formato: **tema**. Decisión. *Por qué.*
 - **Importar CSV**: mismo `computeExpenseFields` que un gasto manual; duplicado = fecha + monto + descripción
   normalizada; los personales se asignan a quien importa (no se pueden crear personales de la pareja).
 - **Filtros en la URL** (`?q=&cat=&who=&status=`): se pueden compartir/guardar y el selector de periodo los conserva.
+- **Licencia**: repositorio público + `LICENSE` propietaria = “código visible, no abierto”. Los Términos de GitHub
+  obligan a permitir ver y hacer fork dentro de GitHub; la licencia lo reconoce y prohíbe todo lo demás. Para una
+  protección mayor, el repositorio puede pasar a **privado**: Pages sigue publicando desde Actions en cuentas
+  con GitHub Pro, pero en el plan Free un repo privado **no** puede usar Pages.
