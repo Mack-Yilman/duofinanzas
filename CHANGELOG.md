@@ -7,6 +7,13 @@ y [SemVer](https://semver.org/lang/es/): **MAJOR** = cambios incompatibles, **MI
 > Regla: cada PR a `main` sube la versión en `package.json` y añade aquí su entrada. Al fusionar,
 > GitHub Actions crea el tag `vX.Y.Z` y su Release automáticamente.
 
+## [1.0.1] - 2026-11-05
+
+### Corregido
+- Workflow “Tag y Release”: el tag se crea con la API de GitHub (`gh release create --target`) en lugar de
+  `git tag -a`, que fallaba por falta de identidad de git en el runner. Permite etiquetar un commit anterior
+  manualmente (entrada `ref`) para publicar la v1.0.0.
+
 ## [1.0.0] - 2026-11-05
 Primera versión estable publicada en GitHub Pages.
 

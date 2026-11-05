@@ -1,10 +1,17 @@
 name: Tag y Release
 
 # Al fusionar en main crea el tag vX.Y.Z (según package.json) y un Release con su entrada del CHANGELOG.
+# El tag lo crea la API de GitHub (gh release create --target): no requiere identidad de git en el runner.
+# Manual: "Run workflow" con `ref` permite etiquetar un commit anterior (p. ej. una versión que no se publicó).
 on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      ref:
+        description: "Commit o rama a etiquetar (por defecto main)"
+        required: false
+        default: main
 
 permissions:
   contents: write
@@ -19,6 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref || github.sha }}
           fetch-depth: 0
       - name: Crear tag y Release si no existen
         env:
@@ -26,16 +34,16 @@ jobs:
         run: |
           VERSION=$(node -p "require('./package.json').version")
           TAG="v$VERSION"
-          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+          SHA=$(git rev-parse HEAD)
+          if gh release view "$TAG" >/dev/null 2>&1 || git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then
             echo "El tag $TAG ya existe; nada que hacer."
             exit 0
           fi
           # Notas: la sección "## [VERSION]" del CHANGELOG hasta la siguiente versión.
           awk -v v="$VERSION" '
-            $0 ~ "^## \\[" v "\\]" {on=1; next}
+            index($0, "## [" v "]") == 1 {on=1; next}
             on && /^## \[/ {exit}
             on {print}
           ' CHANGELOG.md > notes.md
-          git tag -a "$TAG" -m "DúoFinanzas $TAG"
-          git push origin "$TAG"
-          gh release create "$TAG" --title "DúoFinanzas $TAG" --notes-file notes.md --verify-tag
+          gh release create "$TAG" --target "$SHA" --title "DúoFinanzas $TAG" --notes-file notes.md
+          echo "✅ Creado $TAG en $SHA"
