@@ -7,6 +7,12 @@ y [SemVer](https://semver.org/lang/es/): **MAJOR** = cambios incompatibles, **MI
 > Regla: cada PR a `main` sube la versión en `package.json` y añade aquí su entrada. Al fusionar,
 > GitHub Actions crea el tag `vX.Y.Z` y su Release automáticamente.
 
+## [1.3.2] - 2026-11-05
+
+### Documentación
+- Pendiente acordado: migrar el hosting a Cloudflare Pages y hacer el repositorio privado (plan detallado en
+  `docs/PENDIENTES.md`).
+
 ## [1.3.1] - 2026-11-05
 
 ### Añadido
