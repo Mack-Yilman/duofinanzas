@@ -6,7 +6,7 @@
  * el consentimiento a todos los usuarios.
  */
 export const LEGAL = {
-  version: "2026-11-05",
+  version: "2026-11-05.2",
   updatedAt: "5 de noviembre de 2026",
   /** Las imágenes de constancias se eliminan automáticamente pasado este plazo. */
   receiptRetentionMonths: 12,

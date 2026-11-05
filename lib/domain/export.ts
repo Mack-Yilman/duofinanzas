@@ -3,11 +3,12 @@ import { toDateString } from "./dates";
 
 /**
  * Celda CSV segura: comillas escapadas y protección contra inyección de fórmulas
- * (Excel ejecuta celdas que empiezan por = + - @ o tabulador/retorno).
+ * (Excel ejecuta celdas que empiezan por = + - @ o tabulador/retorno, también tras espacios
+ * iniciales o con sus variantes de ancho completo ＝ ＋ － ＠).
  */
 export function csvCell(value: unknown): string {
   let s = value === null || value === undefined ? "" : String(value);
-  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
+  if (/^[\s\u00a0\u3000]*[=+\-@\uff1d\uff0b\uff0d\uff20\t\r]/.test(s)) s = `'${s}`;
   return /[";\n\r]/.test(s) || s.startsWith("'") ? `"${s.replace(/"/g, '""')}"` : s;
 }
 

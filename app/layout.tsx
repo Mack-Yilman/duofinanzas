@@ -11,12 +11,14 @@ import { ServiceWorkerRegister } from "@/components/sw-register";
  * código, no podría enviar datos a OTRO proyecto de Supabase.
  */
 function supabaseOrigin(): { https: string; wss: string } {
+  let u: URL;
   try {
-    const u = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "");
-    return { https: u.origin, wss: `${u.protocol === "http:" ? "ws:" : "wss:"}//${u.host}` };
+    u = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "");
   } catch {
-    return { https: "https://*.supabase.co", wss: "wss://*.supabase.co" };
+    // Sin URL válida el build falla: nunca se publica una CSP con comodines (`*.supabase.co`).
+    throw new Error("NEXT_PUBLIC_SUPABASE_URL no es una URL válida: no se puede generar la CSP.");
   }
+  return { https: u.origin, wss: `${u.protocol === "http:" ? "ws:" : "wss:"}//${u.host}` };
 }
 const SB = supabaseOrigin();
 
@@ -86,13 +88,20 @@ export default function RootLayout({
             "object-src 'none'",
             "base-uri 'self'",
             "form-action 'self'",
+            "upgrade-insecure-requests",
           ].join("; ")}
         />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
-        {/* Anti-clickjacking: Pages no envía X-Frame-Options y `frame-ancestors` no funciona en <meta>.
-            Si la app se carga dentro de un iframe ajeno, sale de él. */}
+        {/* Anti-clickjacking (patrón OWASP): Pages no envía X-Frame-Options y `frame-ancestors` no
+            funciona en <meta>. La página nace OCULTA y solo se muestra si no está dentro de un iframe;
+            así un <iframe sandbox> (que bloquea la redirección) tampoco puede mostrarla. Se usa un
+            atributo en <html> (React no lo toca al hidratar) en vez de quitar el <style>. */}
+        <style>{"html:not([data-top]){display:none!important}"}</style>
         <script
-          dangerouslySetInnerHTML={{ __html: "if(window.top!==window.self){window.top.location=window.self.location.href}" }}
+          dangerouslySetInnerHTML={{
+            __html:
+              'if(window.self===window.top){document.documentElement.setAttribute("data-top","")}else{try{window.top.location=window.self.location.href}catch(e){}}',
+          }}
         />
       </head>
       <body suppressHydrationWarning className={`${outfit.variable} ${fraunces.variable} ${jetbrainsMono.variable} min-h-screen flex flex-col font-sans antialiased`}>

@@ -19,9 +19,9 @@ export async function exportMyData() {
   const me = await requireUser();
   const { data: { user } } = await supabase.auth.getUser();
   const q = async (table: string) => unwrap(await supabase.from(table).select("*")) ?? [];
-  const [profiles, couples, incomes, expenses, goals, contributions, categories, receipts, budgets, recurring] = await Promise.all([
+  const [profiles, couples, incomes, expenses, goals, contributions, categories, receipts, budgets, recurring, settlements, categoryRules] = await Promise.all([
     q("profiles"), q("couples"), q("incomes"), q("expenses"), q("goals"), q("goal_contributions"), q("categories"), q("receipts"),
-    q("budgets"), q("recurring_expenses"),
+    q("budgets"), q("recurring_expenses"), q("settlements"), q("category_rules"),
   ]);
   const payload = {
     generado: new Date().toISOString(),
@@ -29,7 +29,7 @@ export async function exportMyData() {
     cuenta: { id: me.id, email: user?.email, creada: user?.created_at, ultimo_acceso: user?.last_sign_in_at },
     perfiles: profiles, pareja: couples, ingresos: incomes, gastos: expenses, categorias: categories,
     metas: goals, aportes: contributions, constancias: receipts,
-    presupuestos: budgets, gastos_recurrentes: recurring,
+    presupuestos: budgets, gastos_recurrentes: recurring, liquidaciones: settlements, reglas_de_categoria: categoryRules,
   };
   const url = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
   const a = document.createElement("a");

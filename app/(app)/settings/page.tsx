@@ -24,6 +24,7 @@ export default function SettingsPage() {
   if (error) return <PageError error={error} />;
   if (isLoading || !data || !me) return <PageSkeleton />;
   const { couple } = data;
+  const coupleFull = data.users.length >= 2;
 
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
@@ -49,10 +50,15 @@ export default function SettingsPage() {
             </div>
             <div>
               <p className="text-sm font-medium">Código de Invitación (Pareja)</p>
-              <div className="flex items-center gap-4 mt-1">
-                <code className="px-3 py-1 bg-muted rounded-md text-sm font-mono">{couple.inviteCode}</code>
-                <p className="text-xs text-muted-foreground">Comparte este código con tu pareja para que se una.</p>
-              </div>
+              {/* Al completarse la pareja el código se rota en la BD y deja de servir: no se muestra. */}
+              {coupleFull ? (
+                <p className="mt-1 text-xs text-muted-foreground">Tu pareja ya se unió. El código de invitación quedó desactivado.</p>
+              ) : (
+                <div className="flex items-center gap-4 mt-1">
+                  <code className="px-3 py-1 bg-muted rounded-md text-sm font-mono">{couple.inviteCode}</code>
+                  <p className="text-xs text-muted-foreground">Comparte este código con tu pareja para que se una.</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -127,17 +133,17 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle>Cambiar contraseña</CardTitle>
-            <CardDescription>Mínimo 8 caracteres.</CardDescription>
+            <CardDescription>Mínimo 10 caracteres.</CardDescription>
           </CardHeader>
           <CardContent>
             <form action={changePasswordAction} className="space-y-3 max-w-sm">
               <div className="space-y-2">
                 <Label htmlFor="password">Nueva contraseña</Label>
-                <Input id="password" name="password" type="password" minLength={8} autoComplete="new-password" required />
+                <Input id="password" name="password" type="password" minLength={10} autoComplete="new-password" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm">Repetir contraseña</Label>
-                <Input id="confirm" name="confirm" type="password" minLength={8} autoComplete="new-password" required />
+                <Input id="confirm" name="confirm" type="password" minLength={10} autoComplete="new-password" required />
               </div>
               <Button type="submit">Actualizar contraseña</Button>
             </form>

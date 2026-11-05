@@ -11,6 +11,8 @@ Lista viva de tareas acordadas que quedan abiertas. Al cerrar una, muévela a `d
 | 🟡 Media | Ruleset de `main`: marcar `checks` (CI + E2E) como obligatorio | Titular (Settings → Rules) |
 | 🟡 Media | Auth → *Password requirements* (mínimo 10 caracteres + complejidad) | Titular (panel de Supabase) |
 | 🟢 Recomendado | Activar la verificación en dos pasos en la cuenta de administrador | Titular (Ajustes en la app) |
+| 🟡 Media | Auth → *Secure password change* (pedir sesión reciente/AAL2 para cambiar la contraseña) | Titular (panel de Supabase) |
+| 🟢 Recomendado | Mínimo de contraseña en Auth = 10 (la app ya lo exige desde v1.4.0) | Titular (panel de Supabase) |
 
 ## Propuestas implementadas (v1.2.0)
 Presupuestos por categoría, gastos recurrentes, PWA, exportar CSV/PDF, recordatorio de liquidación, resumen
@@ -21,20 +23,24 @@ Notion y dependencias muertas.
 Comparativa con el periodo anterior, proyección de cierre, tasa de ahorro, fecha estimada de metas, gráfico de
 evolución acumulado, búsqueda y filtros, editar ingresos, liquidar todo, importar CSV y deshacer al eliminar.
 
+## Implementado en v1.4.0
+Historial de liquidaciones (`/settlements`), reglas de categorización al importar, presupuesto personal,
+comparativa interanual en `/summary`, PDF de boletas y una segunda auditoría de seguridad (ver
+`docs/SECURITY-AUDIT.md`).
+
 ## Ideas futuras (sin acordar)
 | Idea | Valor | Nota |
 |---|---|---|
-| Notificaciones push del recordatorio de liquidación | Medio | Requiere Web Push + Edge Function con claves VAPID |
-| Presupuesto por persona (gastos personales) | Medio | Extender `budgets` con `user_id` opcional |
-| Adjuntar PDF de boletas electrónicas (SUNAT) | Bajo | Hoy el bucket solo acepta imágenes |
-| Reglas de categorización automática al importar (p. ej. “Wong” → Supermercado) | Medio | Tabla `category_rules` por pareja |
-| Comparativa interanual (mismo mes del año pasado) en `/summary` | Bajo | Reutiliza `comparePeriods` |
-| Historial de liquidaciones (quién pagó a quién y cuándo) | Medio | Tabla `settlements` + vínculo a los gastos |
+| Notificaciones push del recordatorio de liquidación | Medio | Requiere Web Push + Edge Function con claves VAPID (pospuesta el 2026-11-05) |
+| Deshacer una liquidación desde el historial | Bajo | Hoy el historial es inmutable; requeriría RPC que desmarque los gastos |
+| Constancia ligada a la liquidación (`receipts.settlement_id`) | Bajo | Hoy se guarda en el gasto más reciente de la liquidación |
+| Aplicar reglas de categoría también al crear un gasto a mano | Bajo | Reutiliza `matchCategoryRule` |
+| Límite de peticiones en la ruta cron de `cleanup-receipts` | Bajo | Hoy solo valida el secreto de 256 bits |
 
 ## Ahorro del plan Free de Supabase (estado)
 | Límite Free | Uso actual | Medida aplicada |
 |---|---|---|
-| Storage 1 GB | ~0 MB | Compresión ≤ 1280 px / ~80-400 KB, caducidad de 12 meses, limpieza semanal |
+| Storage 1 GB | ~0 MB | Compresión ≤ 1280 px / ~80-400 KB, PDF ≤ 2 MB, bucket 3 MB, cuota 500 archivos/pareja y 30 subidas/hora, caducidad de 12 meses, limpieza semanal |
 | Transferencia 5 GB/mes | Bajo | `Cache-Control` de 1 año + URLs firmadas reutilizadas (12 min) |
 | BD 500 MB | 12 MB | Tablas pequeñas; sin acción |
 | Pausa tras 7 días sin actividad | — | `keepalive.yml` (3 veces por semana) |

@@ -1,9 +1,27 @@
-import type { Category, Currency, Expense } from "../types";
+import type { Category, CategoryRule, Currency, Expense } from "../types";
 import { normalize } from "./filters";
 import { toDateString } from "./dates";
 
 export const IMPORT_MAX_ROWS = 500;
 export const IMPORT_MAX_BYTES = 1024 * 1024;
+
+/**
+ * Regla de categorización que aplica a una descripción: el patrón (sin tildes ni mayúsculas)
+ * debe estar contenido en ella. Si varias coinciden gana la más específica (patrón más largo).
+ * Ignora reglas de categorías que ya no existen.
+ */
+export function matchCategoryRule(name: string, rules: CategoryRule[], categories: Category[]): Category | undefined {
+  const text = normalize(name);
+  const byId = new Map(categories.map((c) => [c.id, c]));
+  let best: { len: number; cat: Category } | undefined;
+  for (const r of rules) {
+    const p = normalize(r.pattern);
+    const cat = byId.get(r.categoryId);
+    if (p.length < 2 || !cat || !text.includes(p)) continue;
+    if (!best || p.length > best.len) best = { len: p.length, cat };
+  }
+  return best?.cat;
+}
 
 /** Parser CSV (RFC 4180) con separador `;` o `,` detectado en la cabecera. */
 export function parseCsv(text: string): string[][] {
@@ -97,7 +115,7 @@ const dupKey = (date: Date, amount: number, name: string) => `${toDateString(dat
  */
 export function buildImport(
   text: string,
-  ctx: { categories: Category[]; users: { id: string; name: string }[]; existing: Expense[] }
+  ctx: { categories: Category[]; users: { id: string; name: string }[]; existing: Expense[]; rules?: CategoryRule[] }
 ): ImportResult {
   const table = parseCsv(text);
   const errors: ImportResult["errors"] = [];
@@ -123,14 +141,15 @@ export function buildImport(
     const line = i + 2;
     const get = (k: keyof typeof COLS) => (idx[k] >= 0 ? (cells[idx[k]] ?? "").trim() : "");
     const date = parseDate(get("date"));
-    const name = get("name").replace(/^'(?=[=+\-@])/, "").slice(0, 120); // quita el escape anti-fórmulas de la exportación
+    const name = get("name").replace(/^'(?=[\s 　]*[=+\-@＝＋－＠])/, "").slice(0, 120); // quita el escape anti-fórmulas de la exportación
     const amount = parseAmount(get("amount"));
     const cur = get("currency").toUpperCase() || "PEN";
     if (!date) return errors.push({ line, message: `Fecha inválida: “${get("date")}”` });
     if (!name) return errors.push({ line, message: "Falta la descripción" });
     if (!Number.isFinite(amount) || amount <= 0) return errors.push({ line, message: `Monto inválido: “${get("amount")}”` });
     if (!["PEN", "USD", "EUR"].includes(cur)) return errors.push({ line, message: `Moneda no soportada: ${cur}` });
-    const cat = catByName.get(normalize(get("category")));
+    // 1) columna Categoría; 2) reglas de la pareja por descripción.
+    const cat = catByName.get(normalize(get("category"))) ?? matchCategoryRule(name, ctx.rules ?? [], ctx.categories);
     const key = dupKey(date, amount, name);
     const duplicate = seen.has(key);
     seen.add(key);

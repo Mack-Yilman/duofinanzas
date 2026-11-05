@@ -39,9 +39,12 @@ export function BudgetsCard({ budgets }: { budgets: BudgetStatus[] }) {
       </CardHeader>
       <CardContent className="space-y-4">
         {budgets.map((b) => (
-          <div key={b.categoryId} className="space-y-1.5">
+          <div key={`${b.categoryId}-${b.personal ? "p" : "s"}`} className="space-y-1.5">
             <div className="flex items-center justify-between gap-2 text-sm">
-              <span className="truncate">{b.icon} {b.name}</span>
+              <span className="truncate">
+                {b.icon} {b.name}
+                {b.personal && <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase text-muted-foreground">personal</span>}
+              </span>
               <span className={cn("shrink-0 tabular-nums", b.level === "over" ? "text-destructive font-medium" : "text-muted-foreground")}>
                 {formatMoney(b.spent, "PEN")} / {formatMoney(b.limit, "PEN")} · {b.pct} %
               </span>
@@ -49,7 +52,7 @@ export function BudgetsCard({ budgets }: { budgets: BudgetStatus[] }) {
             <div
               className="h-2 overflow-hidden rounded-full bg-muted"
               role="progressbar"
-              aria-label={`Presupuesto de ${b.name}`}
+              aria-label={`Presupuesto${b.personal ? " personal" : ""} de ${b.name}`}
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.min(b.pct, 100)}

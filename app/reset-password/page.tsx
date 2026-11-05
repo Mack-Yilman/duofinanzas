@@ -37,7 +37,7 @@ export default function ResetPasswordPage() {
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-2xl">Nueva contraseña</CardTitle>
-          <CardDescription>Elige una contraseña de al menos 8 caracteres.</CardDescription>
+          <CardDescription>Elige una contraseña de al menos 10 caracteres.</CardDescription>
         </CardHeader>
         {ready === false ? (
           <CardContent className="space-y-4">
@@ -51,11 +51,11 @@ export default function ResetPasswordPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="password">Nueva contraseña</Label>
-                <Input id="password" name="password" type="password" minLength={8} autoComplete="new-password" required disabled={isPending || !ready} />
+                <Input id="password" name="password" type="password" minLength={10} autoComplete="new-password" required disabled={isPending || !ready} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm">Repetir contraseña</Label>
-                <Input id="confirm" name="confirm" type="password" minLength={8} autoComplete="new-password" required disabled={isPending || !ready} />
+                <Input id="confirm" name="confirm" type="password" minLength={10} autoComplete="new-password" required disabled={isPending || !ready} />
               </div>
               {error && <p className="text-sm text-destructive text-center" role="alert">{error}</p>}
             </CardContent>

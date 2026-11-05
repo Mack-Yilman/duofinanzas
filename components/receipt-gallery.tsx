@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Paperclip, Trash2, X } from "lucide-react";
+import { FileText, Paperclip, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { deleteReceipt, signedUrls, SIGNED_URL_STALE_MS, type Receipt } from "@/lib/repos/receipts";
 import { queryClient } from "@/lib/query-client";
 import { cn } from "@/lib/utils";
+
+const isPdf = (path: string) => path.toLowerCase().endsWith(".pdf");
 
 const KIND_LABEL: Record<string, string> = {
   expense: "Comprobante del gasto",
@@ -88,7 +90,18 @@ export function ReceiptGallery({
             <div className="grid gap-4 sm:grid-cols-2">
               {receipts.map((r) => (
                 <figure key={r.id} className="overflow-hidden rounded-xl border border-border">
-                  {urls[r.path] ? (
+                  {urls[r.path] && isPdf(r.path) ? (
+                    // La CSP prohíbe iframes/objetos: el PDF se abre en otra pestaña (URL firmada).
+                    <a
+                      href={urls[r.path]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-56 w-full flex-col items-center justify-center gap-2 bg-muted text-sm font-medium hover:text-primary"
+                    >
+                      <FileText className="h-10 w-10" aria-hidden />
+                      Abrir PDF
+                    </a>
+                  ) : urls[r.path] ? (
                     <a href={urls[r.path]} target="_blank" rel="noopener noreferrer">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={urls[r.path]} alt={KIND_LABEL[r.kind]} className="h-56 w-full bg-muted object-contain" />

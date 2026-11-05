@@ -42,7 +42,7 @@ CI/CD:
 | `lib/mfa.ts` | Verificación en dos pasos (TOTP): activar, verificar al entrar, desactivar. |
 | `public/sw.js` + `app/manifest.ts` | PWA: service worker (solo estáticos del mismo origen) y manifest. |
 | `e2e/` | Pruebas Playwright contra `out/` con Supabase simulado (`npm run e2e`). |
-| `lib/couple-data.ts` | Carga paralela de todo lo de la pareja (9 consultas) con TanStack Query. |
+| `lib/couple-data.ts` | Carga paralela de todo lo de la pareja (11 consultas) con TanStack Query. |
 | `lib/legal.ts` | Datos del titular y versión de las políticas (Ley 29733). |
 | `supabase/migrations/` | Esquema versionado (aplicar en orden). |
 | `supabase/functions/admin-invite/` | Edge Function de invitaciones (Deno). |
@@ -59,40 +59,52 @@ CI/CD:
 | `couples` | `invite_code` (DUO-XXXXXXXX), `fx_rate` USD→PEN, `cutoff_day`. Alta solo vía `create_couple`. |
 | `profiles` | 1:1 con `auth.users`; `couple_id`, `role`, `consent_version/at`. Editable solo `name`, `avatar_color`. |
 | `categories`, `incomes`, `expenses`, `goals`, `goal_contributions` | Todas con `couple_id` (default `private.my_couple_id()`). |
-| `budgets` | Presupuesto por categoría y periodo (PEN); único por `(couple_id, category_id)`. |
+| `budgets` | Presupuesto por categoría y periodo (PEN). `user_id` NULL = compartido (cuenta gastos compartidos); con `user_id` = personal (solo sus gastos personales, solo lo ve su dueño). Único `nulls not distinct (couple_id, category_id, user_id)`. |
+| `settlements` | Historial de liquidaciones (una fila por moneda): `from_user`, `to_user`, `amount`, `expense_count`. Solo SELECT/INSERT (inmutable). `expenses.settlement_id` enlaza los gastos. |
+| `category_rules` | “Si la descripción contiene `pattern` → `category_id`” (al importar CSV). Único por `(couple_id, lower(pattern))`. |
 | `recurring_expenses` | Plantillas mensuales (día 1-28, `next_date`). Las personales solo las ve quien paga. `expenses.recurring_id` + índice único `(recurring_id, date)`. |
-| `receipts` | Constancias: `kind` = expense / settlement / goal_contribution; `path` = `<couple_id>/<uuid>.<ext>`; máx. 5 por registro. |
+| `receipts` | Constancias (imágenes o PDF): `kind` = expense / settlement / goal_contribution; `path` = `<couple_id>/<uuid>.<ext>`; máx. 5 por registro. Visibles solo si el gasto/aporte lo es (las de gastos personales, solo su dueño). |
 | `invitations` | Correos invitados. Sin políticas: solo la Edge Function (service role) y RPCs. |
 | `app_admins`, `admin_audit` | Administradores y auditoría. Sin políticas: solo vía RPC. |
 
 ## Seguridad (capas)
 1. **Acceso por invitación**: trigger `BEFORE INSERT` en `auth.users` (`private.enforce_invite_only`)
    rechaza altas sin invitación vigente, aunque el registro público siga activo.
-2. **RLS** en todas las tablas; helpers en el esquema `private` (no expuesto por la API).
+2. **RLS** en todas las tablas; helpers en el esquema `private` (no expuesto por la API). Lo personal (gastos,
+   sus constancias, presupuestos y recurrentes personales) solo lo ve su dueño; los ingresos los ve la pareja pero
+   solo los edita su dueño; `created_by` lo fija un trigger.
 3. **RPCs admin** (`admin_*`) verifican `admin_assert()` y escriben en `admin_audit`. El admin no ve finanzas.
-4. **Storage**: bucket privado, 5 MB, solo imágenes; políticas por carpeta `<couple_id>/`.
-   La app re-codifica a WebP/JPEG ≤ 1280 px (quita EXIF/GPS). Caducidad a los 12 meses + limpieza semanal.
+4. **Storage**: bucket privado, 3 MB, imágenes y PDF; políticas por carpeta `<couple_id>/` + objeto visible solo si
+   su fila en `receipts` lo es (o si eres quien lo subió); nombre `<uuid>/<uuid>.<ext>` y cuota (500 por pareja,
+   30/hora por persona). La app re-codifica las imágenes a WebP/JPEG ≤ 1280 px (quita EXIF/GPS; si no puede, no
+   sube) y verifica la firma `%PDF-`. Caducidad a los 12 meses + limpieza semanal.
 5. **CSP** por `<meta>` (Pages no permite cabeceras): `connect-src` solo el host del proyecto Supabase y
-   Frankfurter; script anti-clickjacking (sale de iframes ajenos).
+   Frankfurter, `upgrade-insecure-requests`; el build falla si falta la URL de Supabase. Anti-clickjacking: la
+   página nace oculta y solo se muestra si `self === top` (resiste `<iframe sandbox>`).
 6. **Edge Function** `admin-invite`: CORS solo para el sitio y localhost, verifica JWT + rol admin,
    límite de 20 invitaciones/hora, `redirectTo` calculado en el servidor (no lo controla el cliente).
+7. **Pareja**: el código de invitación se desactiva al completarse la pareja y rota si alguien sale;
+   `join_couple` limita a 10 intentos/hora y no revela si un código existe.
 
 ## Rutas de la app
 `/` dashboard (estadísticas, presupuestos, recordatorio, evolución) · `/expenses` (filtros `?q=&cat=&who=&status=`,
 CSV/PDF, liquidar todo) · `/expenses/import` · `/recurring` · `/summary?year=` · `/income` (+ `/income/edit?id=`) ·
-`/goals` (fecha estimada) · `/categories` (presupuestos) · `/settings` (MFA) · `/admin`.
+`/goals` (fecha estimada) · `/categories` (presupuestos compartido/personal y reglas de importación) ·
+`/settlements` (historial de liquidaciones) · `/settings` (MFA) · `/admin`.
 
 ## MFA
 `private.mfa_ok()` = sesión AAL2 **o** sin factor TOTP verificado. Está dentro de `private.my_couple_id()` y
 `private.is_admin()`: con MFA activa y solo contraseña, RLS no devuelve datos y las RPC de admin fallan.
 
 ## RPCs
-- Usuario: `create_couple`, `join_couple`, `is_admin`, `accept_terms`, `delete_my_account`.
+- Usuario: `create_couple`, `join_couple` (NULL si el código no sirve), `is_admin`, `accept_terms`,
+  `delete_my_account` (ambas exigen AAL2 con MFA), `record_settlement` (SECURITY INVOKER: liquidación atómica).
 - Admin: `admin_list_users`, `admin_stats`, `admin_set_banned`, `admin_remove_from_couple`,
   `admin_set_admin`, `admin_delete_user`, `admin_audit_log`, `admin_list_invitations`, `admin_revoke_invitation`.
 - Solo service_role: `prepare_invitation`, `cancel_invitation`, `orphan_receipt_paths`, `log_system_action`,
   `verify_cron_secret`.
-- Internas (`private`, sin acceso por API): `expire_old_receipts`, `run_receipts_maintenance`.
+- Internas (`private`, sin acceso por API): `expire_old_receipts`, `run_receipts_maintenance`, `new_invite_code`,
+  `stamp_created_by`; helpers de políticas `receipt_target_visible`, `receipt_path_visible`, `receipt_quota_ok`.
 
 ## Comandos
 ```bash

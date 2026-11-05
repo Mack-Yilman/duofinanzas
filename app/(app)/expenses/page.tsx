@@ -3,7 +3,7 @@
 import { Suspense, useMemo } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { FileUp, Plus, Receipt, Repeat, SearchX } from "lucide-react";
+import { FileUp, Plus, Receipt, Repeat, SearchX, History } from "lucide-react";
 import { ExpenseFilters } from "@/components/expense-filters";
 import { SettleAll } from "@/components/settle-all";
 import { filterExpenses, hasFilters, parseFilters } from "@/lib/domain/filters";
@@ -54,6 +54,10 @@ function Expenses() {
           <Link href="/expenses/import" className={buttonVariants({ variant: "outline", className: "gap-2" })} aria-label="Importar CSV">
             <FileUp className="w-4 h-4" />
             <span className="hidden sm:inline">Importar</span>
+          </Link>
+          <Link href="/settlements" className={buttonVariants({ variant: "outline", className: "gap-2" })} aria-label="Historial de liquidaciones">
+            <History className="w-4 h-4" />
+            <span className="hidden sm:inline">Liquidaciones</span>
           </Link>
           <Link href="/recurring" className={buttonVariants({ variant: "outline", className: "gap-2" })}>
             <Repeat className="w-4 h-4" />

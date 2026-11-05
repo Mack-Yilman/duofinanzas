@@ -15,15 +15,17 @@ App de finanzas en pareja. **Sitio 100 % estático** (Next.js 16 `output: "expor
 ## Mapa rápido del código
 | Dónde | Qué |
 |---|---|
-| `lib/domain/*.ts` | Lógica pura **con tests** (`*.test.ts`): `split` (reparto), `period`, `fx`, `dashboard`, `budgets`, `recurring`, `stats` (comparativa, proyección, ahorro, ETA de metas, evolución), `filters`, `export`/`import` (CSV), `annual`. |
+| `lib/domain/*.ts` | Lógica pura **con tests** (`*.test.ts`): `split` (reparto, `buildSettlements`), `period`, `fx`, `dashboard`, `budgets` (compartido/personal), `recurring`, `stats` (comparativa, proyección, ahorro, ETA de metas, evolución), `filters`, `export`/`import` (CSV, `matchCategoryRule`), `annual` (+ `compareYearOverYear`). |
 | `lib/repos/*.ts` | Acceso a Supabase (snake_case ↔ camelCase en `mappers.ts`). |
 | `lib/actions/*.ts` | Mutaciones de formularios. `action()` = toast + invalidar caché; los borrados usan `deferDelete` (`lib/undo.ts`, “Deshacer” 5 s). |
-| `lib/couple-data.ts` | Todo lo de la pareja en 9 consultas paralelas (TanStack Query); `computeDashboard` lo procesa en memoria. |
-| `app/(app)/*` | Rutas con sesión: `/`, `/expenses` (filtros `?q=&cat=&who=&status=`, CSV/PDF, liquidar todo), `/expenses/import`, `/recurring`, `/income` (+ `/income/edit?id=`), `/goals`, `/summary`, `/categories`, `/settings`. |
+| `lib/couple-data.ts` | Todo lo de la pareja en 11 consultas paralelas (TanStack Query); `computeDashboard` lo procesa en memoria. |
+| `app/(app)/*` | Rutas con sesión: `/`, `/expenses` (filtros `?q=&cat=&who=&status=`, CSV/PDF, liquidar todo), `/expenses/import`, `/settlements`, `/recurring`, `/income` (+ `/income/edit?id=`), `/goals`, `/summary` (interanual), `/categories` (presupuestos y reglas), `/settings`. |
 | `e2e/` | Playwright contra `out/` con Supabase simulado (`mock-supabase.ts` registra las escrituras para comprobarlas). |
 
 Convenciones: lógica nueva → función pura en `lib/domain` + test; UI visible nueva → E2E en `e2e/app.spec.ts`;
-montos de estadísticas en PEN (`amountBase`); gastos visibles = compartidos + personales propios.
+montos de estadísticas en PEN (`amountBase`); gastos visibles = compartidos + personales propios (**lo garantiza RLS**:
+todo dato “personal” nuevo debe filtrarse en la política, no solo en la UI); tabla nueva → añadirla a
+`exportMyData` (`lib/actions/account.ts`). Liquidar = RPC `record_settlement` (nunca PATCH sueltos a `is_settled`).
 
 ## Reglas del proyecto
 1. **Cada bug o hallazgo nuevo se registra** en `docs/ERRORS.md` (síntoma · causa · solución) y cada
@@ -35,6 +37,7 @@ montos de estadísticas en PEN (`amountBase`); gastos visibles = compartidos + p
 4. **Toda tabla nueva** necesita: RLS activado, `revoke all … from anon, authenticated`, GRANT mínimo y
    políticas con `(select private.my_couple_id())`. Helpers de políticas van en el esquema `private`.
 5. **Funciones SECURITY DEFINER**: `set search_path = ''`, nombres calificados, `revoke execute … from public, anon`.
+   Las RPC que actúan sobre la propia cuenta deben exigir `private.mfa_ok()`. Prefiere SECURITY INVOKER si RLS basta.
 6. **Migraciones**: archivo numerado en `supabase/migrations/` + aplicarlo al proyecto
    `vjglzizutcijcyexcume`. Después, revisar `get_advisors` (security y performance).
 7. **Secretos**: la service role key solo existe en la Edge Function. La URL y la clave *publishable*

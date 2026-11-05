@@ -54,15 +54,20 @@ export default function IncomePage() {
                     {inc.type === "freelance" && <Globe className="w-4 h-4 text-muted-foreground" />}
                     {inc.type === "bonus" && <TrendingUp className="w-4 h-4 text-muted-foreground" />}
                     {inc.type === "other" && <Coins className="w-4 h-4 text-muted-foreground" />}
-                    <Link href={`/income/edit?id=${inc.id}`} title="Editar" aria-label={`Editar ${inc.name}`} className="text-muted-foreground hover:text-brand-500">
-                      <Pencil className="w-4 h-4" />
-                    </Link>
-                    <form action={deleteIncomeAction}>
-                      <input type="hidden" name="id" value={inc.id} />
-                      <button type="submit" title="Eliminar" aria-label="Eliminar" className="text-muted-foreground hover:text-destructive">
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </form>
+                    {/* Cada uno gestiona sus propios ingresos (RLS lo exige también). */}
+                    {inc.userId === me?.id && (
+                      <>
+                        <Link href={`/income/edit?id=${inc.id}`} title="Editar" aria-label={`Editar ${inc.name}`} className="text-muted-foreground hover:text-brand-500">
+                          <Pencil className="w-4 h-4" />
+                        </Link>
+                        <form action={deleteIncomeAction}>
+                          <input type="hidden" name="id" value={inc.id} />
+                          <button type="submit" title="Eliminar" aria-label="Eliminar" className="text-muted-foreground hover:text-destructive">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </form>
+                      </>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">

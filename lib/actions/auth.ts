@@ -13,7 +13,10 @@ function translate(message: string) {
   if (/password should be at least/i.test(message)) return "La contraseña es demasiado corta.";
   if (/same.*password|different from the old/i.test(message)) return "La nueva contraseña debe ser distinta a la anterior.";
   if (/weak|pwned|leaked/i.test(message)) return "Esa contraseña es débil o apareció en filtraciones; elige otra.";
-  return message;
+  if (/rate limit|too many/i.test(message)) return "Demasiados intentos. Espera unos minutos.";
+  if (/aal2|verificación en dos pasos/i.test(message)) return "Confirma primero el código de verificación en dos pasos.";
+  // No mostrar mensajes crudos de Postgres/Auth (pueden revelar nombres internos).
+  return "No se pudo completar la operación. Inténtalo de nuevo.";
 }
 
 export async function login(formData: FormData): Promise<{ error?: string; mfa?: boolean }> {
@@ -54,7 +57,7 @@ export async function acceptInvite(input: {
   version: string;
 }): Promise<{ error?: string }> {
   if (!input.consent) return { error: "Debes aceptar la Política de Privacidad y los Términos." };
-  if (input.password.length < 8) return { error: "La contraseña debe tener al menos 8 caracteres." };
+  if (input.password.length < 10) return { error: "La contraseña debe tener al menos 10 caracteres." };
   const name = input.name.trim().slice(0, 80);
   if (!name) return { error: "Escribe tu nombre." };
 
@@ -63,7 +66,7 @@ export async function acceptInvite(input: {
   const { updateMyName } = await import("../repos/users");
   await updateMyName(input.userId, name);
   const consent = await supabase.rpc("accept_terms", { p_version: input.version });
-  if (consent.error) return { error: consent.error.message };
+  if (consent.error) return { error: translate(consent.error.message) };
   await queryClient.invalidateQueries({ queryKey: ME_KEY });
   navigate("/setup");
   return {};
@@ -71,7 +74,7 @@ export async function acceptInvite(input: {
 
 export async function acceptTerms(version: string): Promise<{ error?: string }> {
   const { error } = await supabase.rpc("accept_terms", { p_version: version });
-  if (error) return { error: error.message };
+  if (error) return { error: translate(error.message) };
   await queryClient.invalidateQueries({ queryKey: ME_KEY });
   return {};
 }
@@ -107,7 +110,7 @@ export async function requestPasswordReset(email: string): Promise<{ error?: str
 }
 
 export async function setNewPassword(password: string): Promise<{ error?: string }> {
-  if (password.length < 8) return { error: "La contraseña debe tener al menos 8 caracteres." };
+  if (password.length < 10) return { error: "La contraseña debe tener al menos 10 caracteres." };
   const { error } = await supabase.auth.updateUser({ password });
   if (error) return { error: translate(error.message) };
   await queryClient.invalidateQueries({ queryKey: ME_KEY });

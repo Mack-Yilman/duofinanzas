@@ -23,17 +23,17 @@ cada uno y lleven sus metas de ahorro juntos, con constancias de pago y privacid
 |---|---|
 | 📊 | **Reparto justo**: cada gasto se divide 50/50 o en proporción a los ingresos de cada uno. |
 | 💸 | **Gastos e ingresos** en PEN, USD y EUR, con categorías y periodos según tu día de corte. |
-| 🧾 | **Constancias opcionales**: foto del voucher al registrar, al pagar o al aportar a una meta (comprimida y conservada 12 meses). |
+| 🧾 | **Constancias opcionales**: foto del voucher o **PDF de la boleta electrónica** al registrar, al pagar o al aportar a una meta (conservadas 12 meses). |
 | 🎯 | **Metas de ahorro** con historial de aportes por persona y **fecha estimada** según su ritmo. |
-| 🐷 | **Presupuestos por categoría** con alerta al 80 % y al 100 %. |
+| 🐷 | **Presupuestos por categoría**, compartidos y **personales**, con alerta al 80 % y al 100 %. |
 | 🔁 | **Gastos recurrentes** (alquiler, servicios) que se registran solos cada mes. |
 | 📊 | **Estadísticas**: comparación con el periodo anterior, proyección de cierre, tasa de ahorro y evolución acumulada. |
-| 📈 | **Resumen anual** por mes y categoría; **exportar** a CSV/PDF e **importar** desde CSV con detección de duplicados. |
+| 📈 | **Resumen anual** por mes y categoría con **comparativa interanual**; **exportar** a CSV/PDF e **importar** desde CSV con duplicados detectados y **reglas de categoría** automáticas. |
 | 🔎 | **Búsqueda y filtros** de gastos (texto, categoría, quién pagó, estado) y **deshacer** al eliminar. |
-| 🔔 | **Recordatorio de liquidación** cuando se acerca el cierre, y **liquidar todo** de una vez. |
+| 🔔 | **Recordatorio de liquidación** cuando se acerca el cierre, **liquidar todo** de una vez e **historial de liquidaciones**. |
 | 📱 | **Instalable (PWA)**: se abre como una app y funciona sin conexión. |
 | 🌗 | **Modo claro, oscuro o del sistema**, pensado para el móvil. |
-| 🔐 | **Acceso solo por invitación**, **verificación en dos pasos** opcional y panel de administración con auditoría. |
+| 🔐 | **Acceso solo por invitación**, **verificación en dos pasos** opcional, gastos personales privados **a nivel de base de datos** y panel de administración con auditoría. |
 | ⚖️ | **Ley N.º 29733 (Perú)**: privacidad, términos, cookies, consentimiento y derechos ARCO en la app. |
 
 ## 🏗️ Arquitectura
@@ -96,7 +96,7 @@ Versionado [SemVer](https://semver.org/lang/es/): **patch** = arreglos · **mino
 ### 💾 Cómo rinde el plan Free
 | Límite | Medida |
 |---|---|
-| Storage 1 GB | Constancias ≤ 1280 px en WebP (~80-400 KB), caducan a los 12 meses, limpieza semanal de huérfanas |
+| Storage 1 GB | Imágenes ≤ 1280 px en WebP (~80-400 KB), PDF ≤ 2 MB, cuota de 500 archivos por pareja, caducan a los 12 meses, limpieza semanal de huérfanas |
 | Transferencia 5 GB/mes | `Cache-Control` de 1 año + URLs firmadas reutilizadas |
 | Pausa por inactividad | Workflow `keepalive.yml` |
 

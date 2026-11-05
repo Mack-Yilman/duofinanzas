@@ -24,6 +24,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+          persist-credentials: false # el tag lo crea `gh` con GH_TOKEN; git no necesita credenciales
       - name: Crear tag y Release si no existen
         env:
           GH_TOKEN: ${{ github.token }}

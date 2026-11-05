@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { buildImport, parseAmount, parseCsv, parseDate } from "./import";
+import { buildImport, matchCategoryRule, parseAmount, parseCsv, parseDate } from "./import";
 import { expensesToCsv } from "./export";
 import { toDateString } from "./dates";
-import type { Category, Expense } from "../types";
+import type { Category, CategoryRule, Expense } from "../types";
 
 const cats = [{ id: "c1", name: "Comida", icon: "🍔" }] as Category[];
 const users = [{ id: "u1", name: "Ana" }, { id: "u2", name: "Luis" }];
@@ -44,5 +44,21 @@ describe("importar CSV", () => {
     expect(r.rows.map((x) => x.name)).toEqual(["Pan"]);
     expect(r.errors.map((e) => e.line)).toEqual([3, 4, 5, 6]);
     expect(buildImport("Nombre;Valor\nA;1", { categories: cats, users, existing: [] }).errors[0].message).toMatch(/Faltan columnas/);
+  });
+
+  it("aplica reglas de categoría por descripción (gana la más específica)", () => {
+    const all = [...cats, { id: "c2", name: "Supermercado", icon: "🛒" }, { id: "c3", name: "Farmacia", icon: "💊" }] as Category[];
+    const rules: CategoryRule[] = [
+      { id: "r1", pattern: "wong", categoryId: "c2" },
+      { id: "r2", pattern: "Wong Farma", categoryId: "c3" },
+      { id: "r3", pattern: "uber", categoryId: "borrada" },
+    ];
+    expect(matchCategoryRule("Compra WONG Benavides", rules, all)?.id).toBe("c2");
+    expect(matchCategoryRule("wong farmá Miraflores", rules, all)?.id).toBe("c3");
+    expect(matchCategoryRule("Uber viaje", rules, all)).toBeUndefined();
+    const csv = "Fecha;Descripción;Categoría;Monto\n05/11/2026;Compra Wong;;45\n05/11/2026;Wong;Comida;10";
+    const r = buildImport(csv, { categories: all, users, existing: [], rules });
+    expect(r.rows[0]).toMatchObject({ categoryId: "c2", categoryName: "Supermercado" });
+    expect(r.rows[1]).toMatchObject({ categoryId: "c1" }); // la columna Categoría manda
   });
 });

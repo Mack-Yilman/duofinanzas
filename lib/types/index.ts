@@ -130,6 +130,27 @@ export interface Budget {
   id: string;
   categoryId: string;
   amount: number;
+  /** Vacío = presupuesto compartido; con id = presupuesto personal de esa persona (solo lo ve ella). */
+  userId?: string;
+}
+
+// Historial de liquidaciones (una fila por moneda y por liquidación)
+export interface Settlement {
+  id: string;
+  fromUserId: string;
+  toUserId: string;
+  amount: number;
+  currency: Currency;
+  expenseCount: number;
+  createdById: string;
+  createdAt: Date;
+}
+
+// Reglas de categorización al importar ("si la descripción contiene X → categoría Y")
+export interface CategoryRule {
+  id: string;
+  pattern: string;
+  categoryId: string;
 }
 
 // Gastos recurrentes (plantillas mensuales)
